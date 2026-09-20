@@ -162,15 +162,31 @@ export default function Navbar({ activePage, setActivePage }) {
               </div>
             </div>
 
-            {/* Admin ERP Quick Link */}
-            <div
-              onClick={() => setActivePage('admin')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#94a3b8', fontSize: '0.82rem', fontWeight: 700 }}
-              title="Admin ERP Portal"
-            >
-              <LayoutDashboard size={18} color="#94a3b8" />
-              <span>ERP</span>
-            </div>
+            {/* Admin ERP Quick Link (Visible only for Super Admin or Approved Co-Admin) */}
+            {(() => {
+              const currentUser = user || (() => {
+                try { return JSON.parse(localStorage.getItem('user') || localStorage.getItem('techcore_user') || '{}'); }
+                catch (e) { return {}; }
+              })();
+
+              const isApprovedAdmin = currentUser?.role === 'SUPER_ADMIN' ||
+                                      (currentUser?.role === 'CO_ADMIN' && currentUser?.status === 'APPROVED') ||
+                                      currentUser?.email === 'techcoreadmin@gmail.com' ||
+                                      currentUser?.isAdmin;
+
+              if (!isApprovedAdmin) return null;
+
+              return (
+                <div
+                  onClick={() => setActivePage('admin')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#94a3b8', fontSize: '0.82rem', fontWeight: 700 }}
+                  title="Admin ERP Portal"
+                >
+                  <LayoutDashboard size={18} color="#94a3b8" />
+                  <span>ERP</span>
+                </div>
+              );
+            })()}
 
             {/* 4. Highlighted Blue PC Builder Button */}
             <button
