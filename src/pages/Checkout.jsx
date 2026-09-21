@@ -89,6 +89,14 @@ export default function Checkout({ onNavigate, onOrderCompleted }) {
         body: JSON.stringify(payload)
       });
       const order = await res.json();
+
+      // Save order to local storage for My Orders history
+      const savedOrders = (() => {
+        try { return JSON.parse(localStorage.getItem('techcore_user_orders') || '[]'); }
+        catch (e) { return []; }
+      })();
+      localStorage.setItem('techcore_user_orders', JSON.stringify([order, ...savedOrders]));
+
       clearCart();
       onOrderCompleted(order);
     } catch (err) {

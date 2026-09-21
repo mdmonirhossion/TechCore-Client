@@ -93,6 +93,30 @@ export default function Login({ onNavigate }) {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => onNavigate('my-orders')}
+                style={{
+                  width: '100%',
+                  background: '#ea580c',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.85rem',
+                  fontSize: '1rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(234, 88, 12, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <ShoppingBag size={20} />
+                View My Orders History
+              </button>
+
               {isUserAdmin && (
                 <button
                   type="button"

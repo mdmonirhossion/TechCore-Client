@@ -19,6 +19,7 @@ import Warranty from './pages/Warranty';
 import ServiceCenter from './pages/ServiceCenter';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import MyOrders from './pages/MyOrders';
 
 // Admin ERP Dashboard
 import AdminDashboard from './dashboard/AdminDashboard';
@@ -143,6 +144,10 @@ export default function App() {
 
           {activePage === 'register' && (
             <Register onNavigate={handleNavigate} />
+          )}
+
+          {activePage === 'my-orders' && (
+            <MyOrders onNavigate={handleNavigate} />
           )}
 
           {activePage === 'admin' && (
