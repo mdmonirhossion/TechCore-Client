@@ -32,15 +32,15 @@ export default function PCBuilder({ onNavigate }) {
   
   // Invoice Editable Customer Details
   const [invoiceCustomer, setInvoiceCustomer] = useState({
-    name: user?.name || 'Jibon Biswas',
+    name: user?.name || '',
     company: 'N/A',
     address: 'Jessore, Sadar',
     city: 'Jessore',
-    phone: user?.phoneOrEmail || '01917776088',
-    branch: 'KHULNA BRANCH',
-    invoiceNo: '78,258',
-    date: 'November 21, 2023',
-    paymentMethod: 'CASH'
+    phone: user?.phoneOrEmail || '',
+    branch: '',
+    invoiceNo: '',
+    date: '',
+    paymentMethod: ''
   });
 
   // AI Prompt Modal State
@@ -510,7 +510,7 @@ export default function PCBuilder({ onNavigate }) {
                 {/* Header Left: Store Brand & Address */}
                 <div>
                   <h1 style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '26px', fontWeight: 'bold', color: '#111111', margin: 0, lineHeight: 1.1 }}>
-                    Computer Gallery
+                    TechCore Gallery
                   </h1>
                   <div style={{ fontStyle: 'italic', fontSize: '13px', color: '#444444', marginBottom: '12px' }}>
                     Thanks for visit our shop
@@ -603,7 +603,7 @@ export default function PCBuilder({ onNavigate }) {
               {/* 4. Footer & Signature */}
               <div style={{ marginTop: '24px', fontSize: '13px' }}>
                 <div style={{ marginBottom: '24px' }}>
-                  Make all checks payable to Computer Gallery
+                  Make all checks payable to TechCore Gallery
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>

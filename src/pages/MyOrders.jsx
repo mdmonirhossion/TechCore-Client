@@ -26,15 +26,21 @@ export default function MyOrders({ onNavigate }) {
     // 2. Fetch from backend API
     const currentUserEmail = user?.email || user?.phoneOrEmail;
     if (currentUserEmail) {
-      fetch(`/api/orders?customer=${encodeURIComponent(currentUserEmail)}`)
-        .then(res => res.json())
+      fetch('/api/orders')
+        .then(res => {
+          if (!res.ok) throw new Error('Backend order endpoint not found');
+          return res.json();
+        })
         .then(data => {
-          if (Array.isArray(data) && data.length > 0) {
-            setOrders(data);
+          const userOrders = Array.isArray(data)
+            ? data.filter(o => (o.customer?.email || '').toLowerCase() === currentUserEmail.toLowerCase() || o.customer?.phone === currentUserEmail)
+            : [];
+          
+          if (userOrders.length > 0) {
+            setOrders(userOrders);
           } else if (localSavedOrders.length > 0) {
             setOrders(localSavedOrders);
           } else {
-            // Demo fallback sample order if user is new
             setOrders(getDemoOrders(currentUserEmail));
           }
         })
@@ -374,7 +380,7 @@ export default function MyOrders({ onNavigate }) {
           <div style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'rgba(15, 23, 42, 0.65)',
             backdropFilter: 'blur(4px)',
             zIndex: 9999,
             display: 'flex',
@@ -382,97 +388,101 @@ export default function MyOrders({ onNavigate }) {
             justifyContent: 'center',
             padding: '1rem'
           }}>
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '20px',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-              border: '1px solid #e2e8f0',
-              padding: '2rem'
-            }}>
+            <div
+              id="printable-invoice-area"
+              style={{
+                background: '#ffffff',
+                borderRadius: '20px',
+                maxWidth: '640px',
+                width: '100%',
+                maxHeight: '92vh',
+                overflowY: 'auto',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                border: '1px solid #e2e8f0',
+                padding: '2.25rem'
+              }}
+            >
               
-              {/* Modal Header */}
+              {/* Modal Header (Close button hidden during print) */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ea580c', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
                 <div>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+                  <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
                     TECH<span style={{ color: '#ea580c' }}>CORE</span> INVOICE
                   </h2>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Star Tech Official E-Receipt</div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Star Tech Official E-Receipt</div>
                 </div>
                 <button
+                  className="no-print"
                   onClick={() => setSelectedOrder(null)}
-                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 32, height: 32, fontWeight: 800, cursor: 'pointer' }}
+                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 34, height: 34, fontWeight: 800, cursor: 'pointer' }}
                 >
                   ✕
                 </button>
               </div>
 
-              {/* Order Info */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.85rem', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '10px' }}>
+              {/* Order Info Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.88rem', marginBottom: '1.5rem', background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                 <div>
-                  <div style={{ color: '#64748b' }}>Order Reference:</div>
-                  <strong style={{ color: '#ea580c' }}>#{selectedOrder.id}</strong>
+                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Order Reference:</div>
+                  <strong style={{ color: '#ea580c', fontSize: '1rem' }}>#{selectedOrder.id}</strong>
                 </div>
                 <div>
-                  <div style={{ color: '#64748b' }}>Customer Name:</div>
-                  <strong style={{ color: '#0f172a' }}>{selectedOrder.customer?.name}</strong>
+                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Customer Name:</div>
+                  <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedOrder.customer?.name}</strong>
                 </div>
                 <div>
-                  <div style={{ color: '#64748b' }}>Phone:</div>
-                  <strong>{selectedOrder.customer?.phone}</strong>
+                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Phone Number:</div>
+                  <strong style={{ color: '#0f172a' }}>{selectedOrder.customer?.phone}</strong>
                 </div>
                 <div>
-                  <div style={{ color: '#64748b' }}>Payment Method:</div>
-                  <strong>{selectedOrder.paymentMethod} ({selectedOrder.paymentStatus})</strong>
+                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Payment Method:</div>
+                  <strong style={{ color: '#0f172a' }}>{selectedOrder.paymentMethod} ({selectedOrder.paymentStatus})</strong>
                 </div>
               </div>
 
-              {/* Items Breakdown */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem', marginBottom: '1.25rem' }}>
+              {/* Items Breakdown Table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
                 <thead>
-                  <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #cbd5e1', textAlign: 'left' }}>
-                    <th style={{ padding: '0.6rem' }}>Item</th>
-                    <th style={{ padding: '0.6rem' }}>Qty</th>
-                    <th style={{ padding: '0.6rem', textAlign: 'right' }}>Total</th>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a' }}>Item Description</th>
+                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a', textAlign: 'center' }}>Qty</th>
+                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a', textAlign: 'right' }}>Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(selectedOrder.items || []).map((it, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '0.6rem', fontWeight: 600 }}>{it.name}</td>
-                      <td style={{ padding: '0.6rem' }}>{it.quantity}</td>
-                      <td style={{ padding: '0.6rem', textAlign: 'right', fontWeight: 700 }}>৳{(it.price * it.quantity).toLocaleString()}</td>
+                      <td style={{ padding: '0.75rem 0.85rem', fontWeight: 700, color: '#0f172a' }}>{it.name}</td>
+                      <td style={{ padding: '0.75rem 0.85rem', textAlign: 'center', fontWeight: 600 }}>{it.quantity}</td>
+                      <td style={{ padding: '0.75rem 0.85rem', textAlign: 'right', fontWeight: 800, color: '#0f172a' }}>৳{(it.price * it.quantity).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               {/* Total Calculation */}
-              <div style={{ borderTop: '2px solid #e2e8f0', paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ borderTop: '2px solid #e2e8f0', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569' }}>
                   <span>Subtotal:</span>
-                  <span>৳{(selectedOrder.subtotal || 0).toLocaleString()}</span>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{(selectedOrder.subtotal || 0).toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569' }}>
                   <span>Delivery Charge:</span>
-                  <span>৳{selectedOrder.deliveryFee || 100}</span>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{selectedOrder.deliveryFee || 100}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 900, color: '#ea580c', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 900, color: '#ea580c', borderTop: '2px solid #e2e8f0', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
                   <span>Total Amount Paid:</span>
                   <span>৳{(selectedOrder.payableTotal || selectedOrder.subtotal || 0).toLocaleString()}</span>
                 </div>
               </div>
 
-              {/* Print Action */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              {/* Print Action Buttons (Hidden when printing) */}
+              <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
                 <button
                   onClick={() => window.print()}
-                  style={{ background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.65rem 1.25rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                  style={{ background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.92rem', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)' }}
                 >
-                  <Printer size={16} /> Print Memo
+                  <Printer size={18} /> Print Memo
                 </button>
               </div>
 

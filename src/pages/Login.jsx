@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Home, Phone, Lock, Eye, EyeOff, CheckCircle2, ShieldCheck, ArrowRight, UserPlus, LogOut, LayoutDashboard, UserCheck } from 'lucide-react';
+import { Home, Phone, Lock, Eye, EyeOff, CheckCircle2, ShieldCheck, ArrowRight, UserPlus, LogOut, LayoutDashboard, UserCheck, ShoppingBag } from 'lucide-react';
 
 export default function Login({ onNavigate }) {
   const { user, loginUser, logoutUser } = useShop();
