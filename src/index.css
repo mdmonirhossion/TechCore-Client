@@ -533,40 +533,73 @@ button {
   color: var(--primary-blue);
 }
 
-/* Print Media Styles for Clean Standard Invoice */
+/* Print Media Styles for Clean Standard Single Page Invoice */
+@page {
+  size: A4 portrait;
+  margin: 8mm;
+}
+
 @media print {
-  body, html {
+  /* 1. Hide all non-printable UI, header, footer, floating buttons, & modal control bars */
+  header, footer, nav, .navbar, .footer, .no-print, [class*="FloatingActions"], .search-suggestions-popover {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 2. Reset html & body layout to zero padding/margin */
+  html, body, #root, main, .container {
     background: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Hide all website chrome, modals background overlays and non-print elements */
-  header, footer, nav, .navbar, .footer, .no-print, [class*="FloatingActions"], [style*="backdropFilter"] {
-    display: none !important;
+  /* 3. Collapse modal backdrop overlays & fixed wrappers so they take 0 space */
+  div[style*="position: fixed"], div[style*="fixed"], .modal-overlay {
+    position: static !important;
     background: transparent !important;
-  }
-
-  body * {
-    visibility: hidden;
-  }
-
-  #printable-invoice-area, #printable-invoice-area * {
-    visibility: visible !important;
-  }
-
-  #printable-invoice-area {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
+    padding: 0 !important;
     margin: 0 !important;
-    padding: 20px !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 4. Target printable invoice area to start at top of Page 1 without breaks */
+  #printable-invoice-area {
+    display: block !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     background: #ffffff !important;
     color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #printable-invoice-area * {
+    visibility: visible !important;
   }
 }
-
