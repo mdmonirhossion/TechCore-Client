@@ -24,12 +24,33 @@ import Register from './pages/Register';
 import AdminDashboard from './dashboard/AdminDashboard';
 
 export default function App() {
-  const [activePage, setActivePage] = useState('home');
+  const [activePage, setActivePage] = useState(() => {
+    if (window.location.pathname === '/admin') return 'admin';
+    return 'home';
+  });
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [recentOrder, setRecentOrder] = useState(null);
 
+  React.useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.pathname === '/admin') {
+        setActivePage('admin');
+      } else if (window.location.pathname === '/') {
+        setActivePage('home');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const handleNavigate = (pageStr) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (pageStr === 'admin') {
+      window.history.pushState({}, '', '/admin');
+    } else if (pageStr === 'home') {
+      window.history.pushState({}, '', '/');
+    }
 
     if (pageStr.startsWith('product-detail:')) {
       const pId = pageStr.split(':')[1];

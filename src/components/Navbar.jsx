@@ -172,6 +172,7 @@ export default function Navbar({ activePage, setActivePage }) {
               const isApprovedAdmin = currentUser?.role === 'SUPER_ADMIN' ||
                                       (currentUser?.role === 'CO_ADMIN' && currentUser?.status === 'APPROVED') ||
                                       currentUser?.email === 'techcoreadmin@gmail.com' ||
+                                      currentUser?.phoneOrEmail === 'techcoreadmin@gmail.com' ||
                                       currentUser?.isAdmin;
 
               if (!isApprovedAdmin) return null;

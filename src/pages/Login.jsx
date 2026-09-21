@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Home, Phone, Lock, Eye, EyeOff, CheckCircle2, ShieldCheck, ArrowRight, UserPlus } from 'lucide-react';
+import { Home, Phone, Lock, Eye, EyeOff, CheckCircle2, ShieldCheck, ArrowRight, UserPlus, LogOut, LayoutDashboard, UserCheck } from 'lucide-react';
 
 export default function Login({ onNavigate }) {
-  const { loginUser } = useShop();
+  const { user, loginUser, logoutUser } = useShop();
   const [phoneOrEmail, setPhoneOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,18 +26,131 @@ export default function Login({ onNavigate }) {
 
     setLoading(true);
 
-    // Simulate login logic
     setTimeout(() => {
       setLoading(false);
-      const mockUser = {
-        name: phoneOrEmail.includes('@') ? phoneOrEmail.split('@')[0] : 'Customer',
-        phoneOrEmail: phoneOrEmail,
+      const inputStr = phoneOrEmail.trim().toLowerCase();
+      const isAdminUser = inputStr === 'techcoreadmin@gmail.com' || inputStr === 'admin';
+
+      const loggedInUserData = {
+        name: isAdminUser ? 'TechCore Super Admin' : (inputStr.includes('@') ? inputStr.split('@')[0] : 'Customer'),
+        email: inputStr.includes('@') ? inputStr : (isAdminUser ? 'techcoreadmin@gmail.com' : ''),
+        phoneOrEmail: phoneOrEmail.trim(),
+        role: isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER',
+        isAdmin: isAdminUser,
         isLoggedIn: true
       };
-      loginUser(mockUser);
-      onNavigate('home');
+
+      loginUser(loggedInUserData);
+
+      if (isAdminUser) {
+        onNavigate('admin');
+      } else {
+        onNavigate('home');
+      }
     }, 400);
   };
+
+  // If user is already logged in, show User Account Profile & Logout UI
+  if (user && user.isLoggedIn) {
+    const isUserAdmin = user.role === 'SUPER_ADMIN' || user.email === 'techcoreadmin@gmail.com' || user.isAdmin;
+
+    return (
+      <div style={{ background: '#f8fafc', minHeight: 'calc(100vh - 180px)', padding: '2rem 1rem 4rem 1rem' }}>
+        <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#64748b', marginBottom: '2rem' }}>
+            <Home size={16} style={{ cursor: 'pointer' }} onClick={() => onNavigate('home')} />
+            <span>/</span>
+            <span style={{ color: '#0f172a', fontWeight: 700 }}>My Account</span>
+          </div>
+
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.06)',
+              border: '1px solid #e2e8f0',
+              maxWidth: '560px',
+              margin: '0 auto',
+              padding: '2.5rem 2rem'
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: isUserAdmin ? '#eff6ff' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto' }}>
+                <UserCheck size={32} color={isUserAdmin ? '#2563eb' : '#64748b'} />
+              </div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.4rem' }}>
+                Welcome, {user.name}!
+              </h2>
+              <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                Logged in as: <strong style={{ color: '#1e293b' }}>{user.email || user.phoneOrEmail}</strong>
+              </p>
+              {isUserAdmin && (
+                <span style={{ display: 'inline-block', marginTop: '0.5rem', background: '#dbeafe', color: '#1e40af', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                  🛡️ Super Admin Access
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {isUserAdmin && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('admin')}
+                  style={{
+                    width: '100%',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.85rem',
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <LayoutDashboard size={20} />
+                  Open Admin ERP Dashboard
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  logoutUser();
+                  alert('You have logged out successfully.');
+                }}
+                style={{
+                  width: '100%',
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  padding: '0.85rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <LogOut size={18} />
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#f8fafc', minHeight: 'calc(100vh - 180px)', padding: '2rem 1rem 4rem 1rem' }}>
