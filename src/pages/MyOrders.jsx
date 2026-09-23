@@ -95,8 +95,9 @@ export default function MyOrders({ onNavigate }) {
 
   // Filtered orders list
   const filteredOrders = orders.filter(ord => {
-    const matchesSearch = (ord.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (ord.items || []).some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const ordId = (ord.id || ord._id || '').toLowerCase();
+    const matchesSearch = ordId.includes(searchQuery.toLowerCase()) ||
+                          (ord.items || []).some(item => (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesStatus = statusFilter === 'ALL' || ord.orderStatus === statusFilter;
     return matchesSearch && matchesStatus;
@@ -245,14 +246,16 @@ export default function MyOrders({ onNavigate }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {filteredOrders.map(order => {
+            {filteredOrders.map((order, idx) => {
+              const oId = order.id || order._id || `ORD-${idx}`;
               const badge = getStatusBadge(order.orderStatus || 'Processing');
               const BadgeIcon = badge.icon;
               const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently Placed';
+              const orderTotal = Number(order.grandTotal ?? order.payableTotal ?? order.subtotal ?? 0);
 
               return (
                 <div
-                  key={order.id}
+                  key={oId}
                   style={{
                     background: '#ffffff',
                     border: '1px solid #e2e8f0',
@@ -267,7 +270,7 @@ export default function MyOrders({ onNavigate }) {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                         <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                          Order #{order.id}
+                          Order #{oId}
                         </span>
                         <span style={{
                           padding: '0.25rem 0.65rem',
@@ -291,7 +294,7 @@ export default function MyOrders({ onNavigate }) {
 
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#ea580c' }}>
-                        ৳{(order.payableTotal || order.subtotal || 0).toLocaleString()}
+                        ৳{orderTotal.toLocaleString()}
                       </div>
                       <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
                         Payment: <span style={{ color: '#0f172a', fontWeight: 800 }}>{order.paymentMethod || 'bKash'}</span> ({order.paymentStatus || 'Paid'})

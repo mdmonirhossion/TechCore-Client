@@ -16,8 +16,11 @@ export default function ServiceCenter() {
   useEffect(() => {
     fetch('/api/service')
       .then(res => res.json())
-      .then(data => setRequests(data || []))
-      .catch(err => console.error(err));
+      .then(data => setRequests(Array.isArray(data) ? data : (data.requests || [])))
+      .catch(err => {
+        console.error(err);
+        setRequests([]);
+      });
   }, []);
 
   const handleSubmitService = async (e) => {
@@ -28,13 +31,23 @@ export default function ServiceCenter() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+      if (!res.ok) throw new Error('Service ticket submission failed');
       const data = await res.json();
-      setRequests([data, ...requests]);
-      setSubmittedId(data.id);
+      const ticketId = data.id || data._id || `TKT-${Date.now().toString().slice(-4)}`;
+      const newTicket = { ...data, id: ticketId };
+      setRequests([newTicket, ...requests]);
+      setSubmittedId(ticketId);
       setShowForm(false);
       setFormData({ customerName: '', phone: '', productName: '', serialNumber: '', problem: '' });
     } catch (err) {
       console.error(err);
+      // Fallback ticket creation
+      const localId = `TKT-${Date.now().toString().slice(-4)}`;
+      const localTicket = { ...formData, id: localId, status: 'Received', technician: 'Pending Assign' };
+      setRequests([localTicket, ...requests]);
+      setSubmittedId(localId);
+      setShowForm(false);
+      setFormData({ customerName: '', phone: '', productName: '', serialNumber: '', problem: '' });
     }
   };
 

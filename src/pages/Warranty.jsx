@@ -15,10 +15,12 @@ export default function Warranty() {
 
     try {
       const res = await fetch(`/api/warranty/check?serial=${encodeURIComponent(serialInput)}`);
+      if (!res.ok) throw new Error('Warranty serial not found');
       const data = await res.json();
       setWarrantyData(data);
     } catch (err) {
       console.error(err);
+      setWarrantyData(null);
     } finally {
       setLoading(false);
     }

@@ -13,13 +13,21 @@ export default function ProductDetails({ productId, onNavigate }) {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/products/${productId}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Product not found');
+        return res.json();
+      })
       .then(data => {
-        setProduct(data);
+        if (data && (data.id || data._id || data.name)) {
+          setProduct(data);
+        } else {
+          setProduct(null);
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
+        setProduct(null);
         setLoading(false);
       });
   }, [productId]);
@@ -39,8 +47,16 @@ export default function ProductDetails({ productId, onNavigate }) {
     );
   }
 
-  const isWishlisted = wishlist.some(p => p.id === product.id);
-  const isCompared = compareItems.some(p => p.id === product.id);
+  const pId = product.id || product._id;
+  const isWishlisted = wishlist.some(p => p.id === pId || p._id === pId);
+  const isCompared = compareItems.some(p => p.id === pId || p._id === pId);
+
+  const priceNum = Number(product.price || 0);
+  const discNum = product.discountPrice ? Number(product.discountPrice) : priceNum;
+
+  const mainImage = Array.isArray(product.images) && product.images.length > 0
+    ? product.images[0]
+    : (product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
 
   return (
     <div className="container" style={{ padding: '2.5rem 1.5rem' }}>
@@ -53,8 +69,8 @@ export default function ProductDetails({ productId, onNavigate }) {
         {/* Product Image Showcase */}
         <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
           <img
-            src={product.images[0]}
-            alt={product.name}
+            src={mainImage}
+            alt={product.name || 'Product Image'}
             style={{ width: '100%', maxHeight: '380px', objectFit: 'contain', borderRadius: 12 }}
           />
         </div>

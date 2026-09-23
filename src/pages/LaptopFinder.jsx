@@ -19,10 +19,13 @@ export default function LaptopFinder({ onSelectProduct }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maxBudget: budget, usageScenario: scenario })
       });
+      if (!res.ok) throw new Error('Recommendation request failed');
       const data = await res.json();
-      setResults(data);
+      const list = Array.isArray(data) ? data : (data.recommendations || data.laptops || []);
+      setResults(list);
     } catch (err) {
       console.error(err);
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -106,55 +109,64 @@ export default function LaptopFinder({ onSelectProduct }) {
       </div>
 
       {/* Results Section */}
-      {results && (
+      {Array.isArray(results) && results.length > 0 && (
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>
             Top Recommended <span className="gradient-text">Laptops</span> ({results.length})
           </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {results.map(({ laptop, matchPercentage }, idx) => (
-              <div
-                key={laptop.id}
-                className="glass-panel"
-                style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: '180px 1fr 200px', gap: '1.5rem', alignItems: 'center' }}
-              >
-                <img src={laptop.images[0]} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10 }} />
+            {results.map((item, idx) => {
+              const laptop = item.laptop || item;
+              const matchPercentage = item.matchPercentage || 95;
+              const lId = laptop.id || laptop._id || `lap-${idx}`;
+              const lImg = Array.isArray(laptop.images) && laptop.images.length > 0
+                ? laptop.images[0]
+                : (laptop.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
 
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
-                    <span className="glass-panel" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', background: '#10b981', color: 'black', fontWeight: 800 }}>
-                      {matchPercentage}% Match
-                    </span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--primary-cyan)', fontWeight: 800, textTransform: 'uppercase' }}>
-                      {laptop.brand}
-                    </span>
+              return (
+                <div
+                  key={lId}
+                  className="glass-panel"
+                  style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: '180px 1fr 200px', gap: '1.5rem', alignItems: 'center' }}
+                >
+                  <img src={lImg} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10 }} />
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
+                      <span className="glass-panel" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', background: '#10b981', color: 'black', fontWeight: 800 }}>
+                        {matchPercentage}% Match
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--primary-cyan)', fontWeight: 800, textTransform: 'uppercase' }}>
+                        {laptop.brand || 'TechCore'}
+                      </span>
+                    </div>
+
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer' }} onClick={() => onSelectProduct(lId)}>
+                      {laptop.name}
+                    </h3>
+
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                      {laptop.specifications?.processor} • {laptop.specifications?.ram} • {laptop.specifications?.graphics}
+                    </div>
                   </div>
 
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, cursor: 'pointer' }} onClick={() => onSelectProduct(laptop.id)}>
-                    {laptop.name}
-                  </h3>
-
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                    {laptop.specifications?.processor} • {laptop.specifications?.ram} • {laptop.specifications?.graphics}
+                  <div style={{ textAlign: 'right', borderLeft: '1px solid var(--border-color)', paddingLeft: '1.5rem' }}>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-cyan)', marginBottom: '0.5rem' }}>
+                      ৳{Number(laptop.discountPrice || laptop.price || 0).toLocaleString()}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <button className="btn-primary" style={{ padding: '0.5rem', fontSize: '0.85rem', justifyContent: 'center' }} onClick={() => addToCart(laptop)}>
+                        <ShoppingCart size={14} /> Add to Cart
+                      </button>
+                      <button className="btn-secondary" style={{ padding: '0.5rem', fontSize: '0.85rem', justifyContent: 'center' }} onClick={() => onSelectProduct(lId)}>
+                        View Specs
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div style={{ textAlign: 'right', borderLeft: '1px solid var(--border-color)', paddingLeft: '1.5rem' }}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-cyan)', marginBottom: '0.5rem' }}>
-                    ৳{(laptop.discountPrice || laptop.price).toLocaleString()}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <button className="btn-primary" style={{ padding: '0.5rem', fontSize: '0.85rem', justifyContent: 'center' }} onClick={() => addToCart(laptop)}>
-                      <ShoppingCart size={14} /> Add to Cart
-                    </button>
-                    <button className="btn-secondary" style={{ padding: '0.5rem', fontSize: '0.85rem', justifyContent: 'center' }} onClick={() => onSelectProduct(laptop.id)}>
-                      View Specs
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

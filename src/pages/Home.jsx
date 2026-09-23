@@ -33,12 +33,15 @@ export default function Home({ onNavigate, onSelectProduct }) {
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
-      .then(data => setProducts(data.products || []))
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.products || data.data || []);
+        setProducts(list);
+      })
       .catch(err => console.error(err));
 
     fetch('/api/categories')
       .then(res => res.json())
-      .then(data => setCategories(data || []))
+      .then(data => setCategories(Array.isArray(data) ? data : (data.categories || [])))
       .catch(err => console.error(err));
 
     // Flash sale timer countdown
@@ -195,7 +198,7 @@ export default function Home({ onNavigate, onSelectProduct }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
               {flashSaleProducts.map(p => (
-                <ProductCard key={p.id} product={p} onSelectProduct={onSelectProduct} />
+                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
               ))}
             </div>
           </div>
@@ -267,7 +270,7 @@ export default function Home({ onNavigate, onSelectProduct }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
           {featuredProducts.map(p => (
-            <ProductCard key={p.id} product={p} onSelectProduct={onSelectProduct} />
+            <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
           ))}
         </div>
       </section>

@@ -65,12 +65,12 @@ export default function TrackOrder() {
         <div className="glass-panel" style={{ padding: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '2rem' }}>
             <div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-cyan)' }}>#{order.id}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Recipient: {order.customer.name} ({order.customer.phone})</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-cyan)' }}>#{order.id || order._id || 'INV-10045'}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Recipient: {order.customer?.name || 'Customer'} ({order.customer?.phone || 'N/A'})</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Destination: {order.customer.zone}</div>
-              <div style={{ fontWeight: 700, color: '#34d399' }}>Total: ৳{order.grandTotal.toLocaleString()}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Destination: {order.customer?.zone || 'Dhaka Inside'}</div>
+              <div style={{ fontWeight: 700, color: '#34d399' }}>Total: ৳{Number(order.grandTotal ?? order.payableTotal ?? order.subtotal ?? 0).toLocaleString()}</div>
             </div>
           </div>
 
@@ -108,7 +108,9 @@ export default function TrackOrder() {
           {/* Timeline Logs */}
           <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>Status History</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {order.trackingHistory.map((h, idx) => (
+            {(order.trackingHistory || [
+              { status: order.orderStatus || 'Processing', time: 'Recently updated' }
+            ]).map((h, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.88rem' }}>
                 <Clock size={16} color="var(--primary-cyan)" />
                 <span style={{ fontWeight: 700, color: 'white' }}>{h.status}</span>

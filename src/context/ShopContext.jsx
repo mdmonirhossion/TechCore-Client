@@ -3,20 +3,25 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ShopContext = createContext();
 
 export function ShopProvider({ children }) {
+  // Helper to safely parse localstorage
+  const safeStorageParse = (key, fallback) => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : fallback;
+    } catch (e) {
+      console.error(`Error parsing localStorage key "${key}":`, e);
+      return fallback;
+    }
+  };
+
   // 1. Cart State
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('techcore_cart');
-    return saved ? JSON.parse(saved) : [
-      { id: 'prod-301', name: 'ASUS Dual GeForce RTX 4060 OC 8GB GDDR6', price: 39999, quantity: 1, image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop' }
-    ];
-  });
+  const [cart, setCart] = useState(() => safeStorageParse('techcore_cart', [
+    { id: 'prod-301', name: 'ASUS Dual GeForce RTX 4060 OC 8GB GDDR6', price: 39999, quantity: 1, image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop' }
+  ]));
   const [coupon, setCoupon] = useState({ code: '', discount: 0 });
 
   // 2. Wishlist State
-  const [wishlist, setWishlist] = useState(() => {
-    const saved = localStorage.getItem('techcore_wishlist');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [wishlist, setWishlist] = useState(() => safeStorageParse('techcore_wishlist', []));
 
   // 3. Compare State
   const [compareItems, setCompareItems] = useState([]);
@@ -38,25 +43,34 @@ export function ShopProvider({ children }) {
   });
 
   // 5. User Auth State
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('techcore_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(() => safeStorageParse('techcore_user', null));
 
   // Persist localstorage
   useEffect(() => {
-    localStorage.setItem('techcore_cart', JSON.stringify(cart));
+    try {
+      localStorage.setItem('techcore_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error('Error saving cart to localStorage:', e);
+    }
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem('techcore_wishlist', JSON.stringify(wishlist));
+    try {
+      localStorage.setItem('techcore_wishlist', JSON.stringify(wishlist));
+    } catch (e) {
+      console.error('Error saving wishlist to localStorage:', e);
+    }
   }, [wishlist]);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('techcore_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('techcore_user');
+    try {
+      if (user) {
+        localStorage.setItem('techcore_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('techcore_user');
+      }
+    } catch (e) {
+      console.error('Error saving user to localStorage:', e);
     }
   }, [user]);
 
@@ -70,19 +84,25 @@ export function ShopProvider({ children }) {
 
   // Cart Functions
   const addToCart = (product, qty = 1) => {
+    if (!product) return;
+    const pId = product.id || product._id;
+    const pImg = Array.isArray(product.images) && product.images.length > 0
+      ? product.images[0]
+      : (product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
+
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(item => item.id === pId);
       if (existing) {
         return prev.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + qty } : item
+          item.id === pId ? { ...item, quantity: item.quantity + qty } : item
         );
       }
       return [...prev, {
-        id: product.id,
-        name: product.name,
-        price: product.discountPrice || product.price,
+        id: pId,
+        name: product.name || 'Unnamed Product',
+        price: Number(product.discountPrice || product.price || 0),
         quantity: qty,
-        image: product.images[0]
+        image: pImg
       }];
     });
   };
@@ -109,7 +129,7 @@ export function ShopProvider({ children }) {
   };
 
   const applyCouponCode = (code) => {
-    if (code.toUpperCase() === 'TECH10') {
+    if ((code || '').toUpperCase() === 'TECH10') {
       const sub = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const disc = Math.round(sub * 0.10);
       setCoupon({ code: 'TECH10', discount: disc });
@@ -120,27 +140,35 @@ export function ShopProvider({ children }) {
 
   // Wishlist Functions
   const toggleWishlist = (product) => {
+    if (!product) return;
+    const pId = product.id || product._id;
+    const normalizedProduct = { ...product, id: pId };
+
     setWishlist(prev => {
-      const exists = prev.some(p => p.id === product.id);
+      const exists = prev.some(p => p.id === pId || p._id === pId);
       if (exists) {
-        return prev.filter(p => p.id !== product.id);
+        return prev.filter(p => p.id !== pId && p._id !== pId);
       }
-      return [...prev, product];
+      return [...prev, normalizedProduct];
     });
   };
 
   // Compare Functions
   const toggleCompare = (product) => {
+    if (!product) return;
+    const pId = product.id || product._id;
+    const normalizedProduct = { ...product, id: pId };
+
     setCompareItems(prev => {
-      const exists = prev.some(p => p.id === product.id);
+      const exists = prev.some(p => p.id === pId || p._id === pId);
       if (exists) {
-        return prev.filter(p => p.id !== product.id);
+        return prev.filter(p => p.id !== pId && p._id !== pId);
       }
       if (prev.length >= 4) {
         alert('You can compare a maximum of 4 products at a time.');
         return prev;
       }
-      return [...prev, product];
+      return [...prev, normalizedProduct];
     });
   };
 

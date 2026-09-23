@@ -68,11 +68,13 @@ export default function PCBuilder({ onNavigate }) {
     fetch(`/api/products?category=${catObj.slug}`)
       .then(res => res.json())
       .then(data => {
-        setPickerProducts(data.products || []);
+        const list = Array.isArray(data) ? data : (data.products || data.data || []);
+        setPickerProducts(list);
         setLoadingPicker(false);
       })
       .catch(err => {
         console.error(err);
+        setPickerProducts([]);
         setLoadingPicker(false);
       });
   };

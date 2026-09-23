@@ -5,13 +5,23 @@ import { ShoppingCart, Heart, Scale, Star, ShieldCheck } from 'lucide-react';
 export default function ProductCard({ product, onSelectProduct }) {
   const { addToCart, wishlist, toggleWishlist, compareItems, toggleCompare } = useShop();
 
-  const isWishlisted = wishlist.some(p => p.id === product.id);
-  const isCompared = compareItems.some(p => p.id === product.id);
+  if (!product) return null;
 
-  const savedAmount = product.price > product.discountPrice ? (product.price - product.discountPrice) : 0;
-  const discountPercent = product.price > product.discountPrice
-    ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+  const pId = product.id || product._id;
+  const isWishlisted = wishlist.some(p => p.id === pId || p._id === pId);
+  const isCompared = compareItems.some(p => p.id === pId || p._id === pId);
+
+  const priceNum = Number(product.price || 0);
+  const discNum = product.discountPrice ? Number(product.discountPrice) : priceNum;
+
+  const savedAmount = priceNum > discNum ? (priceNum - discNum) : 0;
+  const discountPercent = priceNum > discNum
+    ? Math.round(((priceNum - discNum) / priceNum) * 100)
     : 0;
+
+  const imgUrl = Array.isArray(product.images) && product.images.length > 0
+    ? product.images[0]
+    : (product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
 
   return (
     <div
@@ -63,13 +73,13 @@ export default function ProductCard({ product, onSelectProduct }) {
             borderRadius: '12px'
           }}
         >
-          Earn Point: {Math.round(product.price / 100)}
+          Earn Point: {Math.round(priceNum / 100)}
         </span>
       )}
 
       {/* Product Image Box */}
       <div
-        onClick={() => onSelectProduct(product.id)}
+        onClick={() => onSelectProduct(pId)}
         style={{
           width: '100%',
           height: '200px',
@@ -83,8 +93,8 @@ export default function ProductCard({ product, onSelectProduct }) {
         }}
       >
         <img
-          src={product.images[0]}
-          alt={product.name}
+          src={imgUrl}
+          alt={product.name || 'Product Image'}
           loading="lazy"
           style={{
             maxWidth: '100%',
@@ -122,16 +132,16 @@ export default function ProductCard({ product, onSelectProduct }) {
         {/* Brand & Rating */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284c7', textTransform: 'uppercase' }}>
-            {product.brand}
+            {product.brand || 'TechCore'}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
-            <Star size={12} fill="#eab308" color="#eab308" /> {product.rating}
+            <Star size={12} fill="#eab308" color="#eab308" /> {product.rating || '5.0'}
           </div>
         </div>
 
         {/* Product Title (2 lines clamp) */}
         <h3
-          onClick={() => onSelectProduct(product.id)}
+          onClick={() => onSelectProduct(pId)}
           style={{
             fontSize: '0.92rem',
             fontWeight: 700,
@@ -152,11 +162,11 @@ export default function ProductCard({ product, onSelectProduct }) {
         {/* Pricing (Star Tech Style Red Price) */}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'baseline', gap: '0.6rem' }}>
           <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#d92d20' }}>
-            {(product.discountPrice || product.price).toLocaleString()}৳
+            {discNum.toLocaleString()}৳
           </span>
-          {product.discountPrice < product.price && (
+          {discNum < priceNum && (
             <span style={{ fontSize: '0.85rem', color: '#94a3b8', textDecoration: 'line-through' }}>
-              {product.price.toLocaleString()}৳
+              {priceNum.toLocaleString()}৳
             </span>
           )}
         </div>

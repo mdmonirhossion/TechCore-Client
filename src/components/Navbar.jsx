@@ -26,10 +26,15 @@ export default function Navbar({ activePage, setActivePage }) {
       try {
         setIsSearching(true);
         const res = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}`);
+        if (!res.ok) throw new Error('Search failed');
         const data = await res.json();
-        setSuggestions(data);
+        const productList = Array.isArray(data)
+          ? data
+          : (data.products || data.results || []);
+        setSuggestions({ products: productList });
       } catch (err) {
         console.error('Search error:', err);
+        setSuggestions(null);
       } finally {
         setIsSearching(false);
       }
@@ -94,25 +99,34 @@ export default function Navbar({ activePage, setActivePage }) {
             <Search className="search-icon" size={18} style={{ position: 'absolute', right: '1rem', left: 'auto', top: '50%', transform: 'translateY(-50%)', color: '#0f172a', cursor: 'pointer' }} />
 
             {/* Search Suggestions */}
-            {suggestions && (
+            {suggestions && suggestions.products && (
               <div className="search-suggestions-popover">
                 {isSearching && <div style={{ padding: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Searching catalog...</div>}
 
-                {suggestions.products.length > 0 && (
+                {suggestions.products.length > 0 ? (
                   <div>
                     <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
                       Matching Products
                     </div>
-                    {suggestions.products.map(p => (
-                      <div key={p.id} className="suggestion-item" onClick={() => handleSelectProduct(p.id)}>
-                        <img src={p.images[0]} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.88rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                          <div style={{ fontSize: '0.78rem', color: '#ea580c', fontWeight: 700 }}>৳{(p.discountPrice || p.price).toLocaleString()}</div>
+                    {suggestions.products.map(p => {
+                      const pId = p.id || p._id;
+                      const pImg = Array.isArray(p.images) && p.images.length > 0
+                        ? p.images[0]
+                        : (p.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
+
+                      return (
+                        <div key={pId} className="suggestion-item" onClick={() => handleSelectProduct(pId)}>
+                          <img src={pImg} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.88rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                            <div style={{ fontSize: '0.78rem', color: '#ea580c', fontWeight: 700 }}>৳{Number(p.discountPrice || p.price || 0).toLocaleString()}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                ) : (
+                  <div style={{ padding: '0.5rem', color: '#64748b', fontSize: '0.85rem' }}>No products found</div>
                 )}
               </div>
             )}

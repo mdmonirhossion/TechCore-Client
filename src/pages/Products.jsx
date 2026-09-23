@@ -17,8 +17,15 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
   }, [categoryFilter]);
 
   useEffect(() => {
-    fetch('/api/brands').then(res => res.json()).then(data => setBrands(data || []));
-    fetch('/api/categories').then(res => res.json()).then(data => setCategories(data || []));
+    fetch('/api/brands')
+      .then(res => res.json())
+      .then(data => setBrands(Array.isArray(data) ? data : (data.brands || [])))
+      .catch(() => setBrands([]));
+
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => setCategories(Array.isArray(data) ? data : (data.categories || [])))
+      .catch(() => setCategories([]));
   }, []);
 
   useEffect(() => {
@@ -32,11 +39,13 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
     fetch(query)
       .then(res => res.json())
       .then(data => {
-        setProducts(data.products || []);
+        const list = Array.isArray(data) ? data : (data.products || data.data || []);
+        setProducts(list);
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
+        setProducts([]);
         setLoading(false);
       });
   }, [selectedCategory, selectedBrand, maxPrice, sortBy, searchFilter]);
@@ -97,8 +106,8 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
             <label className="form-label" style={{ fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>Category</label>
             <select className="form-control" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
               <option value="">All Categories</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.slug}>{c.name}</option>
+              {categories.map((c, i) => (
+                <option key={c.id || c.slug || i} value={c.slug}>{c.name}</option>
               ))}
             </select>
           </div>
@@ -108,8 +117,8 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
             <label className="form-label" style={{ fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>Brand</label>
             <select className="form-control" value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)}>
               <option value="">All Brands</option>
-              {brands.map(b => (
-                <option key={b} value={b}>{b}</option>
+              {brands.map((b, i) => (
+                <option key={b.id || b || i} value={b.name || b}>{b.name || b}</option>
               ))}
             </select>
           </div>
@@ -150,7 +159,7 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
           ) : (
             <div className="product-grid">
               {products.map(p => (
-                <ProductCard key={p.id} product={p} onSelectProduct={onSelectProduct} />
+                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
               ))}
             </div>
           )}
