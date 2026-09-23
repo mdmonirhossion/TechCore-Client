@@ -5,7 +5,7 @@ const bannerSlides = [
   {
     id: 1,
     tag: 'SPECIAL MEGA OFFER',
-    title: 'লেভো -এর AMD প্রসেসর যুক্ত ল্যাপটপ',
+    title: 'লেনাভো -এর AMD প্রসেসর যুক্ত ল্যাপটপ',
     subtitle: 'নির্দিষ্ট ল্যাপটপ কিনলেই পেয়ে যাচ্ছেন স্মার্টওয়াচ অথবা এয়ারবাডস সম্পূর্ণ ফ্রি!',
     image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1200&auto=format&fit=crop',
     bgGradient: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%)',
@@ -40,7 +40,7 @@ const bannerSlides = [
     tag: 'EXPRESS SERVICE & REPAIR',
     title: 'Instant Service & Live Warranty Tracking',
     subtitle: 'Official Brand Authorized Tech Center for Laptops, GPUs & Motherboards',
-    image: 'https://images.unsplash.com/photo-1597872250970-45dca889b703?w=1200&auto=format&fit=crop',
+    image: 'https://img.freepik.com/free-photo/professional-it-technician-working-computer-server-room_53876-110976.jpg?semt=sph',
     bgGradient: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #0f172a 100%)',
     buttonText: 'Request Repair',
     target: 'service-center',
