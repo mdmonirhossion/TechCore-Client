@@ -562,8 +562,8 @@ button {
     print-color-adjust: exact !important;
   }
 
-  /* 3. Collapse modal backdrop overlays & fixed wrappers so they take 0 space */
-  div[style*="position: fixed"], div[style*="fixed"], .modal-overlay {
+  /* 3. Collapse modal backdrop overlays & inner card wrappers so they take 0 space */
+  div[style*="position: fixed"], div[style*="fixed"], .modal-overlay, .modal-card-container, div[style*="maxHeight"], div[style*="max-height"] {
     position: static !important;
     background: transparent !important;
     padding: 0 !important;
@@ -575,6 +575,7 @@ button {
     overflow: visible !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
@@ -594,7 +595,6 @@ button {
     box-shadow: none !important;
     border: none !important;
     page-break-before: avoid !important;
-    page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }

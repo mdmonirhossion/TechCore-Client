@@ -378,120 +378,249 @@ export default function MyOrders({ onNavigate }) {
           </div>
         )}
 
-        {/* Detailed Invoice Popover Modal */}
-        {selectedOrder && (
-          <div style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem'
-          }}>
-            <div
-              id="printable-invoice-area"
-              style={{
-                background: '#ffffff',
-                borderRadius: '20px',
-                maxWidth: '640px',
-                width: '100%',
-                maxHeight: '92vh',
-                overflowY: 'auto',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-                border: '1px solid #e2e8f0',
-                padding: '2.25rem'
-              }}
-            >
-              
-              {/* Modal Header (Close button hidden during print) */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ea580c', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-                    TECH<span style={{ color: '#ea580c' }}>CORE</span> INVOICE
-                  </h2>
-                  <div style={{ fontSize: '0.82rem', color: '#64748b' }}>Star Tech Official E-Receipt</div>
+        {/* Detailed Invoice Overlay Modal */}
+        {selectedOrder && (() => {
+          const oIdStr = selectedOrder.id || selectedOrder._id || 'INV-10045';
+          const cust = selectedOrder.customer || {};
+          const itemsList = Array.isArray(selectedOrder.items) ? selectedOrder.items : [];
+          const sub = Number(selectedOrder.subtotal || 0);
+          const disc = Number(selectedOrder.discount || 0);
+          const del = Number(selectedOrder.deliveryFee || 100);
+          const grand = Number(selectedOrder.grandTotal ?? selectedOrder.payableTotal ?? (sub - disc + del));
+
+          return (
+            <div style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(6px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              overflowY: 'auto'
+            }}>
+              <div
+                className="modal-card-container"
+                style={{
+                  background: '#ffffff',
+                  borderRadius: '16px',
+                  maxWidth: '880px',
+                  width: '100%',
+                  maxHeight: '94vh',
+                  overflowY: 'auto',
+                  boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
+                  padding: '2rem 2.5rem',
+                  position: 'relative'
+                }}
+              >
+                {/* Modal Top Control Bar */}
+                <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: '#f8fafc', padding: '0.75rem 1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0f172a' }}>
+                    📄 Official Order Invoice Document
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                      onClick={() => window.print()}
+                      style={{
+                        background: '#ea580c',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '0.55rem 1.25rem',
+                        fontWeight: 800,
+                        fontSize: '0.88rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}
+                    >
+                      <Printer size={16} /> Print Memo
+                    </button>
+                    <button
+                      onClick={() => setSelectedOrder(null)}
+                      style={{ background: '#cbd5e1', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.55rem 0.9rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Close ✕
+                    </button>
+                  </div>
                 </div>
-                <button
-                  className="no-print"
-                  onClick={() => setSelectedOrder(null)}
-                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: 34, height: 34, fontWeight: 800, cursor: 'pointer' }}
+
+                {/* Standard Official Invoice Document (Matching Image 4) */}
+                <div
+                  id="printable-invoice-area"
+                  className="standard-invoice-paper"
+                  style={{
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    padding: '2.5rem',
+                    fontFamily: "'Urbanist', sans-serif"
+                  }}
                 >
-                  ✕
-                </button>
+                  {/* Invoice Top Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #ea580c', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.75rem', fontWeight: 900, color: '#0f172a' }}>
+                        <Cpu size={32} color="#ea580c" />
+                        <span>TECH<span style={{ color: '#ea580c' }}>CORE</span></span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem', fontWeight: 600 }}>
+                        Bangladesh's Premier Computer & Electronics Store
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span>28 Kazi Nazrul Islam Ave, Dhaka 1215</span>
+                        <span>Hotline: 09678002003 / 16793 | support@techcore.com.bd</span>
+                      </div>
+                    </div>
+
+                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem 1.25rem', minWidth: '220px', textAlign: 'right' }}>
+                      <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ea580c', letterSpacing: '0.05em', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                        INVOICE
+                      </h2>
+                      <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                        Invoice No : <span style={{ color: '#0f172a' }}>#{oIdStr}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem' }}>
+                        Date : {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB')}
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem' }}>
+                        Payment : <span style={{ fontWeight: 700, color: '#ea580c' }}>{selectedOrder.paymentMethod || 'bKash'}</span> ({selectedOrder.paymentStatus || 'Paid'})
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Billed To & Shipping Address */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '1.75rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                        BILL TO
+                      </div>
+                      <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>{cust.name || 'Valued Customer'}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.2rem' }}>Phone: {cust.phone || 'N/A'}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#475569' }}>Email: {cust.email || 'N/A'}</div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                        SHIPPING ADDRESS
+                      </div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{cust.address || 'Dhaka'}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.2rem' }}>{cust.city || 'Dhaka'} ({cust.zone || 'Dhaka Inside'})</div>
+                    </div>
+                  </div>
+
+                  {/* Items Table */}
+                  <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.75rem' }}>
+                    <thead>
+                      <tr style={{ background: '#ea580c', color: '#ffffff' }}>
+                        <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: 800, width: '50px' }}>NO</th>
+                        <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: 800 }}>PRODUCT DESCRIPTION</th>
+                        <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, width: '120px' }}>UNIT PRICE</th>
+                        <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: 800, width: '70px' }}>QTY</th>
+                        <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, width: '130px' }}>TOTAL</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itemsList.map((item, idx) => {
+                        const itemPrice = Number(item.price || 0);
+                        const itemQty = Number(item.quantity || 1);
+                        return (
+                          <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                            <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>
+                              {String(idx + 1).padStart(2, '0')}
+                            </td>
+                            <td style={{ padding: '0.75rem 1rem', fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>
+                              {item.name}
+                            </td>
+                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.88rem', color: '#334155' }}>
+                              ৳{itemPrice.toLocaleString()}
+                            </td>
+                            <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>
+                              {itemQty}
+                            </td>
+                            <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 800, color: '#ea580c' }}>
+                              ৳{(itemPrice * itemQty).toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  {/* Totals & Signature Section */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '2rem', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                      <div style={{ fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', marginBottom: '0.3rem', fontSize: '0.75rem' }}>
+                        TERMS & WARRANTY POLICY
+                      </div>
+                      <p style={{ lineHeight: 1.4, marginBottom: '1.5rem' }}>
+                        All hardware carries official manufacturer warranty. Please preserve this invoice for claim & support services within 7 days replacement period.
+                      </p>
+
+                      <div style={{ marginTop: '2rem', display: 'inline-block', textAlign: 'center' }}>
+                        <div style={{ borderBottom: '1px solid #cbd5e1', width: '160px', marginBottom: '0.3rem' }}></div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569' }}>Authorized Signature</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', color: '#475569' }}>
+                        <span>Sub Total:</span>
+                        <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{sub.toLocaleString()}</span>
+                      </div>
+
+                      {disc > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', color: '#16a34a' }}>
+                          <span>Discount:</span>
+                          <span style={{ fontWeight: 700 }}>-৳{disc.toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', color: '#475569' }}>
+                        <span>Delivery Fee:</span>
+                        <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{del}</span>
+                      </div>
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          background: '#ea580c',
+                          color: '#ffffff',
+                          padding: '0.75rem 1rem',
+                          borderRadius: '6px',
+                          fontWeight: 900,
+                          fontSize: '1.1rem',
+                          marginTop: '0.4rem',
+                          boxShadow: '0 4px 12px rgba(234, 88, 12, 0.2)'
+                        }}
+                      >
+                        <span>Grand Total:</span>
+                        <span>৳{grand.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Invoice Footer Banner */}
+                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ea580c', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      THANK YOU FOR YOUR BUSINESS
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                      TechCore Bangladesh | Complete Computer & Electronics Store
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
-
-              {/* Order Info Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.88rem', marginBottom: '1.5rem', background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                <div>
-                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Order Reference:</div>
-                  <strong style={{ color: '#ea580c', fontSize: '1rem' }}>#{selectedOrder.id}</strong>
-                </div>
-                <div>
-                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Customer Name:</div>
-                  <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedOrder.customer?.name}</strong>
-                </div>
-                <div>
-                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Phone Number:</div>
-                  <strong style={{ color: '#0f172a' }}>{selectedOrder.customer?.phone}</strong>
-                </div>
-                <div>
-                  <div style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 700 }}>Payment Method:</div>
-                  <strong style={{ color: '#0f172a' }}>{selectedOrder.paymentMethod} ({selectedOrder.paymentStatus})</strong>
-                </div>
-              </div>
-
-              {/* Items Breakdown Table */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                <thead>
-                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
-                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a' }}>Item Description</th>
-                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a', textAlign: 'center' }}>Qty</th>
-                    <th style={{ padding: '0.75rem 0.85rem', fontWeight: 800, color: '#0f172a', textAlign: 'right' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(selectedOrder.items || []).map((it, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '0.75rem 0.85rem', fontWeight: 700, color: '#0f172a' }}>{it.name}</td>
-                      <td style={{ padding: '0.75rem 0.85rem', textAlign: 'center', fontWeight: 600 }}>{it.quantity}</td>
-                      <td style={{ padding: '0.75rem 0.85rem', textAlign: 'right', fontWeight: 800, color: '#0f172a' }}>৳{(it.price * it.quantity).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Total Calculation */}
-              <div style={{ borderTop: '2px solid #e2e8f0', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569' }}>
-                  <span>Subtotal:</span>
-                  <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{(selectedOrder.subtotal || 0).toLocaleString()}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475569' }}>
-                  <span>Delivery Charge:</span>
-                  <span style={{ fontWeight: 700, color: '#0f172a' }}>৳{selectedOrder.deliveryFee || 100}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 900, color: '#ea580c', borderTop: '2px solid #e2e8f0', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
-                  <span>Total Amount Paid:</span>
-                  <span>৳{(selectedOrder.payableTotal || selectedOrder.subtotal || 0).toLocaleString()}</span>
-                </div>
-              </div>
-
-              {/* Print Action Buttons (Hidden when printing) */}
-              <div className="no-print" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
-                <button
-                  onClick={() => window.print()}
-                  style={{ background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.92rem', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)' }}
-                >
-                  <Printer size={18} /> Print Memo
-                </button>
-              </div>
-
             </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
     </div>

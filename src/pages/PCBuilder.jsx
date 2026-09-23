@@ -458,17 +458,20 @@ export default function PCBuilder({ onNavigate }) {
           padding: '1rem',
           overflowY: 'auto'
         }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '12px',
-            maxWidth: '820px',
-            width: '100%',
-            maxHeight: '94vh',
-            overflowY: 'auto',
-            boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
-            padding: '2.5rem 3rem',
-            position: 'relative'
-          }}>
+          <div
+            className="modal-card-container"
+            style={{
+              background: '#ffffff',
+              borderRadius: '12px',
+              maxWidth: '820px',
+              width: '100%',
+              maxHeight: '94vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
+              padding: '2.5rem 3rem',
+              position: 'relative'
+            }}
+          >
             
             {/* Modal Control Bar (Hidden when printing) */}
             <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', background: '#f8fafc', padding: '0.85rem 1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
