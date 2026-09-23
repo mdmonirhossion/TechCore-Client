@@ -63,7 +63,7 @@ export default function Navbar({ activePage, setActivePage }) {
   return (
     <header className="navbar" style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
       
-      {/* 1. Star Tech Style Dark Header Bar */}
+      {/* 1. StarA Tech Style Dark Header Bar */}
       <div style={{ background: '#0e1726', color: '#ffffff', padding: '0.75rem 0' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.25rem' }}>
           

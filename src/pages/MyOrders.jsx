@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
 import {
   ShoppingBag, Package, Truck, Clock, CheckCircle2, AlertCircle, ChevronRight,
-  Printer, ArrowLeft, Search, FileText, UserCheck, ShieldCheck, CreditCard
+  Printer, ArrowLeft, Search, FileText, UserCheck, ShieldCheck, CreditCard, Cpu
 } from 'lucide-react';
 
 export default function MyOrders({ onNavigate }) {

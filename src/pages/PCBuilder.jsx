@@ -506,128 +506,154 @@ export default function PCBuilder({ onNavigate }) {
               </div>
             </div>
 
-            {/* ================= EXACT IMAGE LAYOUT REPLICA START ================= */}
-            <div id="printable-invoice-area" style={{ fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.35 }}>
+            {/* ================= OFFICIAL TECHCORE INVOICE DOCUMENT START ================= */}
+            <div id="printable-invoice-area" style={{ background: '#ffffff', color: '#0f172a', borderRadius: '12px', padding: '2.5rem', fontFamily: "'Urbanist', sans-serif" }}>
               
-              {/* 1. Header Grid */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                
-                {/* Header Left: Store Brand & Address */}
+              {/* Invoice Top Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #ea580c', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
                 <div>
-                  <h1 style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '26px', fontWeight: 'bold', color: '#111111', margin: 0, lineHeight: 1.1 }}>
-                    TechCore Gallery
-                  </h1>
-                  <div style={{ fontStyle: 'italic', fontSize: '13px', color: '#444444', marginBottom: '12px' }}>
-                    Thanks for visit our shop
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.75rem', fontWeight: 900, color: '#0f172a' }}>
+                    <Cpu size={32} color="#ea580c" />
+                    <span>TECH<span style={{ color: '#ea580c' }}>CORE</span></span>
                   </div>
-                  
-                  <div style={{ fontSize: '13px', color: '#222222', lineHeight: '1.4' }}>
-                    <div>Street Address: 2nd floor, Jalil Tower, Khulna</div>
-                    <div>Branch: {invoiceCustomer.branch}</div>
-                    <div>Phone 01956417386</div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem', fontWeight: 600 }}>
+                    Bangladesh's Premier Computer & Electronics Store
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>28 Kazi Nazrul Islam Ave, Dhaka 1215</span>
+                    <span>Hotline: 09678002003 / 16793 | support@techcore.com.bd</span>
                   </div>
                 </div>
 
-                {/* Header Right: INVOICE Heading & Meta */}
-                <div style={{ textAlign: 'right' }}>
-                  <h1 style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '38px', fontWeight: 'bold', color: '#16a34a', margin: '0 0 10px 0', letterSpacing: '1px' }}>
-                    INVOICE
-                  </h1>
-                  
-                  <table style={{ marginLeft: 'auto', fontSize: '13px', borderCollapse: 'collapse', lineHeight: '1.4' }}>
-                    <tbody>
-                      <tr>
-                        <td style={{ fontWeight: 'bold', paddingRight: '16px', textAlign: 'right' }}>DATE:</td>
-                        <td style={{ textAlign: 'right', minWidth: '130px' }}>{invoiceCustomer.date}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ fontWeight: 'bold', paddingRight: '16px', textAlign: 'right' }}>INVOICE #</td>
-                        <td style={{ textAlign: 'right' }}>{invoiceCustomer.invoiceNo}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ fontWeight: 'bold', paddingRight: '16px', textAlign: 'right' }}>FOR:</td>
-                        <td style={{ fontStyle: 'italic', textAlign: 'right' }}>Build a PC</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1rem 1.25rem', minWidth: '220px', textAlign: 'right' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ea580c', letterSpacing: '0.05em', marginBottom: '0.4rem', textTransform: 'uppercase' }}>
+                    PC BUILD INVOICE
+                  </h2>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#334155' }}>
+                    Invoice No : <span style={{ color: '#0f172a' }}>#{invoiceCustomer.invoiceNo || 'BUILD-94821'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem' }}>
+                    Date : {invoiceCustomer.date || new Date().toLocaleDateString('en-GB')}
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem' }}>
+                    Order Type : <span style={{ fontWeight: 700, color: '#ea580c' }}>Custom PC Quotation</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billed To & Customer Info */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '1.75rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                    BILL TO
+                  </div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a' }}>{invoiceCustomer.name || user?.name || 'Valued Customer'}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.2rem' }}>Phone: {invoiceCustomer.phone || user?.phoneOrEmail || '01956417386'}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#475569' }}>Company: {invoiceCustomer.company || 'N/A'}</div>
                 </div>
 
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+                    LOCATION & BRANCH
+                  </div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{invoiceCustomer.address || 'Street Address: 2nd floor, Jalil Tower'}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#475569', marginTop: '0.2rem' }}>City: {invoiceCustomer.city || 'Khulna'}</div>
+                  {invoiceCustomer.branch && <div style={{ fontSize: '0.85rem', color: '#475569' }}>Branch: {invoiceCustomer.branch}</div>}
+                </div>
               </div>
 
-              {/* 2. Bill To Block */}
-              <div style={{ marginBottom: '1.5rem', fontSize: '13px', lineHeight: '1.4' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '2px' }}>Bill To:</div>
-                <div>Name: {invoiceCustomer.name}</div>
-                <div>Company Name: {invoiceCustomer.company}</div>
-                <div>Street Address: {invoiceCustomer.address}</div>
-                <div>City: {invoiceCustomer.city}</div>
-                <div>Phone: {invoiceCustomer.phone}</div>
-              </div>
-
-              {/* 3. Description & Amount Table (Matching Exact Image Borders & Padding) */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #000000', marginBottom: '0' }}>
+              {/* Items Table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1.75rem' }}>
                 <thead>
-                  <tr style={{ background: '#ededed', borderBottom: '1.5px solid #000000' }}>
-                    <th style={{ padding: '8px 12px', textAlign: 'center', borderRight: '1.5px solid #000000', fontWeight: 'bold', fontSize: '14px', fontFamily: '"Times New Roman", Times, serif' }}>
-                      DESCRIPTION
-                    </th>
-                    <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', width: '150px', fontFamily: '"Times New Roman", Times, serif' }}>
-                      AMOUNT
-                    </th>
+                  <tr style={{ background: '#ea580c', color: '#ffffff' }}>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: 800, width: '50px' }}>NO</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: 800, width: '120px' }}>COMPONENT</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.8rem', fontWeight: 800 }}>DESCRIPTION & SPECIFICATION</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.8rem', fontWeight: 800, width: '60px' }}>QTY</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, width: '120px' }}>UNIT PRICE</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.8rem', fontWeight: 800, width: '130px' }}>TOTAL</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {invoiceItemsList.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #000000' }}>
-                      <td style={{ padding: '5px 10px', borderRight: '1.5px solid #000000', fontSize: '13px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{item.name}</span>
-                          {item.qty && item.qty > 1 && (
-                            <span style={{ paddingRight: '40px', fontWeight: 'normal' }}>{item.qty}</span>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: '5px 10px', textAlign: 'right', fontSize: '13px', whiteSpace: 'nowrap' }}>
-                        {item.price ? Number(item.price * (item.qty || 1)).toLocaleString() : '0'}.00৳
-                      </td>
-                    </tr>
-                  ))}
+                  {invoiceItemsList.map((item, idx) => {
+                    const itemPrice = Number(item.price || 0);
+                    const itemQty = Number(item.qty || 1);
+                    return (
+                      <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: '#64748b' }}>
+                          {String(idx + 1).padStart(2, '0')}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', fontWeight: 800, color: '#ea580c' }}>
+                          {item.categoryKey || 'Part'}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                          {item.name}
+                          {item.warranty && <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>Warranty: {item.warranty}</div>}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>
+                          {itemQty}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.88rem', color: '#334155' }}>
+                          ৳{itemPrice.toLocaleString()}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 800, color: '#ea580c' }}>
+                          ৳{(itemPrice * itemQty).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
-                <tfoot>
-                  <tr>
-                    <td style={{ padding: '6px 12px', textAlign: 'right', fontWeight: 'bold', fontSize: '14px', borderRight: '1.5px solid #000000' }}>
-                      TOTAL
-                    </td>
-                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 'bold', fontSize: '14px', background: '#e2e8f0', borderTop: '1.5px solid #000000' }}>
-                      {Number(invoiceTotalSum).toLocaleString()}.00৳
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
 
-              {/* 4. Footer & Signature */}
-              <div style={{ marginTop: '24px', fontSize: '13px' }}>
-                <div style={{ marginBottom: '24px' }}>
-                  Make all checks payable to TechCore Gallery
+              {/* Totals & Signature Section */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '2rem', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                <div style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                  <div style={{ fontWeight: 800, color: '#ea580c', textTransform: 'uppercase', marginBottom: '0.3rem', fontSize: '0.75rem' }}>
+                    TERMS & WARRANTY POLICY
+                  </div>
+                  <p style={{ lineHeight: 1.4, marginBottom: '1.5rem' }}>
+                    All PC components carry official brand warranty. Please preserve this PC quotation & invoice document for warranty claims and hardware compatibility support.
+                  </p>
+
+                  <div style={{ marginTop: '2rem', display: 'inline-block', textAlign: 'center' }}>
+                    <div style={{ borderBottom: '1px solid #cbd5e1', width: '160px', marginBottom: '0.3rem' }}></div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569' }}>Authorized Signature</div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-                  <div style={{ color: '#16a34a', fontWeight: 'bold', fontSize: '14px' }}>
-                    PAID BY {invoiceCustomer.paymentMethod} {Number(invoiceTotalSum).toLocaleString()} BDT
-                  </div>
-
-                  <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '13px', width: '180px', borderTop: '1px solid #000000', paddingTop: '4px' }}>
-                    Signature
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      background: '#ea580c',
+                      color: '#ffffff',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '6px',
+                      fontWeight: 900,
+                      fontSize: '1.1rem',
+                      marginTop: '0.4rem',
+                      boxShadow: '0 4px 12px rgba(234, 88, 12, 0.2)'
+                    }}
+                  >
+                    <span>Total Amount:</span>
+                    <span>৳{Number(invoiceTotalSum).toLocaleString()}</span>
                   </div>
                 </div>
+              </div>
 
-                <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '13px', letterSpacing: '0.5px' }}>
-                  THANK YOU FOR YOUR BUSINESS!
+              {/* Invoice Footer Banner */}
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ea580c', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  THANK YOU FOR BUILDING YOUR PC WITH TECHCORE
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                  TechCore Bangladesh | Complete Computer & Electronics Store
                 </div>
               </div>
 
             </div>
-            {/* ================= EXACT IMAGE LAYOUT REPLICA END ================= */}
+            {/* ================= OFFICIAL TECHCORE INVOICE DOCUMENT END ================= */}
 
           </div>
         </div>
