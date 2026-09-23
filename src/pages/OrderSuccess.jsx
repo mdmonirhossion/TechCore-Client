@@ -54,6 +54,7 @@ export default function OrderSuccess({ order, onNavigate }) {
 
       {/* Standard Official Invoice Document (Matching Image 4) */}
       <div
+        id="printable-invoice-area"
         className="standard-invoice-paper"
         style={{
           background: '#ffffff',

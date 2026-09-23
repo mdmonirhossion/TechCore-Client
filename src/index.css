@@ -539,16 +539,30 @@ button {
   margin: 8mm;
 }
 
+/* ==========================================================================
+   OFFICIAL PRINT / PDF EXPORT STYLES
+   ========================================================================== */
 @media print {
-  /* 1. Hide all non-printable UI, header, footer, floating buttons, & modal control bars */
-  header, footer, nav, .navbar, .footer, .no-print, [class*="FloatingActions"], .search-suggestions-popover {
+  /* 1. Set explicit A4 Portrait paper dimensions and clean page margins */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  /* 2. Hide all non-printable page elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 3. Hide screen-only controls, buttons, headers, footers & floating widgets */
+  header, footer, nav, .navbar, .footer, .no-print, [class*="FloatingActions"], .search-suggestions-popover, button {
     display: none !important;
     height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* 2. Reset html & body layout to zero padding/margin */
+  /* 4. Reset html & body layout */
   html, body, #root, main, .container {
     background: #ffffff !important;
     color: #000000 !important;
@@ -562,7 +576,7 @@ button {
     print-color-adjust: exact !important;
   }
 
-  /* 3. Collapse modal backdrop overlays & inner card wrappers so they take 0 space */
+  /* 5. Collapse modal backdrop overlays so they take 0 space on paper */
   div[style*="position: fixed"], div[style*="fixed"], .modal-overlay, .modal-card-container, div[style*="maxHeight"], div[style*="max-height"] {
     position: static !important;
     background: transparent !important;
@@ -580,26 +594,34 @@ button {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 4. Target printable invoice area to start at top of Page 1 without breaks */
+  /* 6. Position printable invoice area at (0,0) top-left of the A4 paper */
+  #printable-invoice-area,
+  #printable-invoice-area * {
+    visibility: visible !important;
+  }
+
   #printable-invoice-area {
-    display: block !important;
-    position: relative !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
     page-break-before: avoid !important;
+    page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  #printable-invoice-area * {
-    visibility: visible !important;
+  /* 7. Ensure table rows, totals, and signatures never break mid-way */
+  table, tr, td, th, tbody, thead, tfoot {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
