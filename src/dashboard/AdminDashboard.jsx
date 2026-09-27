@@ -75,10 +75,22 @@ export default function AdminDashboard({ onNavigate }) {
     { id: 'p5', sku: 'RAM-COR-32GB', name: 'Corsair Vengeance RGB 32GB (2x16GB) DDR5 6000MHz RAM', brand: 'Corsair', category: 'Components', price: 15500, discountPrice: 14200, currentStock: 2, soldCount: 88, status: 'LOW_STOCK', warranty: 'Lifetime Warranty' }
   ];
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('techcore_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     if (!isApprovedAdmin) return;
 
-    fetch('/api/admin/analytics')
+    // One-time cleanup of obsolete local fake product cache
+    try {
+      localStorage.removeItem('techcore_custom_products');
+    } catch (e) {}
+
+    fetch('/api/admin/analytics', {
+      headers: { ...getAuthHeaders() }
+    })
       .then(res => res.json())
       .then(data => setAnalytics(data))
       .catch(() => {
@@ -102,15 +114,21 @@ export default function AdminDashboard({ onNavigate }) {
         });
       });
 
-    fetch('/api/admin/inventory')
+    fetch('/api/admin/inventory', {
+      headers: { ...getAuthHeaders() }
+    })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) setInventory(data);
-        else setInventory(defaultInventory);
+        const baseList = Array.isArray(data) && data.length > 0 ? data : defaultInventory;
+        setInventory(baseList);
       })
-      .catch(() => setInventory(defaultInventory));
+      .catch(() => {
+        setInventory(defaultInventory);
+      });
 
-    fetch('/api/admin/suppliers')
+    fetch('/api/admin/suppliers', {
+      headers: { ...getAuthHeaders() }
+    })
       .then(res => res.json())
       .then(data => setSuppliers(Array.isArray(data) ? data : []))
       .catch(() => {
@@ -171,13 +189,24 @@ export default function AdminDashboard({ onNavigate }) {
     else if (updatedCount <= 5) newStatus = 'LOW_STOCK';
 
     try {
-      await fetch(`/api/admin/inventory/${id}`, {
+      const res = await fetch(`/api/admin/inventory/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
         body: JSON.stringify({ newStock: updatedCount, status: newStatus })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        showToast(`❌ Stock update failed: ${errData.message || 'Unauthorized'}`);
+        return;
+      }
     } catch (err) {
-      console.log('Server update skipped, updating UI locally.');
+      console.error('Stock update network error:', err);
+      showToast('❌ Network error updating stock.');
+      return;
     }
 
     setInventory(prev => prev.map(item =>
@@ -201,61 +230,101 @@ export default function AdminDashboard({ onNavigate }) {
     const stockNum = Number(newProduct.currentStock || 10);
     const generatedSku = newProduct.sku.trim() || `SKU-${Date.now().toString().slice(-6)}`;
 
-    let calculatedStatus = newProduct.status;
-    if (stockNum === 0) calculatedStatus = 'OUT_OF_STOCK';
-    else if (stockNum <= 5) calculatedStatus = 'LOW_STOCK';
-
-    const productObject = {
-      id: `prod-${Date.now()}`,
-      sku: generatedSku,
+    // Align schema with server expectations (stock & images)
+    const payload = {
       name: newProduct.name.trim(),
       brand: newProduct.brand,
       category: newProduct.category,
+      sku: generatedSku,
       price: priceNum,
       discountPrice: discNum,
+      stock: stockNum,
       currentStock: stockNum,
-      soldCount: 0,
-      status: calculatedStatus,
-      warranty: newProduct.warranty,
+      images: newProduct.image ? [newProduct.image] : ['https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop'],
       image: newProduct.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop',
+      warranty: newProduct.warranty,
       description: newProduct.description
     };
 
     try {
-      await fetch('/api/admin/products', {
+      const res = await fetch('/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productObject)
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify(payload)
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        showToast(`❌ Product creation failed: ${errData.message || '401 Unauthorized / Access Denied'}`);
+        return;
+      }
+
+      const createdObj = await res.json();
+
+      const newInventoryItem = {
+        id: createdObj.id || createdObj._id,
+        sku: createdObj.sku || generatedSku,
+        name: createdObj.name || payload.name,
+        brand: createdObj.brand || payload.brand,
+        category: createdObj.category || payload.category,
+        price: createdObj.price !== undefined ? createdObj.price : payload.price,
+        discountPrice: createdObj.discountPrice !== undefined ? createdObj.discountPrice : payload.discountPrice,
+        currentStock: createdObj.stock !== undefined ? createdObj.stock : stockNum,
+        image: (Array.isArray(createdObj.images) && createdObj.images.length > 0) ? createdObj.images[0] : (createdObj.image || payload.image),
+        status: (createdObj.stock !== undefined ? createdObj.stock : stockNum) <= 0 ? 'OUT_OF_STOCK' : ((createdObj.stock !== undefined ? createdObj.stock : stockNum) <= 5 ? 'LOW_STOCK' : 'IN_STOCK'),
+        warranty: createdObj.warranty || payload.warranty
+      };
+
+      setInventory(prev => [newInventoryItem, ...prev]);
+
+      setShowAddModal(false);
+      setNewProduct({
+        name: '',
+        brand: 'ASUS',
+        category: 'Components',
+        sku: '',
+        price: '',
+        discountPrice: '',
+        currentStock: '10',
+        status: 'IN_STOCK',
+        warranty: '3 Years Replacement Warranty',
+        image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop',
+        description: ''
+      });
+
+      showToast(`🎉 New Product "${newInventoryItem.name}" saved to MongoDB & added to inventory!`);
     } catch (err) {
-      console.log('Skipping backend POST, updating UI state.');
+      console.error('Error adding product:', err);
+      showToast('❌ Server error while attempting to create product.');
     }
-
-    setInventory(prev => [productObject, ...prev]);
-
-    setShowAddModal(false);
-    setNewProduct({
-      name: '',
-      brand: 'ASUS',
-      category: 'Components',
-      sku: '',
-      price: '',
-      discountPrice: '',
-      currentStock: '10',
-      status: 'IN_STOCK',
-      warranty: '3 Years Replacement Warranty',
-      image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop',
-      description: ''
-    });
-
-    showToast(`🎉 New Product "${productObject.name}" added to Star Tech catalog & inventory!`);
   };
 
   // 3. Delete Product
-  const handleDeleteProduct = (id, name) => {
+  const handleDeleteProduct = async (id, name) => {
     if (window.confirm(`Are you sure you want to remove "${name}" from inventory?`)) {
-      setInventory(prev => prev.filter(p => p.id !== id));
-      showToast(`🗑️ Product "${name}" deleted.`);
+      try {
+        const res = await fetch(`/api/admin/products/${id}`, {
+          method: 'DELETE',
+          headers: {
+            ...getAuthHeaders()
+          }
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          showToast(`❌ Delete failed: ${errData.message || 'Unauthorized / Server error'}`);
+          return;
+        }
+
+        setInventory(prev => prev.filter(p => p.id !== id));
+        showToast(`🗑️ Product "${name}" deleted.`);
+      } catch (err) {
+        console.error('Error deleting product:', err);
+        showToast('❌ Server error deleting product.');
+      }
     }
   };
 

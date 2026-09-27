@@ -10,7 +10,7 @@ export default function Login({ onNavigate }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -26,28 +26,59 @@ export default function Login({ onNavigate }) {
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      const inputStr = phoneOrEmail.trim().toLowerCase();
-      const isAdminUser = inputStr === 'techcoreadmin@gmail.com' || inputStr === 'admin';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: phoneOrEmail.trim(),
+          password
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.message || 'Login failed. Please check your credentials.');
+        setLoading(false);
+        return;
+      }
+
+      if (data.token) {
+        localStorage.setItem('techcore_token', data.token);
+      }
+
+      const isAdminUser = data.user?.role === 'SUPER_ADMIN' ||
+                          (data.user?.role === 'CO_ADMIN' && data.user?.status === 'APPROVED') ||
+                          data.user?.email === 'techcoreadmin@gmail.com' ||
+                          data.user?.isAdmin === true;
 
       const loggedInUserData = {
-        name: isAdminUser ? 'TechCore Super Admin' : (inputStr.includes('@') ? inputStr.split('@')[0] : 'Customer'),
-        email: inputStr.includes('@') ? inputStr : (isAdminUser ? 'techcoreadmin@gmail.com' : ''),
+        ...data.user,
+        name: data.user?.name || (phoneOrEmail.includes('@') ? phoneOrEmail.split('@')[0] : 'Customer'),
+        email: data.user?.email || phoneOrEmail.trim(),
         phoneOrEmail: phoneOrEmail.trim(),
-        role: isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER',
+        role: data.user?.role || (isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER'),
         isAdmin: isAdminUser,
         isLoggedIn: true
       };
 
+      localStorage.setItem('techcore_user', JSON.stringify(loggedInUserData));
       loginUser(loggedInUserData);
+      setLoading(false);
 
       if (isAdminUser) {
         onNavigate('admin');
       } else {
         onNavigate('home');
       }
-    }, 400);
+    } catch (err) {
+      console.error('Login Error:', err);
+      setErrorMsg('Network error. Unable to connect to backend login service.');
+      setLoading(false);
+    }
   };
 
   // If user is already logged in, show User Account Profile & Logout UI

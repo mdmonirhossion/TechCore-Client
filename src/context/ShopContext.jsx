@@ -80,6 +80,12 @@ export function ShopProvider({ children }) {
 
   const logoutUser = () => {
     setUser(null);
+    try {
+      localStorage.removeItem('techcore_user');
+      localStorage.removeItem('techcore_token');
+    } catch (e) {
+      console.error('Error clearing localStorage on logout:', e);
+    }
   };
 
   // Cart Functions
