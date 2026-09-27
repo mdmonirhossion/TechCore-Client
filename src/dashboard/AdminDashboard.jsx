@@ -217,6 +217,7 @@ export default function AdminDashboard({ onNavigate }) {
   };
 
   // 2. Add New Product Handler
+  // 2. Add New Product Handler
   const handleAddProductSubmit = async (e) => {
     e.preventDefault();
 
@@ -229,12 +230,15 @@ export default function AdminDashboard({ onNavigate }) {
     const discNum = newProduct.discountPrice ? Number(newProduct.discountPrice) : priceNum;
     const stockNum = Number(newProduct.currentStock || 10);
     const generatedSku = newProduct.sku.trim() || `SKU-${Date.now().toString().slice(-6)}`;
+    const categoryName = newProduct.category || 'Components';
+    const categorySlug = categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
     // Align schema with server expectations (stock & images)
     const payload = {
       name: newProduct.name.trim(),
-      brand: newProduct.brand,
-      category: newProduct.category,
+      brand: newProduct.brand || 'Generic',
+      category: categoryName,
+      categorySlug: categorySlug,
       sku: generatedSku,
       price: priceNum,
       discountPrice: discNum,
@@ -256,13 +260,14 @@ export default function AdminDashboard({ onNavigate }) {
         body: JSON.stringify(payload)
       });
 
+      const resData = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        showToast(`❌ Product creation failed: ${errData.message || '401 Unauthorized / Access Denied'}`);
+        showToast(`❌ Product creation failed: ${resData.message || '401 Unauthorized / Access Denied'}`);
         return;
       }
 
-      const createdObj = await res.json();
+      const createdObj = resData;
 
       const newInventoryItem = {
         id: createdObj.id || createdObj._id,
@@ -270,6 +275,7 @@ export default function AdminDashboard({ onNavigate }) {
         name: createdObj.name || payload.name,
         brand: createdObj.brand || payload.brand,
         category: createdObj.category || payload.category,
+        categorySlug: createdObj.categorySlug || payload.categorySlug,
         price: createdObj.price !== undefined ? createdObj.price : payload.price,
         discountPrice: createdObj.discountPrice !== undefined ? createdObj.discountPrice : payload.discountPrice,
         currentStock: createdObj.stock !== undefined ? createdObj.stock : stockNum,
