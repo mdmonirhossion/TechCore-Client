@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { getProductBySlug } from '@/lib/api';
-import ProductDetailsClient from '@/app/product/[slug]/ProductDetailsClient';
+import ProductDetailsClient from '@/components/ProductDetailsClient';
 import { ChevronRight } from 'lucide-react';
 
 export const revalidate = 60;

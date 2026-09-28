@@ -36,7 +36,7 @@ export default function WarrantyPage() {
         </div>
         <h1 className="text-3xl font-black">Official Warranty Checker</h1>
         <p className="text-xs text-gray-300 max-w-lg mx-auto">
-          Check your product's official manufacturer warranty status, validity period, and claim service history by entering your product Serial Number (S/N) or Invoice ID.
+          Check your product&apos;s official manufacturer warranty status, validity period, and claim service history by entering your product Serial Number (S/N) or Invoice ID.
         </p>
 
         {/* Search Bar */}

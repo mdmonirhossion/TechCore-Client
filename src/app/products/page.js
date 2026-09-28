@@ -20,11 +20,11 @@ function ProductsContent() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Sync category filter from query params
-  useEffect(() => {
-    if (initialCategory) {
-      setSelectedCategories([initialCategory]);
-    }
-  }, [initialCategory]);
+  const [prevCategory, setPrevCategory] = useState(initialCategory);
+  if (initialCategory !== prevCategory) {
+    setPrevCategory(initialCategory);
+    setSelectedCategories(initialCategory ? [initialCategory] : []);
+  }
 
   const filteredProducts = useMemo(() => {
     return MOCK_PRODUCTS.filter(product => {

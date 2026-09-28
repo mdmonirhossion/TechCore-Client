@@ -95,7 +95,7 @@ export default function PCBuilderPage() {
           </div>
           <div className="text-right text-xs">
             <p>Date: {new Date().toLocaleDateString()}</p>
-            <p>Quotation Ref: #TC-BUILD-{Math.floor(1000 + Math.random() * 9000)}</p>
+            <p>Quotation Ref: #TC-BUILD-8819</p>
           </div>
         </div>
 

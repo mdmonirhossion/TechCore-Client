@@ -47,7 +47,7 @@ function SearchContent() {
           <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto">
             <Search size={28} />
           </div>
-          <h3 className="text-lg font-bold text-slate-900">No products match "{query}"</h3>
+          <h3 className="text-lg font-bold text-slate-900">No products match &quot;{query}&quot;</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
             Try searching for common electronics keywords such as RTX 4060, Ryzen 7, Gaming Laptop, Monitor, RAM, or ASUS.
           </p>

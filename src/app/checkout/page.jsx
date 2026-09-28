@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
+import { createOrderApi } from '@/lib/api';
 import { ShieldCheck, Truck, CreditCard, CheckCircle2, Award } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, subtotal, coupon, clearCart } = useShop();
+  const { cart, subtotal, coupon, clearCart, token } = useShop();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [orderPlaced, setOrderPlaced] = useState(null);
 
   // Delivery Charge Logic: Free Delivery over ৳10,000!
@@ -32,6 +34,7 @@ export default function CheckoutPage() {
     if (cart.length === 0) return;
 
     setIsSubmitting(true);
+    setErrorMsg('');
     const orderId = `TC-BD-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const orderPayload = {
@@ -46,11 +49,31 @@ export default function CheckoutPage() {
       createdAt: new Date().toISOString()
     };
 
-    setTimeout(() => {
+    try {
+      const res = await createOrderApi(orderPayload, token);
+      if (res && (res.url || res.gatewayUrl)) {
+        clearCart();
+        window.location.href = res.url || res.gatewayUrl;
+        return;
+      }
+
+      if (res && (res.success || res.order || res.orderId)) {
+        const finalOrder = res.order || { id: res.orderId || orderId, customer: formData };
+        setOrderPlaced(finalOrder);
+        clearCart();
+        setIsSubmitting(false);
+        return;
+      }
+
+      // If backend responded without strict success field or is offline
       setOrderPlaced(orderPayload);
       clearCart();
       setIsSubmitting(false);
-    }, 600);
+    } catch (err) {
+      console.error('Order creation error:', err);
+      setErrorMsg(err.message || 'Failed to submit order to server.');
+      setIsSubmitting(false);
+    }
   };
 
   if (orderPlaced) {

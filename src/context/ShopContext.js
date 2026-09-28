@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { trackAddToCart } from '@/lib/analytics';
+import { validateCouponApi } from '@/lib/api';
 
 const ShopContext = createContext();
 
@@ -24,6 +25,7 @@ export function ShopProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [coupon, setCoupon] = useState({ code: '', discount: 0 });
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const [builderSlots, setBuilderSlots] = useState({
     CPU: null, 'CPU Cooler': null, Motherboard: null, RAM: null, GPU: null,
@@ -32,27 +34,28 @@ export function ShopProvider({ children }) {
 
   // Hydrate states from localStorage after component mounts on client
   useEffect(() => {
-    const savedCart = safeStorageParse('techcore_cart', [
-      { id: 'prod-301', name: 'ASUS Dual GeForce RTX 4060 OC 8GB GDDR6', price: 39999, quantity: 1, image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop' }
-    ]);
-    const savedWishlist = safeStorageParse('techcore_wishlist', []);
-    const savedUser = safeStorageParse('techcore_user', null);
-    const savedToken = typeof window !== 'undefined' ? (localStorage.getItem('techcore_token') || '') : '';
+    const timer = setTimeout(() => {
+      const savedCart = safeStorageParse('techcore_cart', []);
+      const savedWishlist = safeStorageParse('techcore_wishlist', []);
+      const savedUser = safeStorageParse('techcore_user', null);
+      const savedToken = typeof window !== 'undefined' ? (localStorage.getItem('techcore_token') || '') : '';
 
-    setCart(savedCart);
-    setWishlist(savedWishlist);
-    setUser(savedUser);
-    setToken(savedToken);
+      setCart(savedCart);
+      setWishlist(savedWishlist);
+      setUser(savedUser);
+      setToken(savedToken);
+      setIsHydrated(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Save changes to localStorage
   useEffect(() => {
+    if (!isHydrated) return;
     try {
-      if (cart.length > 0) {
-        localStorage.setItem('techcore_cart', JSON.stringify(cart));
-      }
+      localStorage.setItem('techcore_cart', JSON.stringify(cart));
     } catch (e) {}
-  }, [cart]);
+  }, [cart, isHydrated]);
 
   useEffect(() => {
     try {
@@ -140,14 +143,24 @@ export function ShopProvider({ children }) {
     } catch (e) {}
   };
 
-  const applyCouponCode = (code) => {
-    if ((code || '').toUpperCase() === 'TECH10') {
-      const sub = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const applyCouponCode = async (code) => {
+    if (!code || !code.trim()) return { success: false, message: 'Please enter a coupon code' };
+    const sub = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    try {
+      const res = await validateCouponApi(code.trim(), sub, user?.id || user?._id);
+      if (res && (res.success || res.discount || res.discountAmount)) {
+        const disc = Number(res.discount || res.discountAmount || 0);
+        setCoupon({ code: code.trim().toUpperCase(), discount: disc });
+        return { success: true, message: res.message || 'Coupon Applied!' };
+      }
+    } catch (e) {}
+
+    if (code.trim().toUpperCase() === 'TECH10') {
       const disc = Math.round(sub * 0.10);
       setCoupon({ code: 'TECH10', discount: disc });
       return { success: true, message: '10% Coupon Discount Applied!' };
     }
-    return { success: false, message: 'Invalid Coupon Code. Try TECH10' };
+    return { success: false, message: 'Invalid Coupon Code' };
   };
 
   // Wishlist Functions

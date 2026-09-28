@@ -1,32 +1,52 @@
 "use client";
 
 import React, { useState } from 'react';
+import { trackOrderApi } from '@/lib/api';
 import { Truck, Search, CheckCircle2, Clock, PackageCheck, MapPin } from 'lucide-react';
 
 export default function TrackOrderPage() {
   const [orderId, setOrderId] = useState('');
   const [phone, setPhone] = useState('');
   const [orderStatus, setOrderStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [searched, setSearched] = useState(false);
 
-  const handleTrack = (e) => {
+  const handleTrack = async (e) => {
     e.preventDefault();
-    if (!orderId.trim() && !phone.trim()) return;
+    const query = orderId.trim() || phone.trim();
+    if (!query) return;
 
     setSearched(true);
-    const mockStatus = {
-      id: orderId.toUpperCase() || 'TC-BD-984120',
-      date: '2026-09-27',
-      customerName: 'Tanvir Hasan',
-      deliveryAddress: 'House 14, Road 5, Dhanmondi, Dhaka',
-      courierPartner: 'Steadfast Courier (Tracking #SF-88912)',
-      currentStep: 3, // 1: Placed, 2: Confirmed, 3: In Transit, 4: Delivered
-      items: [
-        { name: 'ASUS Dual GeForce RTX 4060 OC 8GB', qty: 1, price: 39999 }
-      ],
-      total: 40059
-    };
-    setOrderStatus(mockStatus);
+    setLoading(true);
+    setErrorMsg('');
+    setOrderStatus(null);
+
+    try {
+      const res = await trackOrderApi(query);
+      if (res && res.success !== false && (res.id || res._id || res.order)) {
+        const orderData = res.order || res;
+        const statusMap = { 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
+        const stepNum = statusMap[(orderData.status || 'placed').toLowerCase()] || 2;
+
+        setOrderStatus({
+          id: orderData.id || orderData._id || orderId.toUpperCase(),
+          date: orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : 'N/A',
+          customerName: orderData.customer?.fullName || orderData.customerName || 'Customer',
+          deliveryAddress: orderData.customer?.address || orderData.address || 'Dhaka, Bangladesh',
+          courierPartner: orderData.courierPartner || 'Steadfast Courier / RedX',
+          currentStep: stepNum,
+          items: orderData.items || [],
+          total: orderData.grandTotal || orderData.total || 0
+        });
+      } else {
+        setErrorMsg(res?.message || 'No order found matching the provided Order ID or Phone number.');
+      }
+    } catch (err) {
+      setErrorMsg('Failed to connect to order tracking server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const steps = [
@@ -64,11 +84,18 @@ export default function TrackOrderPage() {
           />
           <button
             type="submit"
-            className="sm:col-span-2 bg-[#ef4a23] hover:bg-[#d63a15] text-white text-xs font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center"
+            disabled={loading}
+            className="sm:col-span-2 bg-[#ef4a23] hover:bg-[#d63a15] text-white text-xs font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center disabled:opacity-50"
           >
-            <Search className="w-4 h-4 mr-1" /> Track Order Status
+            <Search className="w-4 h-4 mr-1" /> {loading ? 'Searching Order...' : 'Track Order Status'}
           </button>
         </form>
+
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-xs font-semibold max-w-lg mx-auto">
+            ⚠️ {errorMsg}
+          </div>
+        )}
       </div>
 
       {searched && orderStatus && (

@@ -201,7 +201,7 @@ export default async function HomePage() {
                 <span className="ml-2 text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
               </summary>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Browse your desired laptop or component, click "Buy Now" to proceed straight to checkout or "Add Cart" to add multiple items, fill in your shipping details, choose Cash on Delivery or SSLCommerz payment, and confirm your order.
+                Browse your desired laptop or component, click &quot;Buy Now&quot; to proceed straight to checkout or &quot;Add Cart&quot; to add multiple items, fill in your shipping details, choose Cash on Delivery or SSLCommerz payment, and confirm your order.
               </p>
             </details>
 

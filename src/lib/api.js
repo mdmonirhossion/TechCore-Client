@@ -26,7 +26,7 @@ export async function getProducts(params = {}) {
     if (!res.ok) throw new Error('API fetch failed');
     const data = await res.json();
     const list = Array.isArray(data) ? data : (data.products || []);
-    return list.length > 0 ? list : MOCK_PRODUCTS;
+    return list;
   } catch (err) {
     console.warn('Backend API fetch error, falling back to mock products:', err.message);
     return MOCK_PRODUCTS;
@@ -34,14 +34,22 @@ export async function getProducts(params = {}) {
 }
 
 export async function getProductBySlug(slugOrId) {
+  if (!slugOrId) return MOCK_PRODUCTS[0];
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${slugOrId}`, { cache: 'no-store' });
+    // 1. Try slug route on backend
+    let res = await fetch(`${API_BASE_URL}/api/products/slug/${encodeURIComponent(slugOrId)}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (data && (data.slug || data.id || data._id)) return data;
+      if (data && (data.slug || data.id || data._id || data.name)) return data;
+    }
+    // 2. Try ID route on backend
+    res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(slugOrId)}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && (data.slug || data.id || data._id || data.name)) return data;
     }
   } catch (e) {
-    console.warn('Backend API single product fetch error, using mock:', e.message);
+    console.warn('Backend API single product fetch error:', e.message);
   }
 
   const match = MOCK_PRODUCTS.find(p => p.slug === slugOrId || p.id === slugOrId || p._id === slugOrId);

@@ -99,19 +99,20 @@ export default function Navbar() {
   const [activeHoverCategory, setActiveHoverCategory] = useState(null);
 
   useEffect(() => {
-    setMounted(true);
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   // Debounced search logic
   useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsSearching(true);
     const timer = setTimeout(() => {
+      if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      setIsSearching(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://techcore-server.vercel.app';
       fetch(`${apiUrl}/api/products?search=${encodeURIComponent(searchQuery.trim())}`)
         .then(res => res.json())
@@ -234,7 +235,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="p-4 text-center text-xs text-slate-500">
-                  No products found for "{searchQuery}"
+                  No products found for &quot;{searchQuery}&quot;
                 </div>
               )}
             </div>

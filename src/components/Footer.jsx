@@ -24,7 +24,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-xs text-slate-500 leading-relaxed max-w-sm">
-              TechCore is Bangladesh's premier technology e-commerce destination for gaming laptops, custom desktop PCs, graphics cards, processors, monitors, and official tech accessories.
+              TechCore is Bangladesh&apos;s premier technology e-commerce destination for gaming laptops, custom desktop PCs, graphics cards, processors, monitors, and official tech accessories.
             </p>
             <div className="space-y-2 text-xs text-slate-700 font-semibold pt-1">
               <div className="flex items-center gap-2">

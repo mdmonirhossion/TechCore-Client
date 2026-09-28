@@ -11,7 +11,7 @@ export default function FloatingActions() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
     const handleScroll = () => {
       if (window.scrollY > 250) {
         setShowScrollTop(true);
@@ -20,7 +20,10 @@ export default function FloatingActions() {
       }
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const scrollToTop = () => {

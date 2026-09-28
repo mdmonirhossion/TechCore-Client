@@ -20,6 +20,8 @@ import {
   ShoppingBag
 } from 'lucide-react';
 
+import { loginUserApi } from '@/lib/api';
+
 export default function LoginPage() {
   const router = useRouter();
   const { user, loginUser, logoutUser } = useShop();
@@ -34,7 +36,8 @@ export default function LoginPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!phoneOrEmail.trim()) {
+    const inputVal = phoneOrEmail.trim();
+    if (!inputVal) {
       setErrorMsg('Please enter your Phone number or Email address.');
       return;
     }
@@ -46,64 +49,37 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    const inputStr = phoneOrEmail.trim().toLowerCase();
-    const isAdminUser = inputStr === 'techcoreadmin@gmail.com' || inputStr === 'admin';
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://techcore-server.vercel.app';
-
     try {
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: inputStr.includes('@') ? inputStr : (isAdminUser ? 'techcoreadmin@gmail.com' : `${inputStr}@techcore.com`),
-          password
-        })
+      const data = await loginUserApi({
+        email: inputVal,
+        phone: inputVal,
+        password
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      if (data && (data.token || data.success)) {
         const loggedInUserData = data.user || {
-          name: isAdminUser ? 'TechCore Super Admin' : (inputStr.includes('@') ? inputStr.split('@')[0] : 'Customer'),
-          email: inputStr.includes('@') ? inputStr : (isAdminUser ? 'techcoreadmin@gmail.com' : ''),
-          phoneOrEmail: phoneOrEmail.trim(),
-          role: isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER',
-          isAdmin: isAdminUser,
+          name: data.user?.name || (inputVal.includes('@') ? inputVal.split('@')[0] : 'Customer'),
+          email: data.user?.email || inputVal,
+          role: data.user?.role || 'CUSTOMER',
+          isAdmin: data.user?.isAdmin || data.user?.role === 'admin' || data.user?.role === 'SUPER_ADMIN',
           isLoggedIn: true
         };
         loginUser(loggedInUserData, data.token);
 
-        if (isAdminUser || loggedInUserData.isAdmin || loggedInUserData.role === 'SUPER_ADMIN') {
+        if (loggedInUserData.isAdmin || loggedInUserData.role === 'admin' || loggedInUserData.role === 'SUPER_ADMIN') {
           router.push('/admin');
         } else {
           router.push('/');
         }
         return;
+      } else {
+        setErrorMsg(data?.message || 'Invalid email/phone or password. Please try again.');
       }
     } catch (err) {
-      console.warn('API login offline/failed, falling back to local auth simulation:', err);
-    }
-
-    // Fallback client simulation if backend is unreachable
-    setTimeout(() => {
+      setErrorMsg('Failed to connect to authentication server.');
+    } finally {
       setLoading(false);
-      const loggedInUserData = {
-        name: isAdminUser ? 'TechCore Super Admin' : (inputStr.includes('@') ? inputStr.split('@')[0] : 'Customer'),
-        email: inputStr.includes('@') ? inputStr : (isAdminUser ? 'techcoreadmin@gmail.com' : ''),
-        phoneOrEmail: phoneOrEmail.trim(),
-        role: isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER',
-        isAdmin: isAdminUser,
-        isLoggedIn: true
-      };
-
-      loginUser(loggedInUserData);
-
-      if (isAdminUser) {
-        router.push('/admin');
-      } else {
-        router.push('/');
-      }
-    }, 400);
+    }
   };
 
   // If user is already logged in, show User Account Profile & Logout UI
