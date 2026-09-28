@@ -2,7 +2,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ShopProvider } from "@/context/ShopContext";
 import Navbar from "@/components/Navbar";
-import MegaMenu from "@/components/MegaMenu";
 import Footer from "@/components/Footer";
 import FloatingActions from "@/components/FloatingActions";
 
@@ -70,7 +69,7 @@ export default function RootLayout({ children }) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
       <head>
         {gtmId && (
           <script
@@ -84,7 +83,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         )}
       </head>
-      <body className="min-h-full flex flex-col bg-[#f2f4f8] text-[#081621] font-sans">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#f2f4f8] text-[#081621] font-sans">
         {gtmId && (
           <noscript>
             <iframe
@@ -97,7 +96,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         )}
         <ShopProvider>
           <Navbar />
-          <MegaMenu />
           <main className="flex-grow">{children}</main>
           <Footer />
           <FloatingActions />
