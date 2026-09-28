@@ -1,13 +1,19 @@
+"use client";
+
 import React from 'react';
-import { useShop } from '../context/ShopContext';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useShop } from '@/context/ShopContext';
 import { ShoppingCart, Heart, Scale, Star, ShieldCheck } from 'lucide-react';
 
-export default function ProductCard({ product, onSelectProduct, onNavigate }) {
+export default function ProductCard({ product }) {
+  const router = useRouter();
   const { addToCart, wishlist, toggleWishlist, compareItems, toggleCompare } = useShop();
 
   if (!product) return null;
 
   const pId = product.id || product._id;
+  const pSlug = product.slug || pId;
   const isWishlisted = wishlist.some(p => p.id === pId || p._id === pId);
   const isCompared = compareItems.some(p => p.id === pId || p._id === pId);
 
@@ -26,9 +32,7 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
   const handleBuyNow = (e) => {
     e.stopPropagation();
     addToCart(product);
-    if (onNavigate) {
-      onNavigate('checkout');
-    }
+    router.push('/checkout');
   };
 
   return (
@@ -46,7 +50,7 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
         position: 'relative'
       }}
     >
-      {/* Top Purple Pill Badge (Star Tech Style) */}
+      {/* Top Save / Point Badge */}
       {savedAmount > 0 ? (
         <span
           style={{
@@ -60,7 +64,6 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
             fontWeight: 800,
             padding: '0.25rem 0.65rem',
             borderRadius: '12px',
-            letterSpacing: '0.02em',
             boxShadow: '0 2px 6px rgba(107, 33, 168, 0.3)'
           }}
         >
@@ -86,58 +89,56 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
       )}
 
       {/* Product Image Box */}
-      <div
-        onClick={() => onSelectProduct && onSelectProduct(pId)}
-        style={{
-          width: '100%',
-          height: '190px',
-          background: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1.25rem',
-          cursor: 'pointer',
-          position: 'relative'
-        }}
-      >
-        <img
-          src={imgUrl}
-          alt={product.name || 'Product Image'}
-          loading="lazy"
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            objectFit: 'contain',
-            transition: 'transform 0.3s ease'
-          }}
-        />
-
-        {/* Official Warranty Badge Overlay */}
+      <Link href={`/product/${pSlug}`} style={{ width: '100%' }}>
         <div
           style={{
-            position: 'absolute',
-            bottom: '8px',
-            right: '10px',
+            width: '100%',
+            height: '190px',
+            background: '#ffffff',
             display: 'flex',
             alignItems: 'center',
-            gap: 3,
-            fontSize: '0.65rem',
-            fontWeight: 800,
-            color: '#0369a1',
-            background: 'rgba(240, 249, 255, 0.95)',
-            padding: '0.15rem 0.4rem',
-            borderRadius: '4px',
-            border: '1px solid #bae6fd'
+            justifyContent: 'center',
+            padding: '1.25rem',
+            position: 'relative'
           }}
         >
-          <ShieldCheck size={11} color="#0284c7" /> OFFICIAL WARRANTY
-        </div>
-      </div>
+          <img
+            src={imgUrl}
+            alt={product.name || 'Product Image'}
+            loading="lazy"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              transition: 'transform 0.3s ease'
+            }}
+          />
 
-      {/* Card Content Body */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              fontSize: '0.65rem',
+              fontWeight: 800,
+              color: '#0369a1',
+              background: 'rgba(240, 249, 255, 0.95)',
+              padding: '0.15rem 0.4rem',
+              borderRadius: '4px',
+              border: '1px solid #bae6fd'
+            }}
+          >
+            <ShieldCheck size={11} color="#0284c7" /> OFFICIAL WARRANTY
+          </div>
+        </div>
+      </Link>
+
+      {/* Card Body */}
       <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, borderTop: '1px solid #f1f5f9' }}>
         
-        {/* Brand & Rating */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284c7', textTransform: 'uppercase' }}>
             {product.brand || 'TechCore'}
@@ -147,27 +148,26 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
           </div>
         </div>
 
-        {/* Product Title (2 lines clamp) */}
-        <h3
-          onClick={() => onSelectProduct && onSelectProduct(pId)}
-          style={{
-            fontSize: '0.92rem',
-            fontWeight: 700,
-            color: '#0f172a',
-            lineHeight: 1.35,
-            cursor: 'pointer',
-            margin: '0.2rem 0 0.8rem 0',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            minHeight: '2.7em'
-          }}
-        >
-          {product.name}
-        </h3>
+        <Link href={`/product/${pSlug}`}>
+          <h3
+            style={{
+              fontSize: '0.92rem',
+              fontWeight: 700,
+              color: '#0f172a',
+              lineHeight: 1.35,
+              margin: '0.2rem 0 0.8rem 0',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              minHeight: '2.7em'
+            }}
+          >
+            {product.name}
+          </h3>
+        </Link>
 
-        {/* Pricing (Star Tech Style Red Price) */}
+        {/* Pricing */}
         <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'baseline', gap: '0.6rem' }}>
           <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#d92d20' }}>
             {discNum.toLocaleString()}৳
@@ -179,7 +179,7 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
           )}
         </div>
 
-        {/* Quick Action Buttons */}
+        {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
           <button
             className="btn-primary"
@@ -222,4 +222,3 @@ export default function ProductCard({ product, onSelectProduct, onNavigate }) {
     </div>
   );
 }
-

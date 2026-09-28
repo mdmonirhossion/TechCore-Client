@@ -1,176 +1,243 @@
+"use client";
+
 import React, { useState } from 'react';
-import { categoryTreeData } from '../data/categoryTreeData';
-import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  ChevronRight, 
+  Cpu, 
+  Laptop, 
+  Monitor, 
+  HardDrive, 
+  Headphones, 
+  Wifi, 
+  Layers, 
+  Gamepad2, 
+  ShieldCheck 
+} from 'lucide-react';
 
-export default function MegaMenu({ activePage, setActivePage }) {
-  const [activeParent, setActiveParent] = useState(null);
-  const [activeChild, setActiveChild] = useState(null);
+export const categoriesData = [
+  {
+    id: 'component',
+    title: 'Component',
+    slug: 'component',
+    icon: Cpu,
+    subcategories: [
+      {
+        title: 'Processor / CPU',
+        slug: 'component/processor',
+        items: ['Intel Processors', 'AMD Ryzen Processors', 'Processor Cooler']
+      },
+      {
+        title: 'Graphics Card',
+        slug: 'component/graphics-card',
+        items: ['NVIDIA RTX 40 Series', 'NVIDIA RTX 30 Series', 'AMD Radeon Series']
+      },
+      {
+        title: 'Motherboard',
+        slug: 'component/motherboard',
+        items: ['Intel Motherboards', 'AMD Motherboards']
+      },
+      {
+        title: 'Memory (RAM)',
+        slug: 'component/ram',
+        items: ['Desktop RAM', 'Laptop RAM', 'DDR5 RAM', 'DDR4 RAM']
+      },
+      {
+        title: 'Storage',
+        slug: 'component/storage',
+        items: ['M.2 NVMe SSD', 'SATA 2.5 Inch SSD', 'Desktop Hard Drive', 'Portable HDD']
+      },
+      {
+        title: 'Power Supply & Casing',
+        slug: 'component/psu-casing',
+        items: ['Power Supply Unit (PSU)', 'Gaming PC Casing', 'Casing Fans']
+      }
+    ]
+  },
+  {
+    id: 'desktop',
+    title: 'Desktop',
+    slug: 'desktop',
+    icon: HardDrive,
+    subcategories: [
+      {
+        title: 'Gaming PC',
+        slug: 'desktop/gaming-pc',
+        items: ['Intel Gaming PC', 'AMD Gaming PC', 'Budget Gaming PC', 'High-End Gaming Rig']
+      },
+      {
+        title: 'Brand PC',
+        slug: 'desktop/brand-pc',
+        items: ['HP Brand PC', 'Dell Brand PC', 'Lenovo Desktop', 'ASUS PC']
+      },
+      {
+        title: 'All-in-One PC',
+        slug: 'desktop/all-in-one-pc',
+        items: ['Apple iMac', 'HP All-in-One', 'Dell Inspiron AIO']
+      },
+      {
+        title: 'Portable Mini PC',
+        slug: 'desktop/mini-pc',
+        items: ['Intel NUC', 'ASUS Mini PC', 'Apple Mac Mini']
+      }
+    ]
+  },
+  {
+    id: 'laptop',
+    title: 'Laptop',
+    slug: 'laptop',
+    icon: Laptop,
+    subcategories: [
+      {
+        title: 'Gaming Laptop',
+        slug: 'laptop/gaming-laptop',
+        items: ['ASUS ROG / TUF', 'Lenovo Legion / LOQ', 'MSI Gaming', 'Acer Predator']
+      },
+      {
+        title: 'Ultrabook & Premium',
+        slug: 'laptop/ultrabook',
+        items: ['Apple MacBook Pro', 'Apple MacBook Air', 'Dell XPS', 'HP Spectre / Envy']
+      },
+      {
+        title: 'Budget & Student',
+        slug: 'laptop/budget-laptop',
+        items: ['Core i3 Laptops', 'Ryzen 3 Laptops', 'Student Special']
+      }
+    ]
+  },
+  {
+    id: 'monitor',
+    title: 'Monitor',
+    slug: 'monitor',
+    icon: Monitor,
+    subcategories: [
+      {
+        title: 'Gaming Monitor',
+        slug: 'monitor/gaming-monitor',
+        items: ['144Hz / 165Hz Monitors', '240Hz Gaming Monitors', 'OLED Gaming Monitors']
+      },
+      {
+        title: 'Professional & 4K',
+        slug: 'monitor/4k-monitor',
+        items: ['4K UHD Monitors', 'IPS Color Accurate', 'Ultrawide Monitors']
+      }
+    ]
+  },
+  {
+    id: 'accessories',
+    title: 'Accessories',
+    slug: 'accessories',
+    icon: Headphones,
+    subcategories: [
+      {
+        title: 'Keyboard & Mouse',
+        slug: 'accessories/keyboard-mouse',
+        items: ['Mechanical Keyboards', 'Wireless Keyboards', 'Gaming Mouse', 'Ergonomic Mouse']
+      },
+      {
+        title: 'Audio & Headset',
+        slug: 'accessories/audio',
+        items: ['Gaming Headset', 'Studio Headphones', 'Bluetooth Speakers', 'Microphones']
+      },
+      {
+        title: 'Gaming Chairs & Desk',
+        slug: 'accessories/gaming-furniture',
+        items: ['Gaming Chair', 'Height Adjustable Desk']
+      }
+    ]
+  },
+  {
+    id: 'networking',
+    title: 'Networking',
+    slug: 'networking',
+    icon: Wifi,
+    subcategories: [
+      {
+        title: 'Routers & Wi-Fi',
+        slug: 'networking/router',
+        items: ['Wi-Fi 6 Routers', 'Mesh Wi-Fi Systems', 'Gaming Routers']
+      },
+      {
+        title: 'Network Accessories',
+        slug: 'networking/accessories',
+        items: ['Network Switches', 'Ethernet Cables', 'Wi-Fi Adapters']
+      }
+    ]
+  },
+  {
+    id: 'software',
+    title: 'Software',
+    slug: 'software',
+    icon: ShieldCheck,
+    subcategories: [
+      {
+        title: 'Operating System & Security',
+        slug: 'software/os-security',
+        items: ['Windows 11 Home / Pro', 'Kaspersky Antivirus', 'Bitdefender Total Security']
+      }
+    ]
+  }
+];
 
-  const handleCategoryClick = (categorySlug, searchKeyword) => {
-    setActiveParent(null);
-    setActiveChild(null);
-    if (searchKeyword) {
-      setActivePage(`products:search=${encodeURIComponent(searchKeyword)}`);
-    } else {
-      setActivePage(`products:category=${categorySlug}`);
-    }
-  };
+export default function MegaMenu({ isOpen, onClose }) {
+  const [activeCat, setActiveCat] = useState(categoriesData[0]);
 
   return (
-    <nav style={{ position: 'relative', zIndex: 400, background: '#ffffff', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', overflow: 'visible' }}>
-      <div
-        className="container"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'nowrap',
-          gap: '0 0.15rem',
-          overflow: 'visible',
-          position: 'relative'
-        }}
-      >
-        {categoryTreeData.map((parent, index) => {
-          const isParentActive = activeParent === parent.id;
-          const isRightSide = index >= 9;
-
-          return (
-            <div
-              key={parent.id}
-              style={{ position: 'relative' }}
-              onMouseEnter={() => {
-                setActiveParent(parent.id);
-                if (parent.children && parent.children.length > 0) {
-                  setActiveChild(parent.children[0].id);
-                }
-              }}
-              onMouseLeave={() => {
-                setActiveParent(null);
-                setActiveChild(null);
-              }}
-            >
-              {/* Parent Category Item */}
-              <button
-                onClick={() => handleCategoryClick(parent.slug)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '0.65rem 0.2rem',
-                  fontSize: 'clamp(0.70rem, 0.85vw, 0.78rem)',
-                  fontWeight: 700,
-                  color: isParentActive ? '#ea580c' : '#0f172a',
-                  borderBottom: isParentActive ? '3px solid #ea580c' : '3px solid transparent',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  transition: 'color 0.15s ease'
-                }}
+    <div className="relative bg-[#081621] text-white border-t border-[#1e293b]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center space-x-1 py-1 text-sm font-medium overflow-x-auto scrollbar-none">
+          {categoriesData.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <div 
+                key={cat.id} 
+                className="group relative inline-block text-left"
+                onMouseEnter={() => setActiveCat(cat)}
               >
-                {parent.name}
-              </button>
-
-              {/* 1st Level Child Dropdown Menu */}
-              {isParentActive && parent.children && parent.children.length > 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: isRightSide ? 'auto' : 0,
-                    right: isRightSide ? 0 : 'auto',
-                    background: '#ffffff',
-                    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: isRightSide ? '0 0 0 8px' : '0 0 8px 8px',
-                    width: '240px',
-                    zIndex: 9999,
-                    padding: '0.3rem 0'
-                  }}
+                <Link
+                  href={`/${cat.slug}`}
+                  className="flex items-center space-x-2 px-3 py-2.5 rounded-md hover:bg-[#3749bb] transition-colors whitespace-nowrap text-gray-200 hover:text-white"
                 >
-                  {parent.children.map((child) => {
-                    const isChildActive = activeChild === child.id;
-                    const hasLeafs = child.children && child.children.length > 0;
+                  <Icon className="w-4 h-4 text-[#ef4a23] group-hover:text-white" />
+                  <span>{cat.title}</span>
+                </Link>
 
-                    return (
-                      <div
-                        key={child.id}
-                        style={{ position: 'relative' }}
-                        onMouseEnter={() => setActiveChild(child.id)}
-                      >
-                        {/* Child Category Item */}
-                        <div
-                          onClick={() => handleCategoryClick(child.slug)}
-                          style={{
-                            padding: '0.55rem 1rem',
-                            fontSize: '0.84rem',
-                            fontWeight: isChildActive ? 800 : 600,
-                            color: isChildActive ? '#ffffff' : '#0f172a',
-                            background: isChildActive ? '#ea580c' : 'transparent',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            transition: 'all 0.15s ease'
-                          }}
+                {/* Dropdown Flyout */}
+                <div className="hidden group-hover:block fixed left-0 right-0 top-[110px] w-full bg-white text-gray-800 shadow-2xl z-50 border-t-2 border-[#3749bb]">
+                  <div className="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
+                    {cat.subcategories.map((sub, idx) => (
+                      <div key={idx} className="space-y-2">
+                        <Link 
+                          href={`/${sub.slug}`}
+                          className="font-bold text-sm text-[#081621] hover:text-[#3749bb] flex items-center group/title border-b pb-1"
                         >
-                          {isRightSide && hasLeafs && <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} color={isChildActive ? '#ffffff' : '#64748b'} />}
-                          <span>{child.name}</span>
-                          {!isRightSide && hasLeafs && <ChevronRight size={14} color={isChildActive ? '#ffffff' : '#64748b'} />}
-                        </div>
-
-                        {/* 2nd Level Leaf Flyout Menu */}
-                        {isChildActive && hasLeafs && (
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: isRightSide ? 'auto' : '100%',
-                              right: isRightSide ? '100%' : 'auto',
-                              background: '#ffffff',
-                              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-                              border: '1px solid #cbd5e1',
-                              borderRadius: isRightSide ? '8px 0 8px 8px' : '0 8px 8px 8px',
-                              width: '200px',
-                              zIndex: 10000,
-                              padding: '0.3rem 0'
-                            }}
-                          >
-                            {child.children.map((leaf, leafIdx) => (
-                              <div
-                                key={leafIdx}
-                                onClick={() => handleCategoryClick(child.slug, leaf)}
-                                style={{
-                                  padding: '0.55rem 1rem',
-                                  fontSize: '0.82rem',
-                                  fontWeight: 600,
-                                  color: '#1e293b',
-                                  cursor: 'pointer',
-                                  transition: 'background 0.15s ease, color 0.15s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = '#f1f5f9';
-                                  e.currentTarget.style.color = '#ea580c';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'transparent';
-                                  e.currentTarget.style.color = '#1e293b';
-                                }}
-                              >
-                                {leaf}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                          <span>{sub.title}</span>
+                          <ChevronRight className="w-3.5 h-3.5 ml-1 opacity-0 group-hover/title:opacity-100 transition-opacity text-[#ef4a23]" />
+                        </Link>
+                        <ul className="space-y-1 text-xs text-gray-600">
+                          {sub.items.map((item, itemIdx) => {
+                            const itemSlug = `${sub.slug}?filter=${encodeURIComponent(item.toLowerCase().replace(/\s+/g, '-'))}`;
+                            return (
+                              <li key={itemIdx}>
+                                <Link 
+                                  href={`/${itemSlug}`} 
+                                  className="hover:text-[#ef4a23] hover:underline block py-0.5"
+                                >
+                                  {item}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </nav>
+    </div>
   );
 }

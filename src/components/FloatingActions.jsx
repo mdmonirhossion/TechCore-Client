@@ -1,154 +1,84 @@
-import React from 'react';
-import { useShop } from '../context/ShopContext';
-import { ShoppingBag, Scale, Smartphone, ChevronUp } from 'lucide-react';
+"use client";
 
-export default function FloatingActions({ onNavigate }) {
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useShop } from '@/context/ShopContext';
+import { ShoppingBag, Scale, Wrench, ArrowUp, PhoneCall } from 'lucide-react';
+
+export default function FloatingActions() {
   const { cart, compareItems } = useShop();
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const [mounted, setMounted] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cartTotalCount = mounted ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
+  const compareCount = mounted ? compareItems.length : 0;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        right: '12px',
-        bottom: '80px',
-        zIndex: 999,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        alignItems: 'flex-end'
-      }}
-    >
-      {/* Mobile Deal Circle Badge */}
-      <button
-        onClick={() => onNavigate('offers')}
-        style={{
-          background: 'linear-gradient(135deg, #ea580c 0%, #dc2626 100%)',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '50px',
-          padding: '0.6rem 0.9rem',
-          fontWeight: 800,
-          fontSize: '0.72rem',
-          boxShadow: '0 4px 15px rgba(234, 88, 12, 0.4)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          transition: 'transform 0.2s ease'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <Smartphone size={14} /> Mobile Deal
-      </button>
+    <div className="fixed right-4 bottom-6 z-40 flex flex-col space-y-3">
+      {/* Scroll to Top */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          className="w-11 h-11 bg-[#081621] hover:bg-[#3749bb] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
 
       {/* Compare Floating Button */}
-      <button
-        onClick={() => onNavigate('compare')}
-        style={{
-          position: 'relative',
-          background: '#0f172a',
-          color: '#ffffff',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          borderRadius: '8px',
-          width: '54px',
-          height: '54px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '2px',
-          cursor: 'pointer',
-          boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-          transition: 'background 0.2s ease'
-        }}
+      <Link
+        href="/compare"
+        className="relative w-11 h-11 bg-[#081621] hover:bg-[#3749bb] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
+        title="Compare Products"
       >
-        <Scale size={18} color="#38bdf8" />
-        <span style={{ fontSize: '0.62rem', fontWeight: 800 }}>COMPARE</span>
-        <span style={{
-          position: 'absolute',
-          top: '-6px',
-          right: '-6px',
-          background: '#ef4444',
-          color: '#ffffff',
-          fontSize: '0.65rem',
-          fontWeight: 800,
-          width: '18px',
-          height: '18px',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {compareItems.length}
-        </span>
-      </button>
+        <Scale className="w-5 h-5" />
+        {compareCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-[#ef4a23] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+            {compareCount}
+          </span>
+        )}
+      </Link>
 
-      {/* Cart Floating Button */}
-      <button
-        onClick={() => onNavigate('cart')}
-        style={{
-          position: 'relative',
-          background: '#0f172a',
-          color: '#ffffff',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          borderRadius: '8px',
-          width: '54px',
-          height: '54px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '2px',
-          cursor: 'pointer',
-          boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-          transition: 'background 0.2s ease'
-        }}
+      {/* PC Builder Floating Button */}
+      <Link
+        href="/pc-builder"
+        className="w-11 h-11 bg-[#3749bb] hover:bg-[#081621] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
+        title="PC Builder Tool"
       >
-        <ShoppingBag size={18} color="#38bdf8" />
-        <span style={{ fontSize: '0.62rem', fontWeight: 800 }}>CART</span>
-        <span style={{
-          position: 'absolute',
-          top: '-6px',
-          right: '-6px',
-          background: '#ea580c',
-          color: '#ffffff',
-          fontSize: '0.65rem',
-          fontWeight: 800,
-          width: '18px',
-          height: '18px',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {totalCartCount}
-        </span>
-      </button>
+        <Wrench className="w-5 h-5" />
+      </Link>
 
-      {/* Scroll to Top */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        style={{
-          background: '#f1f5f9',
-          color: '#0f172a',
-          border: '1px solid #cbd5e1',
-          borderRadius: '50%',
-          width: '36px',
-          height: '36px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-        title="Scroll to Top"
+      {/* Floating Cart Button */}
+      <Link
+        href="/cart"
+        className="relative w-12 h-12 bg-[#ef4a23] hover:bg-[#d63a15] text-white rounded-full flex items-center justify-center shadow-xl transition-all transform hover:scale-105"
+        title="View Shopping Cart"
       >
-        <ChevronUp size={18} />
-      </button>
+        <ShoppingBag className="w-6 h-6" />
+        {cartTotalCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-white text-[#ef4a23] text-xs font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#ef4a23]">
+            {cartTotalCount}
+          </span>
+        )}
+      </Link>
     </div>
   );
 }
