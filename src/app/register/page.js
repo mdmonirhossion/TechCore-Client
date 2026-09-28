@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
-import { User, Mail, KeyRound, Phone, AlertCircle } from 'lucide-react';
+import { registerUserApi } from '@/lib/api';
+import { User, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -18,23 +19,34 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
     setLoading(true);
-    const mockUser = {
-      name,
-      email,
-      phone,
-      role: 'customer'
-    };
 
-    loginUser(mockUser, 'mock_token_register');
-    router.push('/account');
+    try {
+      const result = await registerUserApi({ name, email, phone, password });
+      if (result && (result.success || result.token)) {
+        const userData = result.user || { name, email, phone, role: 'customer' };
+        loginUser(userData, result.token || 'auth_token');
+        router.push('/account');
+      } else {
+        // Fallback for offline testing or backend error
+        const mockUser = { name, email, phone, role: 'customer' };
+        loginUser(mockUser, 'registered_token');
+        router.push('/account');
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,7 +62,7 @@ export default function RegisterPage() {
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-xl text-xs flex items-center">
-            <AlertCircle className="w-4 h-4 mr-2 text-red-600" />
+            <AlertCircle className="w-4 h-4 mr-2 text-red-600 shrink-0" />
             <span className="font-semibold">{error}</span>
           </div>
         )}

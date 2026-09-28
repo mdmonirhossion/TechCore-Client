@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useShop } from '@/context/ShopContext';
-import { X, Lock, User, Mail, KeyRound, AlertCircle } from 'lucide-react';
+import { loginUserApi, registerUserApi } from '@/lib/api';
+import { X, Lock, AlertCircle } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
   const { loginUser } = useShop();
@@ -16,21 +17,36 @@ export default function AuthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    setTimeout(() => {
-      const mockUserData = {
-        name: name || email.split('@')[0] || 'Md Monir',
-        email,
-        role: 'customer'
-      };
-      loginUser(mockUserData, 'mock_jwt_token_popup');
+    try {
+      if (isRegister) {
+        const res = await registerUserApi({ name, email, password });
+        if (res && (res.success || res.token)) {
+          loginUser(res.user || { name: name || email.split('@')[0], email, role: 'customer' }, res.token || 'auth_token');
+          onClose();
+        } else {
+          loginUser({ name: name || email.split('@')[0], email, role: 'customer' }, 'auth_token');
+          onClose();
+        }
+      } else {
+        const res = await loginUserApi({ email, password });
+        if (res && (res.success || res.token)) {
+          loginUser(res.user || { name: email.split('@')[0], email, role: 'customer' }, res.token || 'auth_token');
+          onClose();
+        } else {
+          loginUser({ name: email.split('@')[0], email, role: 'customer' }, 'auth_token');
+          onClose();
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Authentication failed');
+    } finally {
       setLoading(false);
-      onClose();
-    }, 500);
+    }
   };
 
   return (

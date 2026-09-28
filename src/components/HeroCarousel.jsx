@@ -3,18 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ChevronLeft, ChevronRight, MessageSquare, Briefcase } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, ChevronLeft, ChevronRight, Scale, Search } from 'lucide-react';
+import { MOCK_PRODUCTS } from '@/data/mock-products';
 
 const bannerSlides = [
   {
     id: 'b1',
     tag: 'SPECIAL MEGA OFFER',
-    title: 'লেনোভো-এর AMD প্রসেসর যুক্ত ল্যাপটপ',
-    subtitle: 'নির্দিষ্ট ল্যাপটপ কিনলেই পেয়ে যাচ্ছেন স্মার্টওয়াচ অথবা এয়ারবাডস সম্পূর্ণ ফ্রি!',
-    linkText: 'অফারটি দেখুন',
-    link: '/category/laptop',
-    bgGradient: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%)',
-    img: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&auto=format&fit=crop'
+    title: 'KOORUI & SAMSUNG Gaming Monitors',
+    subtitle: '165Hz to 240Hz Curved IPS Display with Official Brand Warranty & 0% EMI!',
+    linkText: 'Shop Monitors',
+    link: '/category/monitor',
+    bgGradient: 'linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #4c1d95 100%)',
+    img: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&auto=format&fit=crop'
   },
   {
     id: 'b2',
@@ -30,7 +32,7 @@ const bannerSlides = [
     id: 'b3',
     tag: 'INTEL 14TH GEN DESKTOP',
     title: 'Core i7-14700K & i9-14900K Processors',
-    subtitle: ' Build your custom workstation with TechCore official brand warranty!',
+    subtitle: 'Build your custom workstation with TechCore official brand warranty!',
     linkText: 'Build Custom PC',
     link: '/pc-builder',
     bgGradient: 'linear-gradient(135deg, #581c87 0%, #3b0764 50%, #0f172a 100%)',
@@ -39,14 +41,17 @@ const bannerSlides = [
 ];
 
 export default function HeroCarousel() {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [prod1, setProd1] = useState('');
+  const [prod2, setProd2] = useState('');
 
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % bannerSlides.length);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
   }, [isPaused]);
 
@@ -60,12 +65,21 @@ export default function HeroCarousel() {
     setCurrentSlide(prev => (prev + 1) % bannerSlides.length);
   };
 
+  const handleCompareSubmit = (e) => {
+    e.preventDefault();
+    if (prod1 || prod2) {
+      router.push(`/compare?p1=${encodeURIComponent(prod1)}&p2=${encodeURIComponent(prod2)}`);
+    } else {
+      router.push('/compare');
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
+    <div className="w-full max-w-[1320px] mx-auto my-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
       
-      {/* 9. HERO CAROUSEL (Left 2 cols on desktop) */}
+      {/* LEFT MAIN BANNER CAROUSEL (3 cols on lg desktop) */}
       <div
-        className="lg:col-span-2 relative rounded-2xl overflow-hidden shadow-xl text-white min-h-[350px] flex items-center p-6 md:p-10 transition-all duration-500 group"
+        className="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-xl text-white min-h-[380px] md:min-h-[420px] flex items-center p-6 md:p-10 transition-all duration-500 group"
         style={{ background: slide.bgGradient }}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
@@ -74,10 +88,10 @@ export default function HeroCarousel() {
           
           {/* Left Text */}
           <div className="space-y-4">
-            <span className="inline-block bg-[#ea580c] text-white text-xs font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-sm">
+            <span className="inline-block bg-[#ea580c] text-white text-[11px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-sm">
               {slide.tag}
             </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">
               {slide.title}
             </h1>
             <p className="text-xs md:text-sm text-slate-200 leading-relaxed font-sans">
@@ -86,7 +100,7 @@ export default function HeroCarousel() {
             <div>
               <Link
                 href={slide.link}
-                className="inline-flex items-center gap-2 bg-[#ea580c] hover:bg-orange-700 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 bg-[#ea580c] hover:bg-orange-700 text-white font-bold text-xs md:text-sm px-6 py-3 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all hover:scale-105"
               >
                 <span>{slide.linkText}</span>
                 <ArrowRight size={16} />
@@ -95,7 +109,7 @@ export default function HeroCarousel() {
           </div>
 
           {/* Right Image */}
-          <div className="relative w-full h-48 md:h-64 flex items-center justify-center">
+          <div className="relative w-full h-48 md:h-72 flex items-center justify-center">
             <Image
               src={slide.img}
               alt={slide.title}
@@ -110,27 +124,27 @@ export default function HeroCarousel() {
         {/* Carousel Navigation Buttons */}
         <button
           onClick={handlePrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all z-20"
           aria-label="Previous Slide"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={22} />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all z-20"
           aria-label="Next Slide"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={22} />
         </button>
 
-        {/* Dots */}
+        {/* Dots (Red/White like Monarch IT) */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
           {bannerSlides.map((s, idx) => (
             <button
               key={s.id}
               onClick={() => setCurrentSlide(idx)}
-              className={`h-2 rounded-full transition-all ${
-                idx === currentSlide ? 'w-7 bg-[#ea580c]' : 'w-2 bg-white/40 hover:bg-white/70'
+              className={`h-2.5 rounded-full transition-all ${
+                idx === currentSlide ? 'w-8 bg-[#e11d48]' : 'w-2.5 bg-white/50 hover:bg-white'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
@@ -139,58 +153,82 @@ export default function HeroCarousel() {
 
       </div>
 
-      {/* 10. RIGHT PROMOTIONAL CARDS (Stacked) */}
-      <div className="flex flex-col gap-4">
+      {/* RIGHT SIDEBAR: MONARCH IT COMPARE WIDGET & PROMO BANNER */}
+      <div className="lg:col-span-1 flex flex-col gap-4">
         
-        {/* CUSTOMER FEEDBACK CARD (Blue Gradient) */}
-        <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 text-white p-6 rounded-2xl shadow-lg border border-blue-700/40 hover:shadow-blue-500/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-full min-h-[165px]">
+        {/* MONARCH IT COMPARE PRODUCTS WIDGET (Yellow Box) */}
+        <div className="bg-[#fef9c3] border border-amber-300 rounded-2xl p-5 shadow-sm text-slate-900 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black tracking-widest text-blue-300 uppercase bg-blue-950/60 px-2.5 py-1 rounded-md">
-                CUSTOMER FEEDBACK
-              </span>
-              <MessageSquare size={20} className="text-blue-400" />
+            <div className="text-center mb-3">
+              <h3 className="text-base font-extrabold text-slate-900 flex items-center justify-center gap-1.5">
+                <Scale size={18} className="text-blue-700" />
+                <span>Compare Products</span>
+              </h3>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                Choose Two Products to Compare
+              </p>
             </div>
-            <h3 className="text-base font-bold text-white mt-2.5 mb-1">
-              টেককোর নিয়ে আপনার অভিযোগ বা মতামত
-            </h3>
-            <p className="text-xs text-blue-100/80 leading-relaxed font-sans">
-              আপনার প্রতিটি পরামর্শ আমাদের সেবার মান আরও বৃদ্ধি করতে সাহায্য করে।
-            </p>
-          </div>
-          <div className="mt-3">
-            <Link
-              href="/service-center"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3.5 py-1.5 rounded-lg shadow transition-colors"
-            >
-              <span>জানান এখানে</span>
-              <ArrowRight size={14} />
-            </Link>
+
+            <form onSubmit={handleCompareSubmit} className="space-y-2.5">
+              <div className="relative">
+                <select
+                  value={prod1}
+                  onChange={(e) => setProd1(e.target.value)}
+                  className="w-full bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 cursor-pointer appearance-none shadow-sm"
+                >
+                  <option value="">Search and Select Product 1</option>
+                  {MOCK_PRODUCTS.slice(0, 8).map(p => (
+                    <option key={p.id} value={p.slug || p.id}>
+                      {p.name} (৳{p.discountPrice || p.price})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="relative">
+                <select
+                  value={prod2}
+                  onChange={(e) => setProd2(e.target.value)}
+                  className="w-full bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 cursor-pointer appearance-none shadow-sm"
+                >
+                  <option value="">Search and Select Product 2</option>
+                  {MOCK_PRODUCTS.slice(4, 12).map(p => (
+                    <option key={p.id} value={p.slug || p.id}>
+                      {p.name} (৳{p.discountPrice || p.price})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-2 bg-transparent hover:bg-blue-600 text-blue-700 hover:text-white text-xs font-bold py-2 rounded-lg border-2 border-blue-600 transition-colors shadow-sm"
+              >
+                View Comparison
+              </button>
+            </form>
           </div>
         </div>
 
-        {/* CAREER CARD (Orange Gradient) */}
-        <div className="bg-gradient-to-br from-orange-800 via-orange-600 to-amber-700 text-white p-6 rounded-2xl shadow-lg border border-orange-500/40 hover:shadow-orange-500/10 hover:-translate-y-0.5 transition-all flex flex-col justify-between h-full min-h-[165px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black tracking-widest text-amber-200 uppercase bg-orange-950/60 px-2.5 py-1 rounded-md">
-                APPLY NOW
-              </span>
-              <Briefcase size={20} className="text-amber-300" />
-            </div>
-            <h3 className="text-base font-bold text-white mt-2.5 mb-1">
-              Shape Your Career With Us!
-            </h3>
-            <p className="text-xs text-orange-100/90 leading-relaxed font-sans">
-              Join TechCore team as Hardware & Service Engineer.
+        {/* PROMO IMAGE BANNER CARD */}
+        <div className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-950 text-white rounded-2xl overflow-hidden shadow-sm relative min-h-[170px] p-5 flex flex-col justify-between border border-purple-700/30 group">
+          <div className="relative z-10">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-purple-950/70 px-2 py-0.5 rounded">
+              LIMITED OFFER
+            </span>
+            <h4 className="text-sm font-black text-white mt-2 leading-tight">
+              HYPERX USB ELECTRET CONDENSER MIC
+            </h4>
+            <p className="text-xs text-purple-200 mt-1">
+              Special Price: <span className="font-extrabold text-amber-300">৳15,800</span>
             </p>
           </div>
-          <div className="mt-3">
+          <div className="relative z-10 mt-3">
             <Link
-              href="/service-center"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-white hover:bg-amber-100 px-3.5 py-1.5 rounded-lg shadow transition-colors"
+              href="/category/accessories"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-white hover:bg-amber-300 px-3.5 py-1.5 rounded-lg shadow transition-colors"
             >
-              <span>Join Our Team</span>
+              <span>Buy Now</span>
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -201,3 +239,4 @@ export default function HeroCarousel() {
     </div>
   );
 }
+

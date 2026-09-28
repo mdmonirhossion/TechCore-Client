@@ -156,13 +156,14 @@ export default function Navbar() {
   return (
     <header className="w-full z-50 sticky top-0 bg-white shadow-sm border-b border-slate-200">
       
-      {/* 4. TOP HEADER (#0e1726, ~74px height) */}
-      <div className="bg-[#0e1726] text-white px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4 min-h-[74px]">
+      {/* MONARCH IT ROYAL BLUE TOP HEADER (~74px height) */}
+      <div className="bg-gradient-to-r from-[#0f2bb0] via-[#1337b8] to-[#0e2482] text-white px-4 lg:px-8 py-3.5 min-h-[74px]">
+        <div className="max-w-[1320px] mx-auto flex items-center justify-between gap-4">
         
         {/* Logo Section */}
         <div className="flex items-center gap-3">
           <button
-            className="lg:hidden text-white p-1 hover:bg-slate-800 rounded-lg"
+            className="lg:hidden text-white p-1 hover:bg-white/10 rounded-lg"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open Mobile Menu"
           >
@@ -175,7 +176,7 @@ export default function Navbar() {
             </div>
             <div className="flex items-center text-2xl font-black tracking-tight font-sans">
               <span className="text-white">TECH</span>
-              <span className="text-[#ea580c]">CORE</span>
+              <span className="text-orange-400">CORE</span>
             </div>
           </Link>
         </div>
@@ -320,11 +321,11 @@ export default function Navbar() {
           </Link>
 
         </div>
-
       </div>
+    </div>
 
       {/* Mobile Search Bar */}
-      <div className="p-3 bg-[#0e1726] border-t border-slate-800 md:hidden">
+      <div className="p-3 bg-[#0f2bb0] border-t border-blue-900 md:hidden">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
@@ -341,7 +342,7 @@ export default function Navbar() {
 
       {/* 7. MEGA CATEGORY NAVIGATION */}
       <nav className="hidden lg:block bg-white border-y border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800">
+        <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800">
           {CATEGORIES_LIST.map((cat, index) => {
             const hasSub = cat.subcategories && cat.subcategories.length > 0;
             return (

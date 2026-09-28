@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
-import { ShoppingBag, Scale, Wrench, ArrowUp, PhoneCall } from 'lucide-react';
+import { ShoppingBag, Scale, ArrowUp } from 'lucide-react';
 
 export default function FloatingActions() {
   const { cart, compareItems } = useShop();
@@ -13,7 +13,7 @@ export default function FloatingActions() {
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => {
-      if (window.scrollY > 300) {
+      if (window.scrollY > 250) {
         setShowScrollTop(true);
       } else {
         setShowScrollTop(false);
@@ -31,54 +31,44 @@ export default function FloatingActions() {
   const compareCount = mounted ? compareItems.length : 0;
 
   return (
-    <div className="fixed right-4 bottom-6 z-40 flex flex-col space-y-3">
-      {/* Scroll to Top */}
+    <div className="fixed right-3 bottom-6 z-50 flex flex-col items-center gap-2">
+      {/* Scroll to Top Button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="w-11 h-11 bg-[#081621] hover:bg-[#3749bb] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
+          className="w-10 h-10 bg-slate-900 hover:bg-[#ea580c] text-white rounded-lg flex items-center justify-center shadow-lg transition-all transform hover:scale-105 mb-1"
         >
           <ArrowUp className="w-5 h-5" />
         </button>
       )}
 
-      {/* Compare Floating Button */}
+      {/* MONARCH IT COMPARE FLOATING BUTTON */}
       <Link
         href="/compare"
-        className="relative w-11 h-11 bg-[#081621] hover:bg-[#3749bb] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
+        className="relative bg-[#0f172a] hover:bg-blue-600 text-white w-14 h-14 rounded-xl flex flex-col items-center justify-center shadow-2xl transition-all transform hover:scale-105 border border-slate-700/50 group"
         title="Compare Products"
       >
-        <Scale className="w-5 h-5" />
-        {compareCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-[#ef4a23] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
-            {compareCount}
-          </span>
-        )}
+        <span className="absolute -top-1.5 -right-1.5 bg-[#d92d20] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+          {compareCount}
+        </span>
+        <Scale className="w-5 h-5 text-slate-200 group-hover:text-white" />
+        <span className="text-[10px] font-extrabold tracking-tight mt-0.5">Compare</span>
       </Link>
 
-      {/* PC Builder Floating Button */}
-      <Link
-        href="/pc-builder"
-        className="w-11 h-11 bg-[#3749bb] hover:bg-[#081621] text-white rounded-full flex items-center justify-center shadow-lg transition-all transform hover:scale-105"
-        title="PC Builder Tool"
-      >
-        <Wrench className="w-5 h-5" />
-      </Link>
-
-      {/* Floating Cart Button */}
+      {/* MONARCH IT CART FLOATING BUTTON */}
       <Link
         href="/cart"
-        className="relative w-12 h-12 bg-[#ef4a23] hover:bg-[#d63a15] text-white rounded-full flex items-center justify-center shadow-xl transition-all transform hover:scale-105"
+        className="relative bg-[#0f172a] hover:bg-[#ea580c] text-white w-14 h-14 rounded-xl flex flex-col items-center justify-center shadow-2xl transition-all transform hover:scale-105 border border-slate-700/50 group"
         title="View Shopping Cart"
       >
-        <ShoppingBag className="w-6 h-6" />
-        {cartTotalCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-white text-[#ef4a23] text-xs font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#ef4a23]">
-            {cartTotalCount}
-          </span>
-        )}
+        <span className="absolute -top-1.5 -right-1.5 bg-[#d92d20] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+          {cartTotalCount}
+        </span>
+        <ShoppingBag className="w-5 h-5 text-slate-200 group-hover:text-white" />
+        <span className="text-[10px] font-extrabold tracking-tight mt-0.5">Cart</span>
       </Link>
     </div>
   );
 }
+
