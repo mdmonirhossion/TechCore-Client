@@ -2,7 +2,7 @@ import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { ShoppingCart, Heart, Scale, Star, ShieldCheck } from 'lucide-react';
 
-export default function ProductCard({ product, onSelectProduct }) {
+export default function ProductCard({ product, onSelectProduct, onNavigate }) {
   const { addToCart, wishlist, toggleWishlist, compareItems, toggleCompare } = useShop();
 
   if (!product) return null;
@@ -22,6 +22,14 @@ export default function ProductCard({ product, onSelectProduct }) {
   const imgUrl = Array.isArray(product.images) && product.images.length > 0
     ? product.images[0]
     : (product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
+
+  const handleBuyNow = (e) => {
+    e.stopPropagation();
+    addToCart(product);
+    if (onNavigate) {
+      onNavigate('checkout');
+    }
+  };
 
   return (
     <div
@@ -79,10 +87,10 @@ export default function ProductCard({ product, onSelectProduct }) {
 
       {/* Product Image Box */}
       <div
-        onClick={() => onSelectProduct(pId)}
+        onClick={() => onSelectProduct && onSelectProduct(pId)}
         style={{
           width: '100%',
-          height: '200px',
+          height: '190px',
           background: '#ffffff',
           display: 'flex',
           alignItems: 'center',
@@ -141,7 +149,7 @@ export default function ProductCard({ product, onSelectProduct }) {
 
         {/* Product Title (2 lines clamp) */}
         <h3
-          onClick={() => onSelectProduct(pId)}
+          onClick={() => onSelectProduct && onSelectProduct(pId)}
           style={{
             fontSize: '0.92rem',
             fontWeight: 700,
@@ -184,7 +192,7 @@ export default function ProductCard({ product, onSelectProduct }) {
               border: 'none',
               borderRadius: '8px'
             }}
-            onClick={() => addToCart(product)}
+            onClick={handleBuyNow}
             disabled={product.stock <= 0}
           >
             <ShoppingCart size={15} /> Buy Now
@@ -193,7 +201,7 @@ export default function ProductCard({ product, onSelectProduct }) {
           <button
             className="btn-secondary"
             style={{ padding: '0.5rem', borderColor: isWishlisted ? '#ea580c' : '#cbd5e1' }}
-            onClick={() => toggleWishlist(product)}
+            onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
             title="Wishlist"
           >
             <Heart size={15} color={isWishlisted ? '#ea580c' : '#475569'} fill={isWishlisted ? '#ea580c' : 'none'} />
@@ -202,7 +210,7 @@ export default function ProductCard({ product, onSelectProduct }) {
           <button
             className="btn-secondary"
             style={{ padding: '0.5rem', borderColor: isCompared ? '#0284c7' : '#cbd5e1' }}
-            onClick={() => toggleCompare(product)}
+            onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
             title="Compare Product"
           >
             <Scale size={15} color={isCompared ? '#0284c7' : '#475569'} />
@@ -214,3 +222,4 @@ export default function ProductCard({ product, onSelectProduct }) {
     </div>
   );
 }
+

@@ -280,8 +280,40 @@ button {
 /* Product Card */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.featured-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.85rem;
+}
+@media (max-width: 1200px) {
+  .featured-categories-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .featured-categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.featured-products-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 1200px) {
+  .featured-products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .featured-products-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
 
 .product-card {

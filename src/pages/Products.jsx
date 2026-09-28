@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import { Filter, SlidersHorizontal, Search, RefreshCw } from 'lucide-react';
 
-export default function Products({ categoryFilter, searchFilter, onSelectProduct }) {
+export default function Products({ categoryFilter, searchFilter, onSelectProduct, onNavigate }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(categoryFilter || '');
@@ -159,7 +159,7 @@ export default function Products({ categoryFilter, searchFilter, onSelectProduct
           ) : (
             <div className="product-grid">
               {products.map(p => (
-                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
+                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} onNavigate={onNavigate} />
               ))}
             </div>
           )}

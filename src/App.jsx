@@ -95,7 +95,7 @@ export default function App() {
           )}
 
           {(activePage === 'products' || activePage.startsWith('products:')) && (
-            <Products categoryFilter={categoryFilter} searchFilter={searchFilter} onSelectProduct={handleSelectProduct} />
+            <Products categoryFilter={categoryFilter} searchFilter={searchFilter} onSelectProduct={handleSelectProduct} onNavigate={handleNavigate} />
           )}
 
           {activePage === 'product-detail' && (

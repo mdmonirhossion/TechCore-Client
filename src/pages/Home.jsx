@@ -7,21 +7,21 @@ import {
 } from 'lucide-react';
 
 const featuredCategories = [
-  { id: 'c1', name: 'Desktop PC', slug: 'desktop', icon: Cpu },
-  { id: 'c2', name: 'Gaming Laptop', slug: 'laptop', icon: Laptop },
-  { id: 'c3', name: 'Graphics Card', slug: 'gpu', icon: Zap },
-  { id: 'c4', name: 'Processor', slug: 'processor', icon: Cpu },
-  { id: 'c5', name: 'Motherboard', slug: 'motherboard', icon: ShieldCheck },
-  { id: 'c6', name: 'Gaming Monitor', slug: 'monitor', icon: Tv },
-  { id: 'c7', name: 'RAM Memory', slug: 'ram', icon: Award },
-  { id: 'c8', name: 'Power Station', slug: 'power', icon: Zap },
-  { id: 'c9', name: 'Mobile Phone', slug: 'phone', icon: Smartphone },
-  { id: 'c10', name: 'Mobile Gear', slug: 'phone', icon: Headphones },
-  { id: 'c11', name: 'Health Monitor', slug: 'gadget', icon: Activity },
-  { id: 'c12', name: 'WiFi Camera', slug: 'security', icon: Video },
-  { id: 'c13', name: 'Smart Watch', slug: 'gadget', icon: Watch },
-  { id: 'c14', name: 'Earbuds', slug: 'gadget', icon: Headphones },
-  { id: 'c15', name: 'WiFi Router', slug: 'networking', icon: Radio },
+  { id: 'c1', name: 'Headphone', slug: 'headphone', icon: Headphones },
+  { id: 'c2', name: 'Earbuds', slug: 'earbuds', icon: Headphones },
+  { id: 'c3', name: 'Printer', slug: 'printer', icon: HardDrive },
+  { id: 'c4', name: 'Graphics Card', slug: 'gpu', icon: Zap },
+  { id: 'c5', name: 'CC Camera', slug: 'security', icon: Video },
+  { id: 'c6', name: 'TV', slug: 'tv', icon: Tv },
+  { id: 'c7', name: 'Phone Accessories', slug: 'accessories', icon: Smartphone },
+  { id: 'c8', name: 'Drone', slug: 'drone', icon: Radio },
+  { id: 'c9', name: 'Gimbal', slug: 'gimbal', icon: Smartphone },
+  { id: 'c10', name: 'VR (Virtual Reality)', slug: 'vr', icon: Tv },
+  { id: 'c11', name: 'Battery For Laptop', slug: 'battery', icon: Zap },
+  { id: 'c12', name: 'Smart Watch', slug: 'watch', icon: Watch },
+  { id: 'c13', name: 'Action Camera', slug: 'action-cam', icon: Video },
+  { id: 'c14', name: 'Bluetooth Speakers', slug: 'speakers', icon: Headphones },
+  { id: 'c15', name: 'Gaming Console', slug: 'console', icon: Cpu },
   { id: 'c16', name: 'SSD Storage', slug: 'storage', icon: HardDrive }
 ];
 
@@ -198,25 +198,25 @@ export default function Home({ onNavigate, onSelectProduct }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
               {flashSaleProducts.map(p => (
-                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
+                <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} onNavigate={onNavigate} />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* 3. FEATURED CATEGORY (STAR TECH STYLE GRID) */}
+      {/* 3. FEATURED CATEGORY (MATCHING IMAGE 4 ROW LAYOUT) */}
       <section className="container">
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <h2 style={{ fontSize: '1.7rem', fontWeight: 900, color: '#0f172a' }}>
             Featured Category
           </h2>
           <p style={{ color: '#64748b', fontSize: '0.92rem', fontWeight: 600, marginTop: '0.2rem' }}>
-            Get Your Desired Product from Featured Category!
+            Get Your Desired Product From Featured Category!
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.85rem' }}>
+        <div className="featured-categories-grid">
           {featuredCategories.map(cat => {
             const IconComp = cat.icon;
 
@@ -227,15 +227,15 @@ export default function Home({ onNavigate, onSelectProduct }) {
                 style={{
                   background: '#ffffff',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  padding: '1.25rem 0.75rem',
+                  borderRadius: '16px',
+                  padding: '1.5rem 0.75rem',
                   textAlign: 'center',
                   cursor: 'pointer',
                   transition: 'transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.03)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.borderColor = '#ea580c';
                   e.currentTarget.style.boxShadow = '0 8px 20px rgba(234, 88, 12, 0.12)';
                 }}
@@ -245,10 +245,10 @@ export default function Home({ onNavigate, onSelectProduct }) {
                   e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.03)';
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.6rem' }}>
-                  <IconComp size={28} color="#334155" />
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                  <IconComp size={32} color="#0f172a" />
                 </div>
-                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.25 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.25 }}>
                   {cat.name}
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function Home({ onNavigate, onSelectProduct }) {
         </div>
       </section>
 
-      {/* 4. FEATURED PRODUCTS (GRID MATCHING SCREENSHOT) */}
+      {/* 4. FEATURED PRODUCTS (MATCHING IMAGE 5 ROW LAYOUT) */}
       <section className="container">
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <h2 style={{ fontSize: '1.7rem', fontWeight: 900, color: '#0f172a' }}>
@@ -268,12 +268,13 @@ export default function Home({ onNavigate, onSelectProduct }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem' }}>
+        <div className="featured-products-grid">
           {featuredProducts.map(p => (
-            <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} />
+            <ProductCard key={p.id || p._id} product={p} onSelectProduct={onSelectProduct} onNavigate={onNavigate} />
           ))}
         </div>
       </section>
+
 
       {/* 5. PC BUILDER & SERVICE CENTER FEATURE BANNER */}
       <section className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
