@@ -34,21 +34,36 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Authentication failed');
+        throw new Error(data.message || data.error || 'Authentication failed. Please check your credentials.');
       }
 
-      // Save user session in context & localStorage
+      // Save real JWT token and user object returned by server
+      const token = data.token;
       const userData = data.user || { name: name || email.split('@')[0], email, role: 'customer' };
-      const token = data.token || 'mock-jwt-token-123456';
-      
+
+      if (!token) {
+        throw new Error('No authentication token received from server.');
+      }
+
+      try {
+        localStorage.setItem('techcore_token', token);
+        localStorage.setItem('techcore_user', JSON.stringify(userData));
+      } catch (e) {
+        console.error('LocalStorage error:', e);
+      }
+
       loginUser(userData, token);
-      router.push('/account');
+
+      // Redirect to Admin Dashboard if admin role, else Account page
+      const isAdmin = userData.role === 'SUPER_ADMIN' || userData.role === 'ADMIN' || userData.isAdmin || userData.email === 'techcoreadmin@gmail.com';
+      if (isAdmin) {
+        router.push('/admin');
+      } else {
+        router.push('/account');
+      }
     } catch (err) {
-      console.error('Auth error:', err);
-      // Fallback mock login for demo
-      const userData = { name: name || 'Demo User', email, role: 'customer' };
-      loginUser(userData, 'mock-jwt-token-123456');
-      router.push('/account');
+      console.error('Auth submit error:', err);
+      setError(err.message || 'Server error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -56,21 +71,21 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 space-y-6">
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6">
+      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 bg-blue-50 text-[#3749bb] rounded-2xl flex items-center justify-center mx-auto mb-2">
+          <div className="w-14 h-14 bg-orange-50 text-[#ea580c] rounded-2xl flex items-center justify-center mx-auto mb-2">
             <Lock className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-black text-[#081621]">
-            {isRegister ? 'Create Account' : 'Customer Login'}
+            {isRegister ? 'Create Account' : 'Sign In'}
           </h1>
-          <p className="text-xs text-gray-500">Access your orders, wishlist, and warranty tickets</p>
+          <p className="text-xs text-gray-500">Access your admin dashboard, orders, and warranty tickets</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs flex items-center">
-            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span>{error}</span>
+          <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-xl text-xs flex items-center">
+            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-red-600" />
+            <span className="font-semibold">{error}</span>
           </div>
         )}
 
@@ -83,7 +98,7 @@ export default function LoginPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Tanvir Hasan"
+                  placeholder="e.g. Admin User"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full text-xs p-3 pl-10 border rounded-xl focus:outline-none focus:border-[#3749bb]"
@@ -125,9 +140,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#ef4a23] hover:bg-[#d63a15] text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all disabled:opacity-50 text-xs"
+            className="w-full bg-[#ea580c] hover:bg-[#d97706] text-white font-extrabold py-3.5 rounded-xl shadow-lg transition-all disabled:opacity-50 text-xs uppercase"
           >
-            {loading ? 'Processing...' : isRegister ? 'Register Account' : 'Sign In'}
+            {loading ? 'Authenticating...' : isRegister ? 'Register Account' : 'Sign In'}
           </button>
         </form>
 

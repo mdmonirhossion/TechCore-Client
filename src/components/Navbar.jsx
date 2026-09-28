@@ -155,6 +155,12 @@ export default function Navbar() {
               <span>{mounted && user ? user.name.split(' ')[0] : 'Account'}</span>
             </Link>
 
+            {mounted && user && (user.role === 'admin' || user.isAdmin) && (
+              <Link href="/admin" className="nav-icon-btn" style={{ background: '#fff7ed', border: '1px solid #ffedd5' }} title="Admin Dashboard">
+                <LayoutDashboard size={20} color="#ea580c" />
+                <span style={{ color: '#ea580c', fontWeight: 700 }}>Admin</span>
+              </Link>
+            )}
           </div>
 
         </div>
