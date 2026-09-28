@@ -9,7 +9,6 @@ import {
   HardDrive, 
   Headphones, 
   Gamepad2, 
-  Flame, 
   Zap, 
   ShieldCheck, 
   Truck, 
@@ -43,6 +42,7 @@ const fallbackProducts = [
     badge: 'Save ৳3,501',
     rating: 4.8,
     reviewsCount: 24,
+    brand: 'ASUS',
     category: 'Component',
     keyFeatures: ['8GB GDDR6 128-bit', 'PCIe 4.0 Support', 'Dual Axial-tech Fans', '0dB Technology']
   },
@@ -57,6 +57,7 @@ const fallbackProducts = [
     badge: 'Popular',
     rating: 4.9,
     reviewsCount: 38,
+    brand: 'Intel',
     category: 'Component',
     keyFeatures: ['20 Cores (8 P-cores + 12 E-cores)', 'Up to 5.6 GHz Max Turbo', 'LGA1700 Socket', 'Intel UHD Graphics 770']
   },
@@ -71,6 +72,7 @@ const fallbackProducts = [
     badge: 'Top Seller',
     rating: 4.7,
     reviewsCount: 19,
+    brand: 'ASUS',
     category: 'Laptop',
     keyFeatures: ['AMD Ryzen 7 7435HS', '16GB DDR5 4800MHz RAM', '512GB PCIe 4.0 NVMe SSD', '15.6" FHD 144Hz IPS']
   },
@@ -85,6 +87,7 @@ const fallbackProducts = [
     badge: '4K UHD',
     rating: 4.9,
     reviewsCount: 15,
+    brand: 'MSI',
     category: 'Monitor',
     keyFeatures: ['3840 x 2160 4K UHD', '144Hz Refresh Rate / 1ms GtG', 'Rapid IPS Panel', 'HDMI 2.1 & Type-C 65W PD']
   },
@@ -99,6 +102,7 @@ const fallbackProducts = [
     badge: 'DDR5 RGB',
     rating: 4.8,
     reviewsCount: 31,
+    brand: 'Corsair',
     category: 'Component',
     keyFeatures: ['32GB (2 x 16GB) Kit', 'DDR5 6000MHz Speed', 'Dynamic Ten-Zone RGB', 'Intel XMP 3.0 Ready']
   }
@@ -152,13 +156,13 @@ export default async function HomePage() {
       />
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <div className="container pt-4">
         <HeroCarousel />
       </div>
 
       {/* Trust Badges */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="container">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="flex items-center space-x-4 border-r border-gray-100 last:border-0 pr-4">
             <div className="w-12 h-12 bg-blue-50 text-[#3749bb] rounded-full flex items-center justify-center flex-shrink-0">
               <Truck className="w-6 h-6" />
@@ -169,7 +173,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="flex items-center space-x-4 border-r border-gray-100 last:border-0 pr-4">
-            <div className="w-12 h-12 bg-orange-50 text-[#ef4a23] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center flex-shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -199,16 +203,16 @@ export default async function HomePage() {
       </div>
 
       {/* Featured Category Section - Requirement: 8 Items Row */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container">
         <div className="text-center mb-6">
-          <span className="text-xs font-bold text-[#ef4a23] tracking-widest uppercase bg-orange-50 px-3 py-1 rounded-full inline-block mb-2">
+          <span className="text-xs font-bold text-[#ea580c] tracking-widest uppercase bg-orange-50 px-3 py-1 rounded-full inline-block mb-2">
             Explore Categories
           </span>
           <h2 className="text-2xl font-extrabold text-[#081621]">Featured Category</h2>
           <p className="text-sm text-gray-500 mt-1">Get Your Desired Product from Featured Category!</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="featured-categories-grid">
           {featuredCategories.map((cat) => {
             const Icon = cat.icon;
             return (
@@ -231,25 +235,25 @@ export default async function HomePage() {
       </section>
 
       {/* Featured Products Section - Requirement: 5 Items Row */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container">
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6 border-b pb-4">
           <div>
             <div className="flex items-center space-x-2">
-              <Sparkles className="w-5 h-5 text-[#ef4a23]" />
+              <Sparkles className="w-5 h-5 text-[#ea580c]" />
               <h2 className="text-2xl font-extrabold text-[#081621]">Featured Products</h2>
             </div>
             <p className="text-sm text-gray-500 mt-1">Check & Get Your Desired Product!</p>
           </div>
           <Link
             href="/component"
-            className="mt-3 sm:mt-0 text-xs font-bold text-[#3749bb] hover:text-[#ef4a23] hover:underline flex items-center"
+            className="mt-3 sm:mt-0 text-xs font-bold text-[#3749bb] hover:text-[#ea580c] hover:underline flex items-center"
           >
             View All Products &rarr;
           </Link>
         </div>
 
         {/* 5 column row on large screens */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="featured-products-grid">
           {products.slice(0, 10).map((product) => (
             <ProductCard key={product.id || product._id} product={product} />
           ))}
@@ -257,7 +261,7 @@ export default async function HomePage() {
       </section>
 
       {/* SEO & FAQ Accordion Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container">
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm space-y-6">
           <div className="border-b pb-4">
             <h2 className="text-xl font-extrabold text-[#081621] mb-2">
@@ -280,7 +284,7 @@ export default async function HomePage() {
                   <span className="ml-2 text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
                 </summary>
                 <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Browse your desired laptop or component, click "Buy Now" to proceed straight to checkout or "Add to Cart" to add multiple items, fill in your delivery details, choose cash on delivery or digital payment, and submit your order.
+                  Browse your desired laptop or component, click "Buy Now" to proceed straight to checkout or "Add Cart" to add multiple items, fill in your delivery details, choose cash on delivery or digital payment, and submit your order.
                 </p>
               </details>
 

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
-import { ShieldCheck, Truck, CreditCard, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Truck, CreditCard, CheckCircle2 } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
           <p className="text-sm text-gray-600">
             Thank you for shopping at TechCore Bangladesh. Your order ID is:
           </p>
-          <div className="inline-block bg-blue-50 border border-blue-200 text-[#3749bb] font-extrabold text-base px-4 py-2 rounded-lg">
+          <div className="inline-block bg-orange-50 border border-orange-200 text-[#ea580c] font-extrabold text-base px-4 py-2 rounded-lg">
             {orderPlaced.id}
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function CheckoutPage() {
         </p>
         <button
           onClick={() => router.push('/')}
-          className="bg-[#ef4a23] hover:bg-[#d63a15] text-white font-bold text-xs px-8 py-3.5 rounded-xl shadow-lg transition-all"
+          className="bg-[#ea580c] hover:bg-[#d97706] text-white font-bold text-xs px-8 py-3.5 rounded-xl shadow-lg transition-all"
         >
           Return to Storefront
         </button>
@@ -91,7 +91,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="container py-8 space-y-6">
       <div className="border-b pb-4">
         <h1 className="text-2xl font-extrabold text-[#081621]">Checkout & Payment</h1>
         <p className="text-xs text-gray-500 mt-1">Complete your delivery address and payment method</p>
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Customer Info Form (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4">
             <h2 className="font-extrabold text-base text-[#081621] flex items-center">
               <Truck className="w-5 h-5 mr-2 text-[#3749bb]" /> Shipping Details
             </h2>
@@ -181,9 +181,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* Payment Method Selector */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4">
             <h2 className="font-extrabold text-base text-[#081621] flex items-center">
-              <CreditCard className="w-5 h-5 mr-2 text-[#ef4a23]" /> Payment Option
+              <CreditCard className="w-5 h-5 mr-2 text-[#ea580c]" /> Payment Option
             </h2>
 
             <div className="space-y-3">
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
 
         {/* Right: Order Summary (5 cols) */}
         <div className="lg:col-span-5">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6 sticky top-20">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6 sticky top-20">
             <h2 className="font-extrabold text-base text-[#081621] border-b pb-3">Your Items</h2>
 
             <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -255,14 +255,14 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-lg font-black text-[#081621] border-t pt-3">
                 <span>Grand Total</span>
-                <span className="text-[#ef4a23]">৳{grandTotal.toLocaleString()}</span>
+                <span className="text-[#ea580c]">৳{grandTotal.toLocaleString()}</span>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting || cart.length === 0}
-              className="w-full bg-[#ef4a23] hover:bg-[#d63a15] text-white font-extrabold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              className="w-full bg-[#ea580c] hover:bg-[#d97706] text-white font-extrabold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 text-xs uppercase"
             >
               {isSubmitting ? 'Processing Order...' : 'Confirm Order Now'}
             </button>

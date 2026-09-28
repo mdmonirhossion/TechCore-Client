@@ -1,224 +1,137 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
-import { ShoppingCart, Heart, Scale, Star, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Zap, Heart, Scale, Star } from 'lucide-react';
 
 export default function ProductCard({ product }) {
   const router = useRouter();
-  const { addToCart, wishlist, toggleWishlist, compareItems, toggleCompare } = useShop();
+  const { addToCart, toggleWishlist, wishlist, toggleCompare, compareItems } = useShop();
 
   if (!product) return null;
 
   const pId = product.id || product._id;
-  const pSlug = product.slug || pId;
-  const isWishlisted = wishlist.some(p => p.id === pId || p._id === pId);
-  const isCompared = compareItems.some(p => p.id === pId || p._id === pId);
-
-  const priceNum = Number(product.price || 0);
-  const discNum = product.discountPrice ? Number(product.discountPrice) : priceNum;
-
-  const savedAmount = priceNum > discNum ? (priceNum - discNum) : 0;
-  const discountPercent = priceNum > discNum
-    ? Math.round(((priceNum - discNum) / priceNum) * 100)
-    : 0;
-
-  const imgUrl = Array.isArray(product.images) && product.images.length > 0
+  const pName = product.name || 'Unnamed Product';
+  const pPrice = Number(product.discountPrice || product.price || 0);
+  const pOldPrice = Number(product.price && product.discountPrice ? product.price : 0);
+  const pImg = Array.isArray(product.images) && product.images.length > 0
     ? product.images[0]
     : (product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
 
+  const pSlug = product.slug || pId;
+  const isWishlisted = wishlist.some(p => (p.id || p._id) === pId);
+  const isCompared = compareItems.some(p => (p.id || p._id) === pId);
+
   const handleBuyNow = (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(product, 1);
     router.push('/checkout');
   };
 
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, 1);
+  };
+
   return (
-    <div
-      className="product-card"
-      style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-        position: 'relative'
-      }}
-    >
-      {/* Top Save / Point Badge */}
-      {savedAmount > 0 ? (
-        <span
-          style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            zIndex: 5,
-            background: '#6b21a8',
-            color: '#ffffff',
-            fontSize: '0.7rem',
-            fontWeight: 800,
-            padding: '0.25rem 0.65rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 6px rgba(107, 33, 168, 0.3)'
-          }}
-        >
-          Save: {savedAmount.toLocaleString()}৳ (-{discountPercent}%)
-        </span>
-      ) : (
-        <span
-          style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            zIndex: 5,
-            background: '#6b21a8',
-            color: '#ffffff',
-            fontSize: '0.7rem',
-            fontWeight: 800,
-            padding: '0.25rem 0.65rem',
-            borderRadius: '12px'
-          }}
-        >
-          Earn Point: {Math.round(priceNum / 100)}
+    <div className="product-card group">
+      {/* Badge Tag */}
+      {product.badge && (
+        <span className="badge-tag z-10">
+          {product.badge}
         </span>
       )}
 
-      {/* Product Image Box */}
-      <Link href={`/product/${pSlug}`} style={{ width: '100%' }}>
-        <div
-          style={{
-            width: '100%',
-            height: '190px',
-            background: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.25rem',
-            position: 'relative'
+      {/* Quick Quick Wishlist & Compare Hover Actions */}
+      <div className="absolute top-2 right-2 z-10 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product);
           }}
+          className={`w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors ${
+            isWishlisted ? 'text-rose-600 bg-rose-50' : 'text-gray-400 hover:text-rose-600'
+          }`}
+          title="Wishlist"
         >
-          <img
-            src={imgUrl}
-            alt={product.name || 'Product Image'}
-            loading="lazy"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-              transition: 'transform 0.3s ease'
-            }}
-          />
+          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+        </button>
 
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '8px',
-              right: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 3,
-              fontSize: '0.65rem',
-              fontWeight: 800,
-              color: '#0369a1',
-              background: 'rgba(240, 249, 255, 0.95)',
-              padding: '0.15rem 0.4rem',
-              borderRadius: '4px',
-              border: '1px solid #bae6fd'
-            }}
-          >
-            <ShieldCheck size={11} color="#0284c7" /> OFFICIAL WARRANTY
-          </div>
-        </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleCompare(product);
+          }}
+          className={`w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center transition-colors ${
+            isCompared ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-blue-600'
+          }`}
+          title="Compare"
+        >
+          <Scale className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Image Box */}
+      <Link href={`/product/${pSlug}`} className="product-img-box">
+        <Image
+          src={pImg}
+          alt={pName}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 33vw, 20vw"
+          className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+        />
       </Link>
 
-      {/* Card Body */}
-      <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, borderTop: '1px solid #f1f5f9' }}>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0284c7', textTransform: 'uppercase' }}>
-            {product.brand || 'TechCore'}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#eab308', fontWeight: 700 }}>
-            <Star size={12} fill="#eab308" color="#eab308" /> {product.rating || '5.0'}
-          </div>
-        </div>
+      {/* Card Content */}
+      <div className="product-card-body">
+        <div className="product-brand">{product.brand || 'ASUS'}</div>
 
-        <Link href={`/product/${pSlug}`}>
-          <h3
-            style={{
-              fontSize: '0.92rem',
-              fontWeight: 700,
-              color: '#0f172a',
-              lineHeight: 1.35,
-              margin: '0.2rem 0 0.8rem 0',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              minHeight: '2.7em'
-            }}
-          >
-            {product.name}
-          </h3>
+        <Link href={`/product/${pSlug}`} className="product-title hover:text-[#ea580c] transition-colors" title={pName}>
+          {pName}
         </Link>
 
-        {/* Pricing */}
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'baseline', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#d92d20' }}>
-            {discNum.toLocaleString()}৳
-          </span>
-          {discNum < priceNum && (
-            <span style={{ fontSize: '0.85rem', color: '#94a3b8', textDecoration: 'line-through' }}>
-              {priceNum.toLocaleString()}৳
-            </span>
+        {/* Rating stars */}
+        <div className="flex items-center space-x-1 mb-2">
+          <div className="flex text-amber-400">
+            <Star className="w-3 h-3 fill-current" />
+          </div>
+          <span className="text-[11px] font-semibold text-gray-500">{product.rating || '4.8'}</span>
+          <span className="text-[10px] text-gray-400">({product.reviewsCount || 12})</span>
+        </div>
+
+        {/* Price Row */}
+        <div className="product-price-row">
+          <span className="price-main">৳{pPrice.toLocaleString()}</span>
+          {pOldPrice > pPrice && (
+            <span className="price-old">৳{pOldPrice.toLocaleString()}</span>
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.85rem' }}>
+        {/* Card Actions: Buy Now & Add to Cart */}
+        <div className="product-card-actions">
           <button
-            className="btn-primary"
-            style={{
-              flex: 1,
-              padding: '0.5rem',
-              fontSize: '0.82rem',
-              justifyContent: 'center',
-              background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-              border: 'none',
-              borderRadius: '8px'
-            }}
             onClick={handleBuyNow}
-            disabled={product.stock <= 0}
+            className="flex-1 bg-[#ea580c] hover:bg-[#d97706] text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center space-x-1 shadow-sm transition-all"
           >
-            <ShoppingCart size={15} /> Buy Now
+            <Zap className="w-3.5 h-3.5" />
+            <span>Buy Now</span>
           </button>
-
           <button
-            className="btn-secondary"
-            style={{ padding: '0.5rem', borderColor: isWishlisted ? '#ea580c' : '#cbd5e1' }}
-            onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-            title="Wishlist"
+            onClick={handleAddToCart}
+            className="flex-1 bg-[#3749bb] hover:bg-[#2c3a99] text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center space-x-1 shadow-sm transition-all"
           >
-            <Heart size={15} color={isWishlisted ? '#ea580c' : '#475569'} fill={isWishlisted ? '#ea580c' : 'none'} />
-          </button>
-
-          <button
-            className="btn-secondary"
-            style={{ padding: '0.5rem', borderColor: isCompared ? '#0284c7' : '#cbd5e1' }}
-            onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
-            title="Compare Product"
-          >
-            <Scale size={15} color={isCompared ? '#0284c7' : '#475569'} />
+            <ShoppingCart className="w-3.5 h-3.5" />
+            <span>Add Cart</span>
           </button>
         </div>
-
       </div>
-
     </div>
   );
 }

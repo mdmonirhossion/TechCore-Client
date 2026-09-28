@@ -9,10 +9,8 @@ import {
   Zap, 
   ShieldCheck, 
   Star, 
-  Share2, 
   Heart, 
   Scale, 
-  Truck, 
   Plus, 
   Minus,
   CheckCircle2
@@ -55,11 +53,11 @@ export default function ProductDetailsClient({ product }) {
   return (
     <div className="space-y-8">
       {/* Top Product Summary Grid */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left: Gallery (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="relative aspect-square w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center p-4">
+          <div className="relative aspect-square w-full rounded-xl overflow-hidden border border-gray-200 bg-[#f8fafc] flex items-center justify-center p-4">
             <Image
               src={activeImage}
               alt={product.name}
@@ -68,7 +66,7 @@ export default function ProductDetailsClient({ product }) {
               priority
             />
             {product.badge && (
-              <span className="absolute top-3 left-3 bg-[#ef4a23] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+              <span className="absolute top-3 left-3 bg-[#ea580c] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
                 {product.badge}
               </span>
             )}
@@ -124,7 +122,7 @@ export default function ProductDetailsClient({ product }) {
               onClick={() => setPaymentOption('cash')}
               className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                 paymentOption === 'cash'
-                  ? 'border-[#3749bb] bg-blue-50/40 shadow-sm'
+                  ? 'border-[#ea580c] bg-orange-50/40 shadow-sm'
                   : 'border-gray-200 hover:border-gray-300 bg-white'
               }`}
             >
@@ -135,16 +133,16 @@ export default function ProductDetailsClient({ product }) {
                     name="paymentOption"
                     checked={paymentOption === 'cash'}
                     onChange={() => setPaymentOption('cash')}
-                    className="text-[#3749bb] focus:ring-[#3749bb]"
+                    className="text-[#ea580c] focus:ring-[#ea580c]"
                   />
                   <span className="font-bold text-xs text-[#081621]">Cash Discount Price</span>
                 </div>
-                <span className="text-[10px] bg-red-100 text-[#ef4a23] font-extrabold px-1.5 py-0.5 rounded">
+                <span className="text-[10px] bg-red-100 text-[#ea580c] font-extrabold px-1.5 py-0.5 rounded">
                   Best Value
                 </span>
               </div>
               <div className="mt-2 pl-6">
-                <div className="text-xl font-black text-[#ef4a23]">
+                <div className="text-xl font-black text-[#ea580c]">
                   ৳{cashPrice.toLocaleString()}
                 </div>
                 {regularPrice > cashPrice && (
@@ -210,7 +208,7 @@ export default function ProductDetailsClient({ product }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <button
                 onClick={handleBuyNow}
-                className="w-full bg-[#ef4a23] hover:bg-[#d63a15] text-white font-extrabold py-3.5 px-6 rounded-xl flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-all"
+                className="w-full bg-[#ea580c] hover:bg-[#d97706] text-white font-extrabold py-3.5 px-6 rounded-xl flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-all"
               >
                 <Zap className="w-5 h-5" />
                 <span>Buy Now</span>
@@ -228,8 +226,8 @@ export default function ProductDetailsClient({ product }) {
             <div className="flex items-center space-x-4 text-xs pt-2 text-gray-600">
               <button
                 onClick={() => toggleWishlist(product)}
-                className={`flex items-center space-x-1.5 hover:text-[#ef4a23] transition-colors ${
-                  isWishlisted ? 'text-[#ef4a23] font-bold' : ''
+                className={`flex items-center space-x-1.5 hover:text-[#ea580c] transition-colors ${
+                  isWishlisted ? 'text-[#ea580c] font-bold' : ''
                 }`}
               >
                 <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
@@ -251,13 +249,13 @@ export default function ProductDetailsClient({ product }) {
       </div>
 
       {/* Specification & Details Tabs */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-6">
         <div className="flex items-center space-x-4 border-b pb-2">
           <button
             onClick={() => setActiveTab('specs')}
             className={`font-bold text-sm pb-2 border-b-2 transition-all ${
               activeTab === 'specs'
-                ? 'border-[#3749bb] text-[#3749bb]'
+                ? 'border-[#ea580c] text-[#ea580c]'
                 : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
@@ -267,7 +265,7 @@ export default function ProductDetailsClient({ product }) {
             onClick={() => setActiveTab('features')}
             className={`font-bold text-sm pb-2 border-b-2 transition-all ${
               activeTab === 'features'
-                ? 'border-[#3749bb] text-[#3749bb]'
+                ? 'border-[#ea580c] text-[#ea580c]'
                 : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
@@ -293,7 +291,7 @@ export default function ProductDetailsClient({ product }) {
         {activeTab === 'features' && (
           <ul className="space-y-3 text-xs text-gray-700 leading-relaxed list-disc pl-5">
             {(product.keyFeatures || []).map((feat, idx) => (
-              <li key={idx} className="marker:text-[#3749bb]">{feat}</li>
+              <li key={idx} className="marker:text-[#ea580c]">{feat}</li>
             ))}
           </ul>
         )}
