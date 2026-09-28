@@ -76,14 +76,45 @@ export default function AdminDashboard({ onNavigate }) {
   ];
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('techcore_token');
+    const token = localStorage.getItem('techcore_token') || currentUser?.token;
     return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
+  const mapInventoryItem = (item) => {
+    if (!item) return null;
+    const stockVal = item.stock !== undefined ? Number(item.stock) : (item.currentStock !== undefined ? Number(item.currentStock) : 0);
+    const imgVal = (Array.isArray(item.images) && item.images.length > 0)
+      ? item.images[0]
+      : (item.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
+
+    let statusVal = item.status;
+    if (!statusVal || statusVal === 'IN_STOCK' || statusVal === 'LOW_STOCK' || statusVal === 'OUT_OF_STOCK') {
+      statusVal = stockVal <= 0 ? 'OUT_OF_STOCK' : (stockVal <= 5 ? 'LOW_STOCK' : 'IN_STOCK');
+    }
+
+    return {
+      id: item.id || item._id,
+      _id: item._id || item.id,
+      sku: item.sku || `SKU-${(item._id || item.id || '').toString().slice(-6)}`,
+      name: item.name || 'Unnamed Product',
+      brand: item.brand || 'Generic',
+      category: item.category || 'Components',
+      categorySlug: item.categorySlug || 'components',
+      price: Number(item.price || 0),
+      discountPrice: item.discountPrice !== undefined ? Number(item.discountPrice) : Number(item.price || 0),
+      currentStock: stockVal,
+      stock: stockVal,
+      image: imgVal,
+      images: Array.isArray(item.images) ? item.images : [imgVal],
+      status: statusVal,
+      warranty: item.warranty || 'Official Warranty'
+    };
   };
 
   useEffect(() => {
     if (!isApprovedAdmin) return;
 
-    // One-time cleanup of obsolete local fake product cache
+    // Remove obsolete local storage custom product cache
     try {
       localStorage.removeItem('techcore_custom_products');
     } catch (e) {}
@@ -91,52 +122,46 @@ export default function AdminDashboard({ onNavigate }) {
     fetch('/api/admin/analytics', {
       headers: { ...getAuthHeaders() }
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Analytics fetch failed');
+        return res.json();
+      })
       .then(data => setAnalytics(data))
-      .catch(() => {
-        // Fallback demo analytics
-        setAnalytics({
-          kpis: { revenue: 4589000, grossProfit: 1147250, totalOrders: 342, lowStockCount: 2 },
-          salesTrend: [
-            { month: 'Jan', sales: 420000, profit: 105000 },
-            { month: 'Feb', sales: 580000, profit: 145000 },
-            { month: 'Mar', sales: 720000, profit: 180000 },
-            { month: 'Apr', sales: 690000, profit: 172500 },
-            { month: 'May', sales: 890000, profit: 222500 },
-            { month: 'Jun', sales: 1289000, profit: 322250 }
-          ],
-          categoryShare: [
-            { name: 'GPU & CPU', value: 45 },
-            { name: 'Laptops', value: 25 },
-            { name: 'Monitors', value: 15 },
-            { name: 'RAM & Storage', value: 15 }
-          ]
-        });
+      .catch(err => {
+        console.error('Admin Analytics fetch error:', err);
+        setAnalytics(null);
       });
 
     fetch('/api/admin/inventory', {
       headers: { ...getAuthHeaders() }
     })
-      .then(res => res.json())
-      .then(data => {
-        const baseList = Array.isArray(data) && data.length > 0 ? data : defaultInventory;
-        setInventory(baseList);
+      .then(res => {
+        if (!res.ok) {
+          // If admin endpoint fails, fallback to public products endpoint
+          return fetch('/api/products').then(r => r.json());
+        }
+        return res.json();
       })
-      .catch(() => {
-        setInventory(defaultInventory);
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.products || data.inventory || data.data || []);
+        setInventory(list.map(mapInventoryItem).filter(Boolean));
+      })
+      .catch(err => {
+        console.error('Admin Inventory fetch error:', err);
+        setInventory([]);
       });
 
     fetch('/api/admin/suppliers', {
       headers: { ...getAuthHeaders() }
     })
-      .then(res => res.json())
-      .then(data => setSuppliers(Array.isArray(data) ? data : []))
-      .catch(() => {
-        setSuppliers([
-          { id: 's1', name: 'Global Brand Private Ltd (ASUS BD)', contactPerson: 'Md. Tareq Rahman', phone: '01711000111', email: 'sales@globalbrand.com.bd', totalPurchase: 4500000, dueAmount: 120000 },
-          { id: 's2', name: 'UCC Bangladesh (MSI & Sapphire)', contactPerson: 'Tanvir Hossain', phone: '01819222333', email: 'orders@ucc-bd.com', totalPurchase: 3200000, dueAmount: 0 },
-          { id: 's3', name: 'Smart Technologies BD Ltd (Gigabyte & Intel)', contactPerson: 'Shafiqul Islam', phone: '01911444555', email: 'corporate@smartbd.com', totalPurchase: 5800000, dueAmount: 450000 }
-        ]);
+      .then(res => {
+        if (!res.ok) throw new Error('Suppliers fetch failed');
+        return res.json();
+      })
+      .then(data => setSuppliers(Array.isArray(data) ? data : (data.suppliers || [])))
+      .catch(err => {
+        console.error('Admin Suppliers fetch error:', err);
+        setSuppliers([]);
       });
   }, [isApprovedAdmin]);
 
@@ -267,22 +292,7 @@ export default function AdminDashboard({ onNavigate }) {
         return;
       }
 
-      const createdObj = resData;
-
-      const newInventoryItem = {
-        id: createdObj.id || createdObj._id,
-        sku: createdObj.sku || generatedSku,
-        name: createdObj.name || payload.name,
-        brand: createdObj.brand || payload.brand,
-        category: createdObj.category || payload.category,
-        categorySlug: createdObj.categorySlug || payload.categorySlug,
-        price: createdObj.price !== undefined ? createdObj.price : payload.price,
-        discountPrice: createdObj.discountPrice !== undefined ? createdObj.discountPrice : payload.discountPrice,
-        currentStock: createdObj.stock !== undefined ? createdObj.stock : stockNum,
-        image: (Array.isArray(createdObj.images) && createdObj.images.length > 0) ? createdObj.images[0] : (createdObj.image || payload.image),
-        status: (createdObj.stock !== undefined ? createdObj.stock : stockNum) <= 0 ? 'OUT_OF_STOCK' : ((createdObj.stock !== undefined ? createdObj.stock : stockNum) <= 5 ? 'LOW_STOCK' : 'IN_STOCK'),
-        warranty: createdObj.warranty || payload.warranty
-      };
+      const newInventoryItem = mapInventoryItem(createdObj) || mapInventoryItem(payload);
 
       setInventory(prev => [newInventoryItem, ...prev]);
 

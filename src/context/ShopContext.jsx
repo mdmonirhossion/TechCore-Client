@@ -44,6 +44,7 @@ export function ShopProvider({ children }) {
 
   // 5. User Auth State
   const [user, setUser] = useState(() => safeStorageParse('techcore_user', null));
+  const [token, setToken] = useState(() => localStorage.getItem('techcore_token') || '');
 
   // Persist localstorage
   useEffect(() => {
@@ -74,12 +75,19 @@ export function ShopProvider({ children }) {
     }
   }, [user]);
 
-  const loginUser = (userData) => {
+  const loginUser = (userData, authToken) => {
     setUser(userData);
+    if (authToken) {
+      setToken(authToken);
+      try {
+        localStorage.setItem('techcore_token', authToken);
+      } catch (e) {}
+    }
   };
 
   const logoutUser = () => {
     setUser(null);
+    setToken('');
     try {
       localStorage.removeItem('techcore_user');
       localStorage.removeItem('techcore_token');
@@ -215,6 +223,7 @@ export function ShopProvider({ children }) {
       removeBuilderComponent,
       resetBuilder,
       user,
+      token,
       loginUser,
       logoutUser
     }}>

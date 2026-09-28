@@ -62,11 +62,12 @@ export default function Login({ onNavigate }) {
         phoneOrEmail: phoneOrEmail.trim(),
         role: data.user?.role || (isAdminUser ? 'SUPER_ADMIN' : 'CUSTOMER'),
         isAdmin: isAdminUser,
-        isLoggedIn: true
+        isLoggedIn: true,
+        token: data.token
       };
 
       localStorage.setItem('techcore_user', JSON.stringify(loggedInUserData));
-      loginUser(loggedInUserData);
+      loginUser(loggedInUserData, data.token);
       setLoading(false);
 
       if (isAdminUser) {
