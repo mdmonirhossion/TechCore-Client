@@ -37,7 +37,7 @@ export default async function CategoryPage({ params }) {
   const displayList = categoryProducts.length > 0 ? categoryProducts : allProducts.slice(0, 8);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-xs text-slate-500 pb-2 border-b border-slate-200">

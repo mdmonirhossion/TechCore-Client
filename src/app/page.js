@@ -43,7 +43,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pb-16">
+    <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pb-16">
       
       {/* Structured Data */}
       <script

@@ -96,7 +96,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         )}
         <ShopProvider>
           <Navbar />
-          <main className="flex-grow">{children}</main>
+          <main className="w-full flex-grow flex flex-col items-center">{children}</main>
           <Footer />
           <FloatingActions />
         </ShopProvider>
