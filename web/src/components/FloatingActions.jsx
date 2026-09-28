@@ -7,11 +7,11 @@ import { ShoppingBag, Scale, Wrench, ArrowUp, PhoneCall } from 'lucide-react';
 
 export default function FloatingActions() {
   const { cart, compareItems } = useShop();
+  const [mounted, setMounted] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const cartTotalCount = cart.reduce((total, item) => total + item.quantity, 0);
-
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       if (window.scrollY > 300) {
         setShowScrollTop(true);
@@ -26,6 +26,9 @@ export default function FloatingActions() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const cartTotalCount = mounted ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
+  const compareCount = mounted ? compareItems.length : 0;
 
   return (
     <div className="fixed right-4 bottom-6 z-40 flex flex-col space-y-3">
@@ -47,9 +50,9 @@ export default function FloatingActions() {
         title="Compare Products"
       >
         <Scale className="w-5 h-5" />
-        {compareItems.length > 0 && (
+        {compareCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-[#ef4a23] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
-            {compareItems.length}
+            {compareCount}
           </span>
         )}
       </Link>

@@ -14,10 +14,15 @@ export default function Navbar() {
   const router = useRouter();
   const { cart, wishlist, compareItems, user } = useShop();
 
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim().length > 1) {
@@ -44,7 +49,9 @@ export default function Navbar() {
     }
   };
 
-  const isUserAdmin = user?.role === 'SUPER_ADMIN' || user?.email === 'techcoreadmin@gmail.com' || user?.isAdmin;
+  const cartCount = mounted ? cart.reduce((s, i) => s + i.quantity, 0) : 0;
+  const wishlistCount = mounted ? wishlist.length : 0;
+  const compareCount = mounted ? compareItems.length : 0;
 
   return (
     <header className="navbar">
@@ -128,24 +135,24 @@ export default function Navbar() {
             <Link href="/compare" className="nav-icon-btn" title="Compare Products">
               <Scale size={20} color="#0284c7" />
               <span>Compare</span>
-              {compareItems.length > 0 && <span className="badge-count">{compareItems.length}</span>}
+              {compareCount > 0 && <span className="badge-count">{compareCount}</span>}
             </Link>
 
             <Link href="/wishlist" className="nav-icon-btn" title="Wishlist">
               <Heart size={20} color="#ea580c" />
               <span>Wishlist</span>
-              {wishlist.length > 0 && <span className="badge-count">{wishlist.length}</span>}
+              {wishlistCount > 0 && <span className="badge-count">{wishlistCount}</span>}
             </Link>
 
             <Link href="/cart" className="nav-icon-btn" title="Shopping Cart">
               <ShoppingCart size={20} color="#2563eb" />
               <span>Cart</span>
-              {cart.length > 0 && <span className="badge-count">{cart.reduce((s, i) => s + i.quantity, 0)}</span>}
+              {cartCount > 0 && <span className="badge-count">{cartCount}</span>}
             </Link>
 
             <Link href="/account" className="nav-icon-btn" style={{ background: '#f1f5f9' }}>
               <User size={20} color="#0f172a" />
-              <span>{user ? user.name.split(' ')[0] : 'Account'}</span>
+              <span>{mounted && user ? user.name.split(' ')[0] : 'Account'}</span>
             </Link>
 
           </div>

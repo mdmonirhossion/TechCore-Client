@@ -17,34 +17,40 @@ export function ShopProvider({ children }) {
     }
   };
 
-  // 1. Cart State
-  const [cart, setCart] = useState(() => safeStorageParse('techcore_cart', [
-    { id: 'prod-301', name: 'ASUS Dual GeForce RTX 4060 OC 8GB GDDR6', price: 39999, quantity: 1, image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop' }
-  ]));
+  // States start empty on SSR for 100% clean hydration
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [compareItems, setCompareItems] = useState([]);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState('');
   const [coupon, setCoupon] = useState({ code: '', discount: 0 });
 
-  // 2. Wishlist State
-  const [wishlist, setWishlist] = useState(() => safeStorageParse('techcore_wishlist', []));
-
-  // 3. Compare State
-  const [compareItems, setCompareItems] = useState([]);
-
-  // 4. PC Builder State
   const [builderSlots, setBuilderSlots] = useState({
     CPU: null, 'CPU Cooler': null, Motherboard: null, RAM: null, GPU: null,
     SSD: null, HDD: null, PSU: null, Casing: null, Monitor: null, Keyboard: null, Mouse: null
   });
 
-  // 5. User Auth State
-  const [user, setUser] = useState(() => safeStorageParse('techcore_user', null));
-  const [token, setToken] = useState(() => {
-    if (typeof window === 'undefined') return '';
-    return localStorage.getItem('techcore_token') || '';
-  });
+  // Hydrate states from localStorage after component mounts on client
+  useEffect(() => {
+    const savedCart = safeStorageParse('techcore_cart', [
+      { id: 'prod-301', name: 'ASUS Dual GeForce RTX 4060 OC 8GB GDDR6', price: 39999, quantity: 1, image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop' }
+    ]);
+    const savedWishlist = safeStorageParse('techcore_wishlist', []);
+    const savedUser = safeStorageParse('techcore_user', null);
+    const savedToken = typeof window !== 'undefined' ? (localStorage.getItem('techcore_token') || '') : '';
 
+    setCart(savedCart);
+    setWishlist(savedWishlist);
+    setUser(savedUser);
+    setToken(savedToken);
+  }, []);
+
+  // Save changes to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('techcore_cart', JSON.stringify(cart));
+      if (cart.length > 0) {
+        localStorage.setItem('techcore_cart', JSON.stringify(cart));
+      }
     } catch (e) {}
   }, [cart]);
 
@@ -129,6 +135,9 @@ export function ShopProvider({ children }) {
   const clearCart = () => {
     setCart([]);
     setCoupon({ code: '', discount: 0 });
+    try {
+      localStorage.removeItem('techcore_cart');
+    } catch (e) {}
   };
 
   const applyCouponCode = (code) => {
