@@ -3,6 +3,7 @@ import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
 import FlashSaleSection from '@/components/FlashSaleSection';
 import FeaturedCategoriesSection from '@/components/FeaturedCategoriesSection';
+import FeaturedProductsTab from '@/components/FeaturedProductsTab';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/api';
 import {
@@ -10,21 +11,19 @@ import {
   ShieldCheck,
   Truck,
   Clock,
-  HelpCircle,
   Sparkles,
   ArrowRight,
   Flame,
   Gamepad2,
   Award,
-  Headphones
+  Headphones,
+  HelpCircle
 } from 'lucide-react';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
   const products = await getProducts();
-  const flashSaleProducts = products.filter(p => p.isFlashSale);
-  const featuredProducts = products.slice(0, 10);
   const popularProducts = products.slice(5, 15);
 
   const organizationSchema = {
@@ -52,40 +51,17 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
 
-      {/* 9 & 10. HERO AREA (Carousel + Stacked Promo Cards) */}
+      {/* HERO AREA (Carousel + Stacked Promo Cards) */}
       <HeroCarousel />
 
-      {/* 11. FLASH SALE SECTION */}
+      {/* FLASH SALE SECTION */}
       <FlashSaleSection products={products} />
 
-      {/* 13. FEATURED CATEGORIES SECTION */}
+      {/* FEATURED CATEGORIES SECTION */}
       <FeaturedCategoriesSection />
 
-      {/* 14. FEATURED PRODUCTS (5 per row desktop, 3 tablet, 2 mobile, 1 small) */}
-      <section>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-slate-200 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#ea580c]" />
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Featured Products</h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Check & Get Your Desired Product!</p>
-          </div>
-          <Link
-            href="/products"
-            className="mt-3 sm:mt-0 text-xs font-bold text-[#2563eb] hover:text-[#ea580c] flex items-center gap-1 transition-colors"
-          >
-            <span>View All Products</span>
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id || product._id} product={product} />
-          ))}
-        </div>
-      </section>
+      {/* FEATURED PRODUCTS WITH TAB SWITCHING */}
+      <FeaturedProductsTab products={products} />
 
       {/* POPULAR PRODUCTS SECTION */}
       <section>
@@ -203,30 +179,52 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* SERVICE / WARRANTY CTA */}
-      <section className="bg-slate-900 text-white rounded-2xl p-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        <div className="space-y-2">
-          <span className="text-emerald-400 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-            <Award size={14} /> Official Support
-          </span>
-          <h3 className="text-2xl font-black text-white">Need Warranty Claim or Device Repair?</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            TechCore Service Center offers fast serial warranty lookup, official claim processing, and component diagnostic services.
+      {/* SEO RICH CONTENT & FAQ SECTION */}
+      <section className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="border-b pb-4">
+          <h2 className="text-xl font-black text-slate-900 mb-2">
+            Leading Computer, Laptop & Component Shop in Bangladesh - TechCore
+          </h2>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            TechCore is Bangladesh’s premier retail and online computer store, offering custom PC building, gaming laptops, high-performance graphics cards, Intel and AMD processors, monitors, and official tech accessories. Whether you are building a budget workstation or an extreme liquid-cooled gaming rig, TechCore provides 100% genuine components with official manufacturer warranty, fast nationwide shipping, and flexible 0% EMI financing across 30+ partner banks.
           </p>
         </div>
-        <div className="flex flex-wrap md:justify-end gap-3">
-          <Link
-            href="/warranty"
-            className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-5 py-3 rounded-xl border border-slate-700"
-          >
-            Check Warranty Policy
-          </Link>
-          <Link
-            href="/service-center"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md"
-          >
-            Submit Service Request
-          </Link>
+
+        <div>
+          <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <HelpCircle size={18} className="text-[#2563eb]" /> Frequently Asked Questions (FAQ)
+          </h3>
+          <div className="space-y-3">
+            <details className="group border rounded-xl p-4 bg-slate-50 [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex items-center justify-between font-bold text-xs text-slate-900 cursor-pointer">
+                <span>How can I place an order online at TechCore?</span>
+                <span className="ml-2 text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+              </summary>
+              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                Browse your desired laptop or component, click "Buy Now" to proceed straight to checkout or "Add Cart" to add multiple items, fill in your shipping details, choose Cash on Delivery or SSLCommerz payment, and confirm your order.
+              </p>
+            </details>
+
+            <details className="group border rounded-xl p-4 bg-slate-50 [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex items-center justify-between font-bold text-xs text-slate-900 cursor-pointer">
+                <span>Does TechCore provide official brand warranty in Bangladesh?</span>
+                <span className="ml-2 text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+              </summary>
+              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                Yes! All products sold at TechCore are 100% authentic and carry official manufacturer warranty served directly through our authorized service centers across Bangladesh.
+              </p>
+            </details>
+
+            <details className="group border rounded-xl p-4 bg-slate-50 [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex items-center justify-between font-bold text-xs text-slate-900 cursor-pointer">
+                <span>How does the PC Builder tool work?</span>
+                <span className="ml-2 text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+              </summary>
+              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                Our custom PC Builder lets you select compatible CPU, Motherboard, RAM, GPU, Storage, and PSU step-by-step with real-time total price calculation, wattage estimates, and one-click add to cart or print quotation features.
+              </p>
+            </details>
+          </div>
         </div>
       </section>
 
