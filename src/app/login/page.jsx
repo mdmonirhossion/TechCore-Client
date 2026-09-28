@@ -120,7 +120,7 @@ export default function LoginPage() {
               <Home size={14} /> Home
             </Link>
             <span>/</span>
-            <span className="color-[#0f172a] font-bold text-slate-900">My Account</span>
+            <span className="text-[#0f172a] font-bold text-slate-900">My Account</span>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg border border-slate-200 max-w-[560px] mx-auto p-8 md:p-10">
