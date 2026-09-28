@@ -1,128 +1,31 @@
 import React from 'react';
 import Link from 'next/link';
 import HeroCarousel from '@/components/HeroCarousel';
+import FlashSaleSection from '@/components/FlashSaleSection';
+import FeaturedCategoriesSection from '@/components/FeaturedCategoriesSection';
 import ProductCard from '@/components/ProductCard';
-import { 
-  Laptop, 
-  Cpu, 
-  Monitor, 
-  HardDrive, 
-  Headphones, 
-  Gamepad2, 
-  Zap, 
-  ShieldCheck, 
-  Truck, 
-  Clock, 
+import { getProducts } from '@/lib/api';
+import {
+  Wrench,
+  ShieldCheck,
+  Truck,
+  Clock,
   HelpCircle,
-  Sparkles
+  Sparkles,
+  ArrowRight,
+  Flame,
+  Gamepad2,
+  Award,
+  Headphones
 } from 'lucide-react';
 
-export const revalidate = 60; // Revalidate home page every 60s (ISR)
-
-const featuredCategories = [
-  { id: 1, title: 'Laptop', count: '140+ Items', icon: Laptop, slug: 'laptop', color: 'bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-500' },
-  { id: 2, title: 'Component', count: '320+ Items', icon: Cpu, slug: 'component', color: 'bg-purple-50 text-purple-600 border-purple-200 hover:border-purple-500' },
-  { id: 3, title: 'Desktop PC', count: '85+ Items', icon: HardDrive, slug: 'desktop', color: 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:border-emerald-500' },
-  { id: 4, title: 'Monitor', count: '90+ Items', icon: Monitor, slug: 'monitor', color: 'bg-amber-50 text-amber-600 border-amber-200 hover:border-amber-500' },
-  { id: 5, title: 'Accessories', count: '210+ Items', icon: Headphones, slug: 'accessories', color: 'bg-rose-50 text-rose-600 border-rose-200 hover:border-rose-500' },
-  { id: 6, title: 'Gaming Gear', count: '115+ Items', icon: Gamepad2, slug: 'accessories/gaming-furniture', color: 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:border-indigo-500' },
-  { id: 7, title: 'Power & PSU', count: '65+ Items', icon: Zap, slug: 'component/psu-casing', color: 'bg-cyan-50 text-cyan-600 border-cyan-200 hover:border-cyan-500' },
-  { id: 8, title: 'Software', count: '40+ Items', icon: ShieldCheck, slug: 'software', color: 'bg-orange-50 text-orange-600 border-orange-200 hover:border-orange-500' }
-];
-
-const fallbackProducts = [
-  {
-    _id: 'p1',
-    id: 'p1',
-    name: 'ASUS Dual GeForce RTX 4060 OC Edition 8GB GDDR6 Graphics Card',
-    price: 43500,
-    discountPrice: 39999,
-    images: ['https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop'],
-    stock: 12,
-    badge: 'Save ৳3,501',
-    rating: 4.8,
-    reviewsCount: 24,
-    brand: 'ASUS',
-    category: 'Component',
-    keyFeatures: ['8GB GDDR6 128-bit', 'PCIe 4.0 Support', 'Dual Axial-tech Fans', '0dB Technology']
-  },
-  {
-    _id: 'p2',
-    id: 'p2',
-    name: 'Intel 14th Gen Core i7-14700K Gaming Desktop Processor',
-    price: 51000,
-    discountPrice: 47500,
-    images: ['https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&auto=format&fit=crop'],
-    stock: 8,
-    badge: 'Popular',
-    rating: 4.9,
-    reviewsCount: 38,
-    brand: 'Intel',
-    category: 'Component',
-    keyFeatures: ['20 Cores (8 P-cores + 12 E-cores)', 'Up to 5.6 GHz Max Turbo', 'LGA1700 Socket', 'Intel UHD Graphics 770']
-  },
-  {
-    _id: 'p3',
-    id: 'p3',
-    name: 'ASUS TUF Gaming A15 FA507NUR Ryzen 7 7435HS 16GB RAM RTX 4050 6GB',
-    price: 135000,
-    discountPrice: 124999,
-    images: ['https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop'],
-    stock: 5,
-    badge: 'Top Seller',
-    rating: 4.7,
-    reviewsCount: 19,
-    brand: 'ASUS',
-    category: 'Laptop',
-    keyFeatures: ['AMD Ryzen 7 7435HS', '16GB DDR5 4800MHz RAM', '512GB PCIe 4.0 NVMe SSD', '15.6" FHD 144Hz IPS']
-  },
-  {
-    _id: 'p4',
-    id: 'p4',
-    name: 'MSI MAG 274UPF 27 Inch 4K UHD 144Hz 1ms IPS Gaming Monitor',
-    price: 68000,
-    discountPrice: 62999,
-    images: ['https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop'],
-    stock: 14,
-    badge: '4K UHD',
-    rating: 4.9,
-    reviewsCount: 15,
-    brand: 'MSI',
-    category: 'Monitor',
-    keyFeatures: ['3840 x 2160 4K UHD', '144Hz Refresh Rate / 1ms GtG', 'Rapid IPS Panel', 'HDMI 2.1 & Type-C 65W PD']
-  },
-  {
-    _id: 'p5',
-    id: 'p5',
-    name: 'Corsair Vengeance RGB 32GB (2x16GB) DDR5 6000MHz CL36 RAM Kit',
-    price: 16500,
-    discountPrice: 14999,
-    images: ['https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&auto=format&fit=crop'],
-    stock: 20,
-    badge: 'DDR5 RGB',
-    rating: 4.8,
-    reviewsCount: 31,
-    brand: 'Corsair',
-    category: 'Component',
-    keyFeatures: ['32GB (2 x 16GB) Kit', 'DDR5 6000MHz Speed', 'Dynamic Ten-Zone RGB', 'Intel XMP 3.0 Ready']
-  }
-];
-
-async function getProducts() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://techcore-server.vercel.app';
-  try {
-    const res = await fetch(`${apiUrl}/api/products`, { next: { revalidate: 60 } });
-    if (!res.ok) return fallbackProducts;
-    const data = await res.json();
-    return Array.isArray(data) && data.length > 0 ? data : fallbackProducts;
-  } catch (err) {
-    console.error('Fetch products error:', err);
-    return fallbackProducts;
-  }
-}
+export const revalidate = 60;
 
 export default async function HomePage() {
   const products = await getProducts();
+  const flashSaleProducts = products.filter(p => p.isFlashSale);
+  const featuredProducts = products.slice(0, 10);
+  const popularProducts = products.slice(5, 15);
 
   const organizationSchema = {
     '@context': 'https://schema.org',
@@ -137,180 +40,196 @@ export default async function HomePage() {
       addressLocality: 'Dhaka',
       postalCode: '1205',
       addressCountry: 'BD'
-    },
-    contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: '+880-1700-000000',
-      contactType: 'customer service',
-      areaServed: 'BD',
-      availableLanguage: ['en', 'bn']
     }
   };
 
   return (
-    <div className="space-y-10 pb-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 pb-16">
+      
       {/* Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
 
-      {/* Hero Section */}
-      <div className="container pt-4">
-        <HeroCarousel />
-      </div>
+      {/* 9 & 10. HERO AREA (Carousel + Stacked Promo Cards) */}
+      <HeroCarousel />
 
-      {/* Trust Badges */}
-      <div className="container">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="flex items-center space-x-4 border-r border-gray-100 last:border-0 pr-4">
-            <div className="w-12 h-12 bg-blue-50 text-[#3749bb] rounded-full flex items-center justify-center flex-shrink-0">
-              <Truck className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-[#081621]">Fast Delivery</h3>
-              <p className="text-xs text-gray-500">Same day in Dhaka, 48h across BD</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 border-r border-gray-100 last:border-0 pr-4">
-            <div className="w-12 h-12 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center flex-shrink-0">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-[#081621]">100% Authentic</h3>
-              <p className="text-xs text-gray-500">Official brand warranty product</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 border-r border-gray-100 last:border-0 pr-4">
-            <div className="w-12 h-12 bg-green-50 text-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <Clock className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-[#081621]">0% EMI Facility</h3>
-              <p className="text-xs text-gray-500">Up to 36 months on 30+ banks</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <HelpCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-[#081621]">Expert Tech Support</h3>
-              <p className="text-xs text-gray-500">Dedicated desktop & laptop team</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 11. FLASH SALE SECTION */}
+      <FlashSaleSection products={products} />
 
-      {/* Featured Category Section - Requirement: 8 Items Row */}
-      <section className="container">
-        <div className="text-center mb-6">
-          <span className="text-xs font-bold text-[#ea580c] tracking-widest uppercase bg-orange-50 px-3 py-1 rounded-full inline-block mb-2">
-            Explore Categories
-          </span>
-          <h2 className="text-2xl font-extrabold text-[#081621]">Featured Category</h2>
-          <p className="text-sm text-gray-500 mt-1">Get Your Desired Product from Featured Category!</p>
-        </div>
+      {/* 13. FEATURED CATEGORIES SECTION */}
+      <FeaturedCategoriesSection />
 
-        <div className="featured-categories-grid">
-          {featuredCategories.map((cat) => {
-            const Icon = cat.icon;
-            return (
-              <Link
-                key={cat.id}
-                href={`/${cat.slug}`}
-                className={`group flex flex-col items-center justify-center p-4 rounded-xl border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${cat.color}`}
-              >
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-xs text-[#081621] group-hover:text-[#3749bb] text-center line-clamp-1">
-                  {cat.title}
-                </h3>
-                <span className="text-[10px] text-gray-400 mt-0.5">{cat.count}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Featured Products Section - Requirement: 5 Items Row */}
-      <section className="container">
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 border-b pb-4">
+      {/* 14. FEATURED PRODUCTS (5 per row desktop, 3 tablet, 2 mobile, 1 small) */}
+      <section>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-slate-200 pb-4">
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#ea580c]" />
-              <h2 className="text-2xl font-extrabold text-[#081621]">Featured Products</h2>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Featured Products</h2>
             </div>
-            <p className="text-sm text-gray-500 mt-1">Check & Get Your Desired Product!</p>
+            <p className="text-xs text-slate-500 mt-1">Check & Get Your Desired Product!</p>
           </div>
           <Link
-            href="/component"
-            className="mt-3 sm:mt-0 text-xs font-bold text-[#3749bb] hover:text-[#ea580c] hover:underline flex items-center"
+            href="/products"
+            className="mt-3 sm:mt-0 text-xs font-bold text-[#2563eb] hover:text-[#ea580c] flex items-center gap-1 transition-colors"
           >
-            View All Products &rarr;
+            <span>View All Products</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
 
-        {/* 5 column row on large screens */}
-        <div className="featured-products-grid">
-          {products.slice(0, 10).map((product) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {featuredProducts.map((product) => (
             <ProductCard key={product.id || product._id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* SEO & FAQ Accordion Section */}
-      <section className="container">
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm space-y-6">
-          <div className="border-b pb-4">
-            <h2 className="text-xl font-extrabold text-[#081621] mb-2">
-              Leading Tech & Computer Shop in Bangladesh - TechCore
-            </h2>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              TechCore is Bangladesh’s premier retail and online computer store, offering custom PC building, gaming laptops, 
-              high-performance graphics cards, processors, monitors, and official tech accessories. Whether you are building 
-              a budget workstation or an extreme liquid-cooled gaming rig, TechCore provides 100% genuine components with official 
-              manufacturer warranty, fast nationwide shipping, and flexible 0% EMI financing.
-            </p>
-          </div>
-
+      {/* POPULAR PRODUCTS SECTION */}
+      <section>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-slate-200 pb-4">
           <div>
-            <h3 className="text-base font-bold text-[#081621] mb-4">Frequently Asked Questions (FAQ)</h3>
-            <div className="space-y-4">
-              <details className="group border rounded-lg p-4 bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex items-center justify-between font-bold text-xs text-[#081621] cursor-pointer">
-                  <span>How can I place an order online at TechCore?</span>
-                  <span className="ml-2 text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
-                </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Browse your desired laptop or component, click "Buy Now" to proceed straight to checkout or "Add Cart" to add multiple items, fill in your delivery details, choose cash on delivery or digital payment, and submit your order.
-                </p>
-              </details>
-
-              <details className="group border rounded-lg p-4 bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex items-center justify-between font-bold text-xs text-[#081621] cursor-pointer">
-                  <span>Does TechCore provide official brand warranty in Bangladesh?</span>
-                  <span className="ml-2 text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
-                </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Yes! All products sold at TechCore are 100% authentic and carry official manufacturer warranty served directly through our authorized service centers across Bangladesh.
-                </p>
-              </details>
-
-              <details className="group border rounded-lg p-4 bg-gray-50 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex items-center justify-between font-bold text-xs text-[#081621] cursor-pointer">
-                  <span>How does the PC Builder tool work?</span>
-                  <span className="ml-2 text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
-                </summary>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Our custom PC Builder lets you select compatible CPU, Motherboard, RAM, GPU, Storage, and PSU step-by-step with real-time total price calculation, wattage estimates, and one-click add to cart or print quotation features.
-                </p>
-              </details>
+            <div className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-red-600" />
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Popular Products</h2>
             </div>
+            <p className="text-xs text-slate-500 mt-1">Top Selling Electronics & Components in Bangladesh</p>
+          </div>
+          <Link
+            href="/products"
+            className="mt-3 sm:mt-0 text-xs font-bold text-[#2563eb] hover:text-[#ea580c] flex items-center gap-1 transition-colors"
+          >
+            <span>Explore Store</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {popularProducts.map((product) => (
+            <ProductCard key={product.id || product._id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      {/* GAMING ZONE / PROMOTIONAL BANNER */}
+      <section className="bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 text-white rounded-2xl p-8 md:p-12 relative overflow-hidden shadow-2xl border border-purple-800/30">
+        <div className="max-w-xl relative z-10 space-y-4">
+          <span className="bg-purple-600 text-white text-xs font-extrabold uppercase px-3 py-1 rounded-full tracking-wider inline-flex items-center gap-1">
+            <Gamepad2 size={14} /> TechCore Gaming Zone
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">
+            Build Your Ultimate RTX 4090 Liquid-Cooled BattleStation
+          </h2>
+          <p className="text-xs md:text-sm text-purple-200 leading-relaxed font-sans">
+            Get expert guidance from TechCore PC building specialists. Official warranties, 0% EMI financing, and custom cable management.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/pc-builder"
+              className="bg-[#ea580c] hover:bg-orange-700 text-white text-xs md:text-sm font-bold px-6 py-3 rounded-full inline-flex items-center gap-2 shadow-lg hover:scale-105 transition-all"
+            >
+              <span>Launch PC Builder</span>
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>
+
+      {/* PC BUILDER CTA SECTION */}
+      <section className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        <div className="md:col-span-2 space-y-2">
+          <div className="flex items-center gap-2 text-[#2563eb] font-bold text-xs uppercase tracking-wider">
+            <Wrench size={16} /> Custom Rig Configurator
+          </div>
+          <h2 className="text-2xl font-black text-slate-900">
+            Build Your Custom PC with Real-Time Compatibility Check
+          </h2>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Select your CPU, Motherboard, GPU, RAM, Storage, and Power Supply step-by-step. Get wattage estimates and instant invoice printing!
+          </p>
+        </div>
+        <div className="flex md:justify-end">
+          <Link
+            href="/pc-builder"
+            className="w-full md:w-auto bg-[#2563eb] hover:bg-blue-700 text-white text-sm font-extrabold px-6 py-3.5 rounded-xl text-center shadow-lg transition-all hover:scale-105"
+          >
+            Start Building Now →
+          </Link>
+        </div>
+      </section>
+
+      {/* WHY CHOOSE TECHCORE (Trust Badges) */}
+      <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#2563eb] flex items-center justify-center flex-shrink-0">
+            <Truck size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-slate-900">Fast Nationwide Delivery</h4>
+            <p className="text-xs text-slate-500">Express delivery across all 64 districts in BD</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#ea580c] flex items-center justify-center flex-shrink-0">
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-slate-900">100% Authentic Products</h4>
+            <p className="text-xs text-slate-500">Official manufacturer warranty guaranteed</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+            <Clock size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-slate-900">0% EMI Facilities</h4>
+            <p className="text-xs text-slate-500">Up to 36 months EMI on 30+ leading banks</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+            <Headphones size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-slate-900">Expert Technical Support</h4>
+            <p className="text-xs text-slate-500">Dedicated hardware team ready to assist</p>
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICE / WARRANTY CTA */}
+      <section className="bg-slate-900 text-white rounded-2xl p-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="space-y-2">
+          <span className="text-emerald-400 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+            <Award size={14} /> Official Support
+          </span>
+          <h3 className="text-2xl font-black text-white">Need Warranty Claim or Device Repair?</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            TechCore Service Center offers fast serial warranty lookup, official claim processing, and component diagnostic services.
+          </p>
+        </div>
+        <div className="flex flex-wrap md:justify-end gap-3">
+          <Link
+            href="/warranty"
+            className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-5 py-3 rounded-xl border border-slate-700"
+          >
+            Check Warranty Policy
+          </Link>
+          <Link
+            href="/service-center"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md"
+          >
+            Submit Service Request
+          </Link>
+        </div>
+      </section>
+
     </div>
   );
 }

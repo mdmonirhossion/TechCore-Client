@@ -2,64 +2,104 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { Cpu, Phone, Mail, MapPin, ShieldCheck, Share2, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="footer">
-      <div className="container">
+    <footer className="bg-white border-t border-slate-200 pt-12 pb-6 text-slate-800 font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="footer-grid">
+        {/* Footer Top Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-slate-200">
           
-          <div>
-            <div className="logo-brand" style={{ marginBottom: '1rem' }}>
-              <span style={{ color: '#ea580c', fontWeight: 900 }}>Tech</span>
-              <span style={{ color: '#0f172a', fontWeight: 900 }}>Core</span>
-            </div>
-            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6, marginBottom: '1rem' }}>
-              TechCore BD is Bangladesh's premier technology e-commerce portal providing official warranty laptops, desktop computers, graphics cards, processors, and smart gadgets.
+          {/* Brand Info */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white">
+                <Cpu size={20} className="stroke-[2.5]" />
+              </div>
+              <div className="text-xl font-black tracking-tight">
+                <span className="text-slate-900">TECH</span>
+                <span className="text-orange-600">CORE</span>
+              </div>
+            </Link>
+            <p className="text-xs text-slate-500 leading-relaxed max-w-sm">
+              TechCore is Bangladesh's premier technology e-commerce destination for gaming laptops, custom desktop PCs, graphics cards, processors, monitors, and official tech accessories.
             </p>
-            <div style={{ fontSize: '0.84rem', color: '#0f172a', fontWeight: 700 }}>
-              Hotline: 01700-000000 | Support: support@techcorebd.com
+            <div className="space-y-2 text-xs text-slate-700 font-semibold pt-1">
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-orange-600" />
+                <span>Hotline: 01700-000000 (9 AM - 8 PM)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail size={14} className="text-blue-600" />
+                <span>Email: support@techcorebd.com</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="text-emerald-600" />
+                <span>Multiplan Center, New Elephant Road, Dhaka-1205</span>
+              </div>
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h4 className="footer-title">Popular Categories</h4>
-            <ul className="footer-links">
-              <li><Link href="/gpu">NVIDIA & AMD Graphics Cards</Link></li>
-              <li><Link href="/processor">Intel & AMD Processors</Link></li>
-              <li><Link href="/laptop">Gaming & Business Laptops</Link></li>
-              <li><Link href="/monitor">4K & 144Hz Gaming Monitors</Link></li>
-              <li><Link href="/ram">DDR4 & DDR5 Desktop RAM</Link></li>
+            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
+              Customer Service
+            </h4>
+            <ul className="space-y-2 text-xs text-slate-600">
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Warranty Claim</Link></li>
+              <li><Link href="/service-center" className="hover:text-orange-600 hover:underline">Service Center</Link></li>
+              <li><Link href="/track-order" className="hover:text-orange-600 hover:underline">Track Your Order</Link></li>
+              <li><Link href="/my-orders" className="hover:text-orange-600 hover:underline">My Orders</Link></li>
+              <li><Link href="/pc-builder" className="hover:text-orange-600 hover:underline">PC Builder Tool</Link></li>
+              <li><Link href="/laptop-finder" className="hover:text-orange-600 hover:underline">Laptop Finder</Link></li>
             </ul>
           </div>
 
+          {/* Popular Categories */}
           <div>
-            <h4 className="footer-title">Customer Support</h4>
-            <ul className="footer-links">
-              <li><Link href="/page/about">About Us</Link></li>
-              <li><Link href="/page/contact">Contact Us</Link></li>
-              <li><Link href="/outlets">Store Outlets & Locations</Link></li>
-              <li><Link href="/emi">EMI Facilities & Calculator</Link></li>
-              <li><Link href="/page/warranty">Warranty Policy</Link></li>
+            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
+              Popular Categories
+            </h4>
+            <ul className="space-y-2 text-xs text-slate-600">
+              <li><Link href="/category/laptop" className="hover:text-orange-600 hover:underline">Gaming Laptop</Link></li>
+              <li><Link href="/category/desktop" className="hover:text-orange-600 hover:underline">Desktop PC</Link></li>
+              <li><Link href="/category/gpu" className="hover:text-orange-600 hover:underline">Graphics Card</Link></li>
+              <li><Link href="/category/monitor" className="hover:text-orange-600 hover:underline">Gaming Monitor</Link></li>
+              <li><Link href="/category/processor" className="hover:text-orange-600 hover:underline">Processor</Link></li>
+              <li><Link href="/category/ram" className="hover:text-orange-600 hover:underline">RAM Memory</Link></li>
+              <li><Link href="/category/storage" className="hover:text-orange-600 hover:underline">SSD Storage</Link></li>
             </ul>
           </div>
 
+          {/* Information & Policies */}
           <div>
-            <h4 className="footer-title">Policies & Info</h4>
-            <ul className="footer-links">
-              <li><Link href="/page/privacy-policy">Privacy Policy</Link></li>
-              <li><Link href="/page/terms">Terms & Conditions</Link></li>
-              <li><Link href="/page/refund-policy">Refund & Return Policy</Link></li>
-              <li><Link href="/page/online-delivery">Online Delivery System</Link></li>
-              <li><Link href="/page/point-policy">Star Point Policy</Link></li>
+            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
+              About & Policies
+            </h4>
+            <ul className="space-y-2 text-xs text-slate-600">
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">About TechCore</Link></li>
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Warranty Policy</Link></li>
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Delivery Information</Link></li>
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Return & Refund Policy</Link></li>
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Privacy Policy</Link></li>
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Terms & Conditions</Link></li>
             </ul>
           </div>
 
         </div>
 
-        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', textAlign: 'center', fontSize: '0.82rem', color: '#94a3b8' }}>
-          © {new Date().getFullYear()} TechCore Computer & Electronics BD. All Rights Reserved. Powered by TechCore Engine.
+        {/* Footer Bottom */}
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div>
+            © 2026 TechCore. All rights reserved. Premium Electronics & Computer Store Bangladesh.
+          </div>
+          <div className="flex items-center gap-3 text-slate-400">
+            <span className="flex items-center gap-1 hover:text-blue-600 transition-colors cursor-pointer">
+              <Globe size={14} /> English / বাংলা
+            </span>
+          </div>
         </div>
 
       </div>
