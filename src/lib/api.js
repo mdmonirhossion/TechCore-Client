@@ -77,10 +77,12 @@ export async function getProductBySlug(slugOrId) {
     }
   } catch (e) {}
 
-  // Fallback to MOCK_PRODUCTS if backend API is unreachable or product not found in DB
+  // Fallback to MOCK_PRODUCTS with intelligent keyword token matching
   try {
     const { MOCK_PRODUCTS } = require('@/data/mock-products');
     const target = String(slugOrId).toLowerCase().trim();
+
+    // 1. Exact match on slug, id, _id
     const exact = MOCK_PRODUCTS.find(p => 
       (p.slug && p.slug.toLowerCase() === target) ||
       (p.id && String(p.id).toLowerCase() === target) ||
@@ -88,12 +90,40 @@ export async function getProductBySlug(slugOrId) {
     );
     if (exact) return exact;
 
-    // Fuzzy matching by name slug
-    const fuzzy = MOCK_PRODUCTS.find(p => {
+    // 2. Exact match on name slug
+    const exactNameSlug = MOCK_PRODUCTS.find(p => {
       const nameSlug = (p.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      return nameSlug === target || (p.slug && p.slug.toLowerCase().includes(target)) || (p.slug && target.includes(p.slug.toLowerCase()));
+      return nameSlug === target;
+    });
+    if (exactNameSlug) return exactNameSlug;
+
+    // 3. Substring inclusion match
+    const fuzzy = MOCK_PRODUCTS.find(p => {
+      const pSlug = (p.slug || '').toLowerCase();
+      return (pSlug && pSlug.includes(target)) || (pSlug && target.includes(pSlug));
     });
     if (fuzzy) return fuzzy;
+
+    // 4. Smart keyword token overlap matching
+    const targetTokens = target.split(/[-_\s]+/).filter(w => w.length > 1);
+    let bestMatch = null;
+    let maxOverlap = 0;
+
+    MOCK_PRODUCTS.forEach(p => {
+      const prodStr = `${p.slug || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''}`.toLowerCase();
+      let overlap = 0;
+      targetTokens.forEach(token => {
+        if (prodStr.includes(token)) overlap++;
+      });
+      if (overlap > maxOverlap) {
+        maxOverlap = overlap;
+        bestMatch = p;
+      }
+    });
+
+    if (bestMatch && maxOverlap >= 2) {
+      return bestMatch;
+    }
   } catch (err) {}
 
   return null;

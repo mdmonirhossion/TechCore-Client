@@ -833,7 +833,7 @@ export const MOCK_PRODUCTS = [
     id: 'prod-123',
     _id: 'prod-123',
     name: 'Microsoft Windows 11 Pro 64-Bit Lifetime Retail License Key',
-    slug: 'microsoft-windows-11-pro-retail-license-key',
+    slug: 'microsoft-windows-11-pro-64-bit-retail-license-key',
     brand: 'Microsoft',
     category: 'software',
     price: 2500,
