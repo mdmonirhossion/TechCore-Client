@@ -3,13 +3,13 @@ import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/api';
 import { MOCK_CATEGORIES } from '@/data/mock-products';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, PackageX } from 'lucide-react';
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const catObj = MOCK_CATEGORIES.find(c => c.slug === slug);
+  const catObj = MOCK_CATEGORIES.find(c => c.slug.toLowerCase() === slug.toLowerCase());
   const catTitle = catObj ? catObj.title : slug.toUpperCase();
 
   return {
@@ -22,30 +22,37 @@ export default async function CategoryPage({ params }) {
   const { slug } = await params;
   const allProducts = await getProducts();
 
-  const categoryObj = MOCK_CATEGORIES.find(c => c.slug === slug);
+  const categoryObj = MOCK_CATEGORIES.find(c => c.slug.toLowerCase() === slug.toLowerCase());
   const categoryTitle = categoryObj ? categoryObj.title : slug.toUpperCase();
 
-  const categoryProducts = allProducts.filter(p =>
-    p.category.toLowerCase() === slug.toLowerCase() ||
-    (slug === 'gpu' && p.category === 'gpu') ||
-    (slug === 'processor' && p.category === 'processor') ||
-    (slug === 'laptop' && p.category === 'laptop') ||
-    (slug === 'desktop' && p.category === 'desktop') ||
-    (slug === 'monitor' && p.category === 'monitor')
-  );
+  const slugNorm = slug.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  const displayList = categoryProducts.length > 0 ? categoryProducts : allProducts.slice(0, 8);
+  // Strict category matching - NEVER fallback to random products from other categories!
+  const categoryProducts = allProducts.filter(p => {
+    if (!p.category) return false;
+    const catNorm = p.category.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    if (catNorm === slugNorm || catNorm.includes(slugNorm) || slugNorm.includes(catNorm)) return true;
+    if (slugNorm === 'psu' && (catNorm.includes('power') || catNorm.includes('psu'))) return true;
+    if (slugNorm === 'gpu' && (catNorm.includes('graphics') || catNorm.includes('gpu') || catNorm.includes('card'))) return true;
+    if (slugNorm === 'processor' && (catNorm.includes('cpu') || catNorm.includes('processor'))) return true;
+    if (slugNorm === 'ram' && (catNorm.includes('memory') || catNorm.includes('ram'))) return true;
+    if (slugNorm === 'storage' && (catNorm.includes('ssd') || catNorm.includes('hdd') || catNorm.includes('storage'))) return true;
+    if (slugNorm === 'casing' && (catNorm.includes('case') || catNorm.includes('casing'))) return true;
+    if (slugNorm === 'smartwatch' && (catNorm.includes('watch') || catNorm.includes('smart'))) return true;
+    return false;
+  });
 
   return (
     <div className="w-full max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
       {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-xs text-slate-500 pb-2 border-b border-slate-200">
+      <nav className="flex items-center space-x-2 text-xs text-slate-500 pb-2 border-b border-slate-200 dark:border-slate-800">
         <Link href="/" className="hover:text-orange-600">Home</Link>
         <ChevronRight className="w-3 h-3 text-slate-400" />
         <Link href="/products" className="hover:text-orange-600">Categories</Link>
         <ChevronRight className="w-3 h-3 text-slate-400" />
-        <span className="font-semibold text-slate-900 capitalize">{categoryTitle}</span>
+        <span className="font-semibold text-slate-900 dark:text-white capitalize">{categoryTitle}</span>
       </nav>
 
       {/* Header Banner */}
@@ -60,16 +67,34 @@ export default async function CategoryPage({ params }) {
           </p>
         </div>
         <div className="text-xs font-extrabold bg-orange-600 text-white px-4 py-2 rounded-xl shadow-md">
-          {displayList.length} Items Found
+          {categoryProducts.length} Items Found
         </div>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {displayList.map(product => (
-          <ProductCard key={product.id || product._id} product={product} />
-        ))}
-      </div>
+      {/* Product Grid or Clean Empty State */}
+      {categoryProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {categoryProducts.map(product => (
+            <ProductCard key={product.id || product._id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4">
+          <div className="w-16 h-16 bg-orange-50 dark:bg-slate-800 text-orange-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+            <PackageX size={28} />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No products found in {categoryTitle}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            Currently there are no active products under this category in MongoDB database.
+          </p>
+          <Link
+            href="/products"
+            className="inline-block bg-[#ea580c] hover:bg-orange-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md transition-colors"
+          >
+            Explore All Catalog Products
+          </Link>
+        </div>
+      )}
 
     </div>
   );
