@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Pagination from '@/components/Pagination';
 import { getProducts } from '@/lib/api';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
-import { Filter, SlidersHorizontal, ArrowUpDown, X } from 'lucide-react';
+import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
+import { Filter, SlidersHorizontal, ArrowUpDown, X, Loader2 } from 'lucide-react';
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -16,7 +16,10 @@ function ProductsContent() {
   const initialSearch = searchParams.get('search') || '';
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
 
-  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
+  // 100% Clean state - loads strictly from Backend MongoDB
+  const [allProducts, setAllProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [selectedCategories, setSelectedCategories] = useState(initialCategory ? [initialCategory] : []);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [priceRange, setPriceRange] = useState(300000);
@@ -28,14 +31,21 @@ function ProductsContent() {
 
   const itemsPerPage = 12;
 
-  // Fetch full products list dynamically from backend API (with fallback to mock dataset)
+  // Fetch products strictly from Node.js / Express + MongoDB Backend
   useEffect(() => {
     let isMounted = true;
-    getProducts().then(data => {
-      if (isMounted && Array.isArray(data) && data.length > 0) {
-        setAllProducts(data);
-      }
-    });
+    setIsLoading(true);
+    getProducts()
+      .then(data => {
+        if (isMounted) {
+          setAllProducts(Array.isArray(data) ? data : []);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
     return () => { isMounted = false; };
   }, []);
 
@@ -154,7 +164,9 @@ function ProductsContent() {
             {initialSearch ? `Search Results for "${initialSearch}"` : 'All Computer & Electronics Products'}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Showing Page {currentPage} of {totalPages || 1} ({filteredProducts.length} products available)
+            {isLoading
+              ? 'Fetching products from MongoDB Server...'
+              : `Showing Page ${currentPage} of ${totalPages || 1} (${filteredProducts.length} MongoDB products available)`}
           </p>
         </div>
 
@@ -282,7 +294,12 @@ function ProductsContent() {
 
         {/* Product Grid & Pagination */}
         <div className="lg:col-span-3 flex flex-col justify-between">
-          {paginatedProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center space-y-3">
+              <Loader2 size={32} className="text-orange-600 animate-spin mx-auto" />
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Loading products from MongoDB Backend...</h3>
+            </div>
+          ) : paginatedProducts.length > 0 ? (
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {paginatedProducts.map(product => (
@@ -304,9 +321,9 @@ function ProductsContent() {
               <div className="w-16 h-16 bg-orange-50 dark:bg-slate-800 text-orange-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
                 !
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">No products found</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">No products found in MongoDB database</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                Try changing your filters, clearing your search keywords, or selecting a different category.
+                Make sure your Express server is running and database seed script has finished uploading products.
               </p>
               <button
                 onClick={resetFilters}
