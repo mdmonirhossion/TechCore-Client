@@ -593,5 +593,391 @@ export const MOCK_PRODUCTS = [
       'Speed': '3200MHz',
       'Latency': 'CL16'
     }
+  },
+  {
+    id: 'prod-117',
+    _id: 'prod-117',
+    name: 'TechCore Ultimate Ryzen 7 7800X3D RTX 4070 Ti Super Custom Gaming Desktop PC',
+    slug: 'techcore-ultimate-ryzen-7-rtx-4070ti-super-gaming-pc',
+    brand: 'AMD',
+    category: 'desktop',
+    price: 210000,
+    discountPrice: 189999,
+    images: [
+      'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop'
+    ],
+    rating: 5.0,
+    reviewsCount: 14,
+    stock: 5,
+    warranty: '3 Years Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳20,001 (-10%)',
+    keyFeatures: [
+      'AMD Ryzen 7 7800X3D 8-Core Processor',
+      'GeForce RTX 4070 Ti Super 16GB GDDR6X',
+      '32GB DDR5 6000MHz RGB RAM + 1TB Gen4 NVMe SSD',
+      '360mm ARGB Liquid Cooler & 850W 80+ Gold PSU'
+    ],
+    specifications: {
+      'Processor': 'AMD Ryzen 7 7800X3D',
+      'GPU': 'RTX 4070 Ti Super 16GB',
+      'RAM': '32GB DDR5 6000MHz',
+      'Storage': '1TB PCIe 4.0 NVMe SSD',
+      'Cooler': '360mm AIO Liquid Cooler'
+    }
+  },
+  {
+    id: 'prod-118',
+    _id: 'prod-118',
+    name: 'Apple MacBook Air 15-inch M3 Chip 8GB RAM 256GB SSD Space Grey',
+    slug: 'apple-macbook-air-15-inch-m3-8gb-256gb-space-grey',
+    brand: 'Apple',
+    category: 'laptop',
+    price: 165000,
+    discountPrice: 154999,
+    images: [
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.9,
+    reviewsCount: 38,
+    stock: 10,
+    warranty: '1 Year International Warranty',
+    isFlashSale: false,
+    isFeatured: true,
+    badge: 'Save ৳10,001 (-6%)',
+    keyFeatures: [
+      'Apple M3 Chip with 8-core CPU and 10-core GPU',
+      '15.3" Liquid Retina Display with True Tone',
+      'Up to 18 Hours Battery Life',
+      'MagSafe 3 Charging Port + Dual Thunderbolt'
+    ],
+    specifications: {
+      'Brand': 'Apple',
+      'Chip': 'Apple M3',
+      'Display': '15.3-inch Liquid Retina',
+      'RAM': '8GB Unified Memory',
+      'Storage': '256GB SSD'
+    }
+  },
+  {
+    id: 'prod-119',
+    _id: 'prod-119',
+    name: 'Apple Watch Series 9 GPS 45mm Midnight Aluminum Case with Sport Band',
+    slug: 'apple-watch-series-9-gps-45mm-midnight-aluminum',
+    brand: 'Apple',
+    category: 'smartwatch',
+    price: 49000,
+    discountPrice: 43500,
+    images: [
+      'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.8,
+    reviewsCount: 26,
+    stock: 12,
+    warranty: '1 Year Official Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳5,500 (-11%)',
+    keyFeatures: [
+      'S9 SiP with Double Tap Gesture Control',
+      'Always-On Retina display up to 2000 nits',
+      'ECG App & Blood Oxygen Sensor',
+      'Crash Detection & Fall Detection'
+    ],
+    specifications: {
+      'Brand': 'Apple',
+      'Model': 'Series 9 GPS',
+      'Case Size': '45mm',
+      'Display': 'Always-On Retina LTPO OLED'
+    }
+  },
+  {
+    id: 'prod-120',
+    _id: 'prod-120',
+    name: 'Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)',
+    slug: 'apple-airpods-pro-2nd-generation-usbc',
+    brand: 'Apple',
+    category: 'earbuds',
+    price: 28500,
+    discountPrice: 24999,
+    images: [
+      'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.9,
+    reviewsCount: 54,
+    stock: 22,
+    warranty: '1 Year Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳3,501 (-12%)',
+    keyFeatures: [
+      'H2 Chip powering Active Noise Cancellation',
+      'Adaptive Audio & Transparency Mode',
+      'Personalized Spatial Audio with Dynamic Head Tracking',
+      'Up to 30 Hours Total Listening Time'
+    ],
+    specifications: {
+      'Brand': 'Apple',
+      'Model': 'AirPods Pro 2 (USB-C)',
+      'Chip': 'Apple H2 Headphone Chip',
+      'Case': 'MagSafe Charging Case (USB-C)'
+    }
+  },
+  {
+    id: 'prod-121',
+    _id: 'prod-121',
+    name: 'HyperX QuadCast S RGB USB Condenser Microphone for PC & PS5',
+    slug: 'hyperx-quadcast-s-rgb-usb-condenser-microphone',
+    brand: 'HyperX',
+    category: 'accessories',
+    price: 18500,
+    discountPrice: 15800,
+    images: [
+      'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.8,
+    reviewsCount: 31,
+    stock: 14,
+    warranty: '2 Years Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳2,700 (-15%)',
+    keyFeatures: [
+      'Dynamic RGB Lighting Effects Customizable via NGENUITY',
+      'Anti-Vibration Shock Mount Included',
+      'Tap-to-Mute Sensor with LED Status Indicator',
+      '4 Selectable Polar Patterns (Stereo, Omnidirectional, Cardioid, Bidirectional)'
+    ],
+    specifications: {
+      'Brand': 'HyperX',
+      'Model': 'QuadCast S',
+      'Connection': 'USB-C to USB-A',
+      'Polar Patterns': '4 Selectable Patterns'
+    }
+  },
+  {
+    id: 'prod-122',
+    _id: 'prod-122',
+    name: 'Hikvision DS-2CV2Q21FD-IW 2MP Outdoor PT Security WiFi IP Camera',
+    slug: 'hikvision-2mp-outdoor-pt-security-wifi-camera',
+    brand: 'Hikvision',
+    category: 'camera',
+    price: 4500,
+    discountPrice: 3799,
+    images: [
+      'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.7,
+    reviewsCount: 42,
+    stock: 30,
+    warranty: '1 Year Warranty',
+    isFlashSale: false,
+    isFeatured: false,
+    badge: 'Save ৳701 (-16%)',
+    keyFeatures: [
+      '1080P Full HD Image Quality with Night Vision',
+      '355° Pan and 90° Tilt Remote Control via Mobile App',
+      'Two-Way Audio with Built-in Mic & Speaker',
+      'Motion Detection Alert and MicroSD Card Slot up to 256GB'
+    ],
+    specifications: {
+      'Brand': 'Hikvision',
+      'Model': 'DS-2CV2Q21FD-IW',
+      'Resolution': '2MP (1920x1080)',
+      'Storage': 'MicroSD up to 256GB'
+    }
+  },
+  {
+    id: 'prod-123',
+    _id: 'prod-123',
+    name: 'Microsoft Windows 11 Pro 64-Bit Lifetime Retail License Key',
+    slug: 'microsoft-windows-11-pro-retail-license-key',
+    brand: 'Microsoft',
+    category: 'software',
+    price: 2500,
+    discountPrice: 1499,
+    images: [
+      'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.9,
+    reviewsCount: 88,
+    stock: 100,
+    warranty: 'Lifetime Digital Activation',
+    isFlashSale: true,
+    isFeatured: false,
+    badge: 'Save ৳1,001 (-40%)',
+    keyFeatures: [
+      '100% Genuine Retail Digital License Key',
+      'Lifetime Activation with Official Microsoft Updates',
+      'BitLocker Encryption & Hyper-V Virtualization',
+      'Instant Email & SMS Delivery within 10 Minutes'
+    ],
+    specifications: {
+      'Publisher': 'Microsoft',
+      'OS Version': 'Windows 11 Pro 64-Bit',
+      'License Type': 'Retail Digital Activation'
+    }
+  },
+  {
+    id: 'prod-124',
+    _id: 'prod-124',
+    name: 'KOORUI 24E4 24 Inch 165Hz FHD 1ms Gaming Monitor',
+    slug: 'koorui-24e4-24-inch-165hz-fhd-gaming-monitor',
+    brand: 'KOORUI',
+    category: 'monitor',
+    price: 15500,
+    discountPrice: 13499,
+    images: [
+      'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.7,
+    reviewsCount: 45,
+    stock: 18,
+    warranty: '3 Years Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳2,001 (-13%)',
+    keyFeatures: [
+      '24" Full HD (1920x1080) Ultra-thin Bezel Panel',
+      '165Hz Refresh Rate & 1ms MPRT Response Time',
+      'FreeSync & G-Sync Compatible',
+      'HDMI 1.4 + DisplayPort 1.2 Ports'
+    ],
+    specifications: {
+      'Brand': 'KOORUI',
+      'Model': '24E4',
+      'Refresh Rate': '165Hz',
+      'Panel': 'VA Anti-glare',
+      'Ports': 'DP 1.2, HDMI 1.4'
+    }
+  },
+  {
+    id: 'prod-125',
+    _id: 'prod-125',
+    name: 'Gigabyte GeForce RTX 4080 SUPER GAMING OC 16GB GDDR6X Graphics Card',
+    slug: 'gigabyte-geforce-rtx-4080-super-gaming-oc-16g-gpu',
+    brand: 'Gigabyte',
+    category: 'gpu',
+    price: 142000,
+    discountPrice: 129999,
+    images: [
+      'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop'
+    ],
+    rating: 5.0,
+    reviewsCount: 12,
+    stock: 4,
+    warranty: '3 Years Warranty',
+    isFlashSale: false,
+    isFeatured: true,
+    badge: 'Save ৳12,001 (-8%)',
+    keyFeatures: [
+      '16GB GDDR6X 256-bit Memory Interface',
+      'WINDFORCE Cooling System with 3x 110mm Fans',
+      'RGB Fusion 2.0 Customizable Lighting',
+      'Dual BIOS (Performance / Silent Mode)'
+    ],
+    specifications: {
+      'Brand': 'Gigabyte',
+      'Model': 'RTX 4080 SUPER GAMING OC',
+      'VRAM': '16GB GDDR6X',
+      'Recommended PSU': '850W'
+    }
+  },
+  {
+    id: 'prod-126',
+    _id: 'prod-126',
+    name: 'Intel 14th Gen Core i9-14900K 24-Core Flagship Processor',
+    slug: 'intel-14th-gen-core-i9-14900k-processor',
+    brand: 'Intel',
+    category: 'processor',
+    price: 72000,
+    discountPrice: 65999,
+    images: [
+      'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.9,
+    reviewsCount: 22,
+    stock: 6,
+    warranty: '3 Years Warranty',
+    isFlashSale: false,
+    isFeatured: true,
+    badge: 'Save ৳6,001 (-8%)',
+    keyFeatures: [
+      '24 Cores (8 P-Cores + 16 E-Cores), 32 Threads',
+      'Up to 6.0 GHz Thermal Velocity Boost',
+      '36MB Intel Smart Cache',
+      'Intel UHD Graphics 770 Integrated'
+    ],
+    specifications: {
+      'Brand': 'Intel',
+      'Model': 'Core i9-14900K',
+      'Socket': 'LGA1700',
+      'Max Turbo Frequency': '6.00 GHz'
+    }
+  },
+  {
+    id: 'prod-127',
+    _id: 'prod-127',
+    name: 'Logitech G PRO X SUPERLIGHT 2 Wireless Gaming Mouse Magenta',
+    slug: 'logitech-g-pro-x-superlight-2-wireless-mouse',
+    brand: 'Logitech',
+    category: 'accessories',
+    price: 16500,
+    discountPrice: 14500,
+    images: [
+      'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.9,
+    reviewsCount: 35,
+    stock: 16,
+    warranty: '2 Years Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳2,000 (-12%)',
+    keyFeatures: [
+      'Ultra-lightweight design under 60 grams',
+      'HERO 2 Sensor with 32,000 DPI Tracking',
+      'LIGHTFORCE Hybrid Optical-Mechanical Switches',
+      'Up to 95 Hours Battery Life per Charge'
+    ],
+    specifications: {
+      'Brand': 'Logitech G',
+      'Model': 'PRO X SUPERLIGHT 2',
+      'Sensor': 'HERO 2 32K DPI',
+      'Weight': '60g'
+    }
+  },
+  {
+    id: 'prod-128',
+    _id: 'prod-128',
+    name: 'Kaspersky Total Security 2026 1 User 1 Year License',
+    slug: 'kaspersky-total-security-1-user-1-year',
+    brand: 'Kaspersky',
+    category: 'software',
+    price: 1200,
+    discountPrice: 899,
+    images: [
+      'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=800&auto=format&fit=crop'
+    ],
+    rating: 4.8,
+    reviewsCount: 65,
+    stock: 50,
+    warranty: '1 Year License',
+    isFlashSale: false,
+    isFeatured: false,
+    badge: 'Save ৳301 (-25%)',
+    keyFeatures: [
+      'Real-time Antivirus & Anti-Ransomware Protection',
+      'Safe Money Encryption for Online Banking',
+      'Includes Premium VPN & Password Manager'
+    ],
+    specifications: {
+      'Publisher': 'Kaspersky',
+      'Users': '1 Device / 1 Year',
+      'Delivery': 'Digital License Code'
+    }
   }
 ];
+

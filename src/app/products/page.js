@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Pagination from '@/components/Pagination';
+import { getProducts } from '@/lib/api';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
 import { Filter, SlidersHorizontal, ArrowUpDown, X } from 'lucide-react';
 
@@ -15,9 +16,10 @@ function ProductsContent() {
   const initialSearch = searchParams.get('search') || '';
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
 
+  const [allProducts, setAllProducts] = useState(MOCK_PRODUCTS);
   const [selectedCategories, setSelectedCategories] = useState(initialCategory ? [initialCategory] : []);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [priceRange, setPriceRange] = useState(200000);
+  const [priceRange, setPriceRange] = useState(300000);
   const [minRating, setMinRating] = useState(0);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState('featured');
@@ -25,6 +27,17 @@ function ProductsContent() {
   const [currentPage, setCurrentPage] = useState(initialPage > 0 ? initialPage : 1);
 
   const itemsPerPage = 12;
+
+  // Fetch full products list dynamically from backend API (with fallback to mock dataset)
+  useEffect(() => {
+    let isMounted = true;
+    getProducts().then(data => {
+      if (isMounted && Array.isArray(data) && data.length > 0) {
+        setAllProducts(data);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // Sync category filter & page from query params
   const [prevCategory, setPrevCategory] = useState(initialCategory);
@@ -42,47 +55,48 @@ function ProductsContent() {
   }, [searchParams]);
 
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter(product => {
+    return allProducts.filter(product => {
       // Search term filter
       if (initialSearch) {
         const q = initialSearch.toLowerCase();
-        const matchesSearch = product.name.toLowerCase().includes(q) ||
-                              product.brand.toLowerCase().includes(q) ||
-                              product.category.toLowerCase().includes(q);
+        const matchesSearch = (product.name && product.name.toLowerCase().includes(q)) ||
+                              (product.brand && product.brand.toLowerCase().includes(q)) ||
+                              (product.category && product.category.toLowerCase().includes(q));
         if (!matchesSearch) return false;
       }
 
-      // Category filter
+      // Category filter (case-insensitive)
       if (selectedCategories.length > 0) {
-        if (!selectedCategories.includes(product.category.toLowerCase())) {
-          return false;
-        }
+        const productCat = product.category ? product.category.toLowerCase() : '';
+        const matchesCategory = selectedCategories.some(c => c.toLowerCase() === productCat);
+        if (!matchesCategory) return false;
       }
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        if (!selectedBrands.includes(product.brand.toUpperCase())) {
+        const productBrand = product.brand ? product.brand.toUpperCase() : '';
+        if (!selectedBrands.includes(productBrand)) {
           return false;
         }
       }
 
       // Price filter
-      const currentPrice = product.discountPrice || product.price;
+      const currentPrice = product.discountPrice || product.price || 0;
       if (currentPrice > priceRange) return false;
 
       // Rating filter
-      if (minRating > 0 && product.rating < minRating) return false;
+      if (minRating > 0 && (product.rating || 0) < minRating) return false;
 
       // Stock filter
-      if (inStockOnly && product.stock <= 0) return false;
+      if (inStockOnly && (product.stock || 0) <= 0) return false;
 
       return true;
     }).sort((a, b) => {
-      const priceA = a.discountPrice || a.price;
-      const priceB = b.discountPrice || b.price;
+      const priceA = a.discountPrice || a.price || 0;
+      const priceB = b.discountPrice || b.price || 0;
       if (sortBy === 'price-low') return priceA - priceB;
       if (sortBy === 'price-high') return priceB - priceA;
-      if (sortBy === 'rating') return b.rating - a.rating;
+      if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
       if (sortBy === 'discount') {
         const discA = a.price && a.discountPrice ? a.price - a.discountPrice : 0;
         const discB = b.price && b.discountPrice ? b.price - b.discountPrice : 0;
@@ -90,7 +104,7 @@ function ProductsContent() {
       }
       return 0;
     });
-  }, [selectedCategories, selectedBrands, priceRange, minRating, inStockOnly, sortBy, initialSearch]);
+  }, [allProducts, selectedCategories, selectedBrands, priceRange, minRating, inStockOnly, sortBy, initialSearch]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
@@ -123,7 +137,7 @@ function ProductsContent() {
   const resetFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
-    setPriceRange(200000);
+    setPriceRange(300000);
     setMinRating(0);
     setInStockOnly(false);
     setSortBy('featured');
@@ -140,7 +154,7 @@ function ProductsContent() {
             {initialSearch ? `Search Results for "${initialSearch}"` : 'All Computer & Electronics Products'}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Showing Page {currentPage} of {totalPages || 1} ({filteredProducts.length} items total)
+            Showing Page {currentPage} of {totalPages || 1} ({filteredProducts.length} products available)
           </p>
         </div>
 
@@ -198,7 +212,7 @@ function ProductsContent() {
             <input
               type="range"
               min="5000"
-              max="200000"
+              max="300000"
               step="5000"
               value={priceRange}
               onChange={(e) => {
@@ -209,7 +223,7 @@ function ProductsContent() {
             />
             <div className="flex justify-between text-[10px] text-slate-400 font-bold">
               <span>৳5,000</span>
-              <span>৳2,00,000</span>
+              <span>৳3,00,000</span>
             </div>
           </div>
 
@@ -221,7 +235,7 @@ function ProductsContent() {
                 <label key={cat.id} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
                   <input
                     type="checkbox"
-                    checked={selectedCategories.includes(cat.slug)}
+                    checked={selectedCategories.some(c => c.toLowerCase() === cat.slug.toLowerCase())}
                     onChange={() => toggleCategory(cat.slug)}
                     className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                   />
@@ -324,7 +338,7 @@ function ProductsContent() {
                 <input
                   type="range"
                   min="5000"
-                  max="200000"
+                  max="300000"
                   step="5000"
                   value={priceRange}
                   onChange={(e) => {
@@ -342,7 +356,7 @@ function ProductsContent() {
                     <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(cat.slug)}
+                        checked={selectedCategories.some(c => c.toLowerCase() === cat.slug.toLowerCase())}
                         onChange={() => toggleCategory(cat.slug)}
                         className="rounded border-slate-300 text-orange-600"
                       />
