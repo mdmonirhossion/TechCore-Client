@@ -80,11 +80,11 @@ export const CATEGORIES_LIST = [
   { title: 'Casing', slug: 'casing' },
   { title: 'Networking', slug: 'networking' },
   { title: 'Accessories', slug: 'accessories' },
-  { title: 'Gaming', slug: 'accessories' },
-  { title: 'Mobile', slug: 'accessories' },
+  { title: 'Gaming', slug: 'gaming' },
+  { title: 'Mobile', slug: 'mobile' },
   { title: 'Smart Watch', slug: 'smartwatch' },
   { title: 'Camera', slug: 'camera' },
-  { title: 'Office', slug: 'accessories' },
+  { title: 'Office', slug: 'office' },
   { title: 'Software', slug: 'software' }
 ];
 

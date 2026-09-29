@@ -40,6 +40,10 @@ export default async function CategoryPage({ params }) {
     if (slugNorm === 'storage' && (catNorm.includes('ssd') || catNorm.includes('hdd') || catNorm.includes('storage'))) return true;
     if (slugNorm === 'casing' && (catNorm.includes('case') || catNorm.includes('casing'))) return true;
     if (slugNorm === 'smartwatch' && (catNorm.includes('watch') || catNorm.includes('smart'))) return true;
+    if (slugNorm === 'mobile' && (catNorm.includes('mobile') || catNorm.includes('phone') || catNorm.includes('earbud') || catNorm.includes('smartwatch'))) return true;
+    if (slugNorm === 'gaming' && (catNorm.includes('gaming') || catNorm.includes('gear') || catNorm.includes('gpu'))) return true;
+    if (slugNorm === 'office' && (catNorm.includes('office') || catNorm.includes('accessories') || catNorm.includes('software'))) return true;
+    if (slugNorm === 'accessories' && (catNorm.includes('accessories') || catNorm.includes('gear') || catNorm.includes('mic') || catNorm.includes('mouse'))) return true;
     return false;
   });
 
