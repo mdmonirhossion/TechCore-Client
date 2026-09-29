@@ -24,12 +24,35 @@ export async function getProducts(params = {}) {
     const queryString = queryParams.toString();
     const url = `${API_BASE_URL}/api/products${queryString ? `?${queryString}` : ''}`;
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`Backend API returned HTTP ${res.status}`);
-    const data = await res.json();
-    const list = Array.isArray(data) ? data : (data.products || []);
-    return list;
+    if (res.ok) {
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : (data.products || []);
+      if (list.length > 0) return list;
+    }
   } catch (err) {
-    console.error('❌ Failed to fetch products from MongoDB Backend:', err.message);
+    // Quiet fallback to mock data when backend API is offline
+  }
+
+  try {
+    const { MOCK_PRODUCTS } = require('@/data/mock-products');
+    let filtered = [...MOCK_PRODUCTS];
+    if (params.category) {
+      const cat = String(params.category).toLowerCase();
+      filtered = filtered.filter(p => (p.category || '').toLowerCase() === cat);
+    }
+    if (params.brand) {
+      const b = String(params.brand).toLowerCase();
+      filtered = filtered.filter(p => (p.brand || '').toLowerCase() === b);
+    }
+    if (params.isFeatured === 'true' || params.isFeatured === true) {
+      filtered = filtered.filter(p => p.isFeatured);
+    }
+    if (params.search) {
+      const q = String(params.search).toLowerCase();
+      filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q));
+    }
+    return filtered;
+  } catch (e) {
     return [];
   }
 }
@@ -52,11 +75,28 @@ export async function getProductBySlug(slugOrId) {
       const data = await res.json();
       if (data && (data.slug || data.id || data._id)) return data;
     }
-    return null;
-  } catch (e) {
-    console.error('❌ Failed to fetch single product from MongoDB Backend:', e.message);
-    return null;
-  }
+  } catch (e) {}
+
+  // Fallback to MOCK_PRODUCTS if backend API is unreachable or product not found in DB
+  try {
+    const { MOCK_PRODUCTS } = require('@/data/mock-products');
+    const target = String(slugOrId).toLowerCase().trim();
+    const exact = MOCK_PRODUCTS.find(p => 
+      (p.slug && p.slug.toLowerCase() === target) ||
+      (p.id && String(p.id).toLowerCase() === target) ||
+      (p._id && String(p._id).toLowerCase() === target)
+    );
+    if (exact) return exact;
+
+    // Fuzzy matching by name slug
+    const fuzzy = MOCK_PRODUCTS.find(p => {
+      const nameSlug = (p.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      return nameSlug === target || (p.slug && p.slug.toLowerCase().includes(target)) || (p.slug && target.includes(p.slug.toLowerCase()));
+    });
+    if (fuzzy) return fuzzy;
+  } catch (err) {}
+
+  return null;
 }
 
 /**
@@ -68,12 +108,16 @@ export async function getFeaturedProducts() {
     if (res.ok) {
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.products || []);
-      return list;
+      if (list.length > 0) return list;
     }
+  } catch (e) {}
+
+  try {
+    const { MOCK_PRODUCTS } = require('@/data/mock-products');
+    return MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 10);
   } catch (e) {
-    console.error('❌ Failed to fetch featured products from MongoDB Backend:', e.message);
+    return [];
   }
-  return [];
 }
 
 /**
@@ -84,15 +128,19 @@ export async function getFlashSaleProducts() {
     const res = await fetch(`${API_BASE_URL}/api/offers/flash-sale`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (data && data.products && Array.isArray(data.products)) {
-        return data.products;
-      }
-      if (Array.isArray(data)) return data;
+      let list = [];
+      if (data && data.products && Array.isArray(data.products)) list = data.products;
+      else if (Array.isArray(data)) list = data;
+      if (list.length > 0) return list;
     }
+  } catch (e) {}
+
+  try {
+    const { MOCK_PRODUCTS } = require('@/data/mock-products');
+    return MOCK_PRODUCTS.filter(p => p.isFlashSale);
   } catch (e) {
-    console.error('❌ Failed to fetch flash sale products from MongoDB Backend:', e.message);
+    return [];
   }
-  return [];
 }
 
 /**

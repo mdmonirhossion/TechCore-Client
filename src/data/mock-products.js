@@ -34,6 +34,44 @@ export const MOCK_BRANDS = [
 
 export const MOCK_PRODUCTS = [
   {
+    id: 'prod-099',
+    _id: 'prod-099',
+    name: 'TechCore Ultimate AMD Ryzen 7 7800X3D RTX 4070 Ti Super 16GB Custom Gaming Rig',
+    slug: 'techcore-ultimate-ryzen-7-7800x3d-rtx-4070-ti-super-custom-rig',
+    brand: 'ASUS',
+    category: 'desktop',
+    price: 245000,
+    discountPrice: 228999,
+    images: [
+      'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop'
+    ],
+    rating: 5.0,
+    reviewsCount: 18,
+    stock: 5,
+    warranty: '3 Years Comprehensive Warranty',
+    isFlashSale: true,
+    isFeatured: true,
+    badge: 'Save ৳16,001 (-7%)',
+    keyFeatures: [
+      'AMD Ryzen 7 7800X3D Processor with 3D V-Cache Technology',
+      'NVIDIA GeForce RTX 4070 Ti Super 16GB GDDR6X Graphics Card',
+      '32GB DDR5 6000MHz Dual Channel ARGB RAM',
+      '1TB PCIe 4.0 NVMe M.2 SSD (7300MB/s Read)',
+      '360mm ARGB Liquid Cooler & 850W 80+ Gold Full Modular PSU'
+    ],
+    specifications: {
+      'Processor': 'AMD Ryzen 7 7800X3D (8 Cores, 16 Threads, up to 5.0GHz)',
+      'Motherboard': 'ASUS ROG Strix B650-A Gaming WiFi',
+      'RAM': 'G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6000MHz',
+      'Graphics Card': 'ZOTAC Gaming GeForce RTX 4070 Ti Super Trinity OC 16GB',
+      'Storage': 'Samsung 990 Pro 1TB PCIe 4.0 NVMe M.2 SSD',
+      'CPU Cooler': 'DeepCool LT720 360mm ARGB Liquid CPU Cooler',
+      'Power Supply': 'Corsair RM850e 850W 80+ Gold Fully Modular ATX 3.0',
+      'Casing': 'Lian Li O11 Dynamic EVO Mid-Tower Gaming Case'
+    }
+  },
+  {
     id: 'prod-101',
     _id: 'prod-101',
     name: 'ASUS VY229HF 21.45" 100Hz FHD IPS Eye Care Gaming Monitor',

@@ -38,7 +38,18 @@ function ProductsContent() {
     getProducts()
       .then(data => {
         if (isMounted) {
-          setAllProducts(Array.isArray(data) ? data : []);
+          if (Array.isArray(data) && data.length > 0) {
+            setAllProducts(data);
+          } else {
+            const { MOCK_PRODUCTS } = require('@/data/mock-products');
+            setAllProducts(MOCK_PRODUCTS);
+          }
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          const { MOCK_PRODUCTS } = require('@/data/mock-products');
+          setAllProducts(MOCK_PRODUCTS);
         }
       })
       .finally(() => {

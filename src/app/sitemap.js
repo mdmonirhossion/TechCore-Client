@@ -8,9 +8,15 @@ export default async function sitemap() {
     if (res.ok) {
       const data = await res.json();
       products = Array.isArray(data) ? data : (data.products || []);
+    } else {
+      const { MOCK_PRODUCTS } = require('@/data/mock-products');
+      products = MOCK_PRODUCTS;
     }
   } catch (e) {
-    console.error('Error generating sitemap products:', e);
+    try {
+      const { MOCK_PRODUCTS } = require('@/data/mock-products');
+      products = MOCK_PRODUCTS;
+    } catch (err) {}
   }
 
   const productUrls = products.map((product) => {
