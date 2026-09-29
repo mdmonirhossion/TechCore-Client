@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
-import { ShoppingBag, Scale, ArrowUp } from 'lucide-react';
+import { ShoppingBag, Scale, ArrowUp, Sun, Moon } from 'lucide-react';
 
 export default function FloatingActions() {
-  const { cart, compareItems } = useShop();
+  const { cart, compareItems, theme, toggleTheme } = useShop();
   const [mounted, setMounted] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -46,6 +46,23 @@ export default function FloatingActions() {
         </button>
       )}
 
+      {/* FLOATING THEME TOGGLE BUTTON */}
+      <button
+        onClick={toggleTheme}
+        aria-label="Toggle Dark/Light Theme"
+        title={mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        className="relative bg-[#0f172a] hover:bg-amber-600 text-white w-14 h-14 rounded-xl flex flex-col items-center justify-center shadow-2xl transition-all transform hover:scale-105 border border-slate-700/50 group"
+      >
+        {mounted && theme === 'dark' ? (
+          <Sun className="w-5 h-5 text-amber-400 group-hover:text-white transition-colors" />
+        ) : (
+          <Moon className="w-5 h-5 text-slate-200 group-hover:text-white transition-colors" />
+        )}
+        <span className="text-[10px] font-extrabold tracking-tight mt-0.5">
+          {mounted && theme === 'dark' ? 'Light' : 'Dark'}
+        </span>
+      </button>
+
       {/* MONARCH IT COMPARE FLOATING BUTTON */}
       <Link
         href="/compare"
@@ -74,4 +91,5 @@ export default function FloatingActions() {
     </div>
   );
 }
+
 

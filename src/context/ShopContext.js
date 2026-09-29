@@ -25,6 +25,7 @@ export function ShopProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
   const [coupon, setCoupon] = useState({ code: '', discount: 0 });
+  const [theme, setTheme] = useState('light');
   const [isHydrated, setIsHydrated] = useState(false);
 
   const [builderSlots, setBuilderSlots] = useState({
@@ -39,15 +40,37 @@ export function ShopProvider({ children }) {
       const savedWishlist = safeStorageParse('techcore_wishlist', []);
       const savedUser = safeStorageParse('techcore_user', null);
       const savedToken = typeof window !== 'undefined' ? (localStorage.getItem('techcore_token') || '') : '';
+      const savedTheme = typeof window !== 'undefined' ? (localStorage.getItem('techcore_theme') || 'light') : 'light';
 
       setCart(savedCart);
       setWishlist(savedWishlist);
       setUser(savedUser);
       setToken(savedToken);
+      setTheme(savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
       setIsHydrated(true);
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const nextTheme = prev === 'dark' ? 'light' : 'dark';
+      if (nextTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      try {
+        localStorage.setItem('techcore_theme', nextTheme);
+      } catch (e) {}
+      return nextTheme;
+    });
+  };
 
   // Save changes to localStorage
   useEffect(() => {
@@ -236,12 +259,15 @@ export function ShopProvider({ children }) {
       user,
       token,
       loginUser,
-      logoutUser
+      logoutUser,
+      theme,
+      toggleTheme
     }}>
       {children}
     </ShopContext.Provider>
   );
 }
+
 
 export function useShop() {
   return useContext(ShopContext);

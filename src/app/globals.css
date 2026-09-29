@@ -19,7 +19,63 @@
   --font-body: 'Urbanist', sans-serif;
 }
 
+html.dark {
+  --bg-secondary: #0f172a;
+  --bg-card: #1e293b;
+  --border-color: #334155;
+  --border-color-dark: #475569;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  color-scheme: dark;
+}
 
+html.dark body {
+  background-color: #0b0f19;
+  color: #f8fafc;
+}
+
+/* Dark mode global component overrides */
+html.dark .product-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .product-title {
+  color: #f1f5f9 !important;
+}
+
+html.dark .product-img-box {
+  background-color: #0f172a !important;
+}
+
+html.dark .modal-content {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .footer {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html.dark .footer-title {
+  color: #f8fafc !important;
+}
+
+html.dark .footer-links {
+  color: #94a3b8 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
 
 html, body {
   overflow-x: hidden !important;
@@ -33,6 +89,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

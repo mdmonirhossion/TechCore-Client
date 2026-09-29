@@ -28,7 +28,9 @@ import {
   Server,
   Database,
   MemoryStick,
-  Box
+  Box,
+  Sun,
+  Moon
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -88,7 +90,7 @@ export const CATEGORIES_LIST = [
 
 export default function Navbar() {
   const router = useNextRouter();
-  const { cart, wishlist, compareItems, user } = useShop();
+  const { cart, wishlist, compareItems, user, theme, toggleTheme } = useShop();
 
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -312,6 +314,20 @@ export default function Navbar() {
             )}
           </Link>
 
+          {/* Theme Toggle Button (Sun / Moon) */}
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-orange-600 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-md group"
+            title={mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle Theme"
+          >
+            {mounted && theme === 'dark' ? (
+              <Sun size={20} className="text-amber-400 group-hover:text-white transition-colors" />
+            ) : (
+              <Moon size={20} className="text-slate-200 group-hover:text-white transition-colors" />
+            )}
+          </button>
+
           {/* PC Builder Button */}
           <Link
             href="/pc-builder"
@@ -342,14 +358,14 @@ export default function Navbar() {
       </div>
 
       {/* 7. MEGA CATEGORY NAVIGATION */}
-      <nav className="hidden lg:block bg-white border-y border-slate-200">
-        <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800">
+      <nav className="hidden lg:block bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 transition-colors">
+        <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800 dark:text-slate-200">
           {CATEGORIES_LIST.map((cat, index) => {
             const hasSub = cat.subcategories && cat.subcategories.length > 0;
             return (
               <div
                 key={index}
-                className="relative group py-3.5 hover:text-orange-600 border-b-2 border-transparent hover:border-orange-600 transition-colors cursor-pointer"
+                className="relative group py-3.5 hover:text-orange-600 dark:hover:text-orange-400 border-b-2 border-transparent hover:border-orange-600 transition-colors cursor-pointer"
                 onMouseEnter={() => setActiveHoverCategory(cat.title)}
                 onMouseLeave={() => setActiveHoverCategory(null)}
               >
@@ -360,17 +376,17 @@ export default function Navbar() {
 
                 {/* Dropdown Flyout */}
                 {hasSub && activeHoverCategory === cat.title && (
-                  <div className="absolute left-0 top-full mt-0 bg-white border border-slate-200 rounded-b-xl shadow-2xl p-6 min-w-[500px] z-50 grid grid-cols-2 gap-6 text-slate-800 font-normal">
+                  <div className="absolute left-0 top-full mt-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-b-xl shadow-2xl p-6 min-w-[500px] z-50 grid grid-cols-2 gap-6 text-slate-800 dark:text-slate-200 font-normal">
                     {cat.subcategories.map((sub, sIdx) => (
                       <div key={sIdx} className="space-y-2">
-                        <h5 className="font-bold text-xs text-slate-900 border-b pb-1 flex items-center gap-1">
+                        <h5 className="font-bold text-xs text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 flex items-center gap-1">
                           <ChevronRight size={12} className="text-orange-600" />
                           {sub.title}
                         </h5>
-                        <ul className="space-y-1 text-xs text-slate-600">
+                        <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
                           {sub.items.map((item, iIdx) => (
                             <li key={iIdx}>
-                              <Link href={`/category/${cat.slug}?filter=${encodeURIComponent(item)}`} className="hover:text-orange-600 hover:underline block py-0.5">
+                              <Link href={`/category/${cat.slug}?filter=${encodeURIComponent(item)}`} className="hover:text-orange-600 dark:hover:text-orange-400 hover:underline block py-0.5">
                                 {item}
                               </Link>
                             </li>
@@ -390,18 +406,30 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="relative bg-white w-4/5 max-w-sm h-full shadow-2xl p-6 flex flex-col overflow-y-auto z-10 text-slate-900">
-            <div className="flex items-center justify-between border-b pb-4 mb-4">
+          <div className="relative bg-white dark:bg-slate-900 w-4/5 max-w-sm h-full shadow-2xl p-6 flex flex-col overflow-y-auto z-10 text-slate-900 dark:text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
               <div className="flex items-center gap-2 font-black text-xl">
-                <span className="text-slate-900">TECH</span>
+                <span className="text-slate-900 dark:text-white">TECH</span>
                 <span className="text-orange-600">CORE</span>
               </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded text-slate-500 hover:text-slate-900">
+              <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded text-slate-500 hover:text-slate-900 dark:hover:text-white">
                 <X size={20} />
               </button>
             </div>
 
             <div className="space-y-3 flex-1">
+              {/* Theme Toggle in Mobile Drawer */}
+              <button
+                onClick={toggleTheme}
+                className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold px-4 py-2.5 rounded-lg flex items-center justify-between transition-colors border border-slate-200 dark:border-slate-700"
+              >
+                <span className="flex items-center gap-2">
+                  {mounted && theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
+                  <span>{mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                </span>
+                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">{mounted ? theme : ''}</span>
+              </button>
+
               <Link href="/pc-builder" onClick={() => setMobileMenuOpen(false)} className="bg-blue-600 text-white font-bold px-4 py-2.5 rounded-lg flex items-center gap-2">
                 <Wrench size={16} /> PC Builder
               </Link>
@@ -412,7 +440,7 @@ export default function Navbar() {
                   key={idx}
                   href={`/category/${cat.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2 border-b border-slate-100 text-sm font-semibold text-slate-700 hover:text-orange-600"
+                  className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-orange-600"
                 >
                   <span>{cat.title}</span>
                   <ChevronRight size={14} className="text-slate-400" />
@@ -426,3 +454,4 @@ export default function Navbar() {
     </header>
   );
 }
+
