@@ -170,12 +170,16 @@ export async function getCategories() {
     const res = await fetch(`${API_BASE_URL}/api/categories`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) return data;
+      if (Array.isArray(data) && data.length > 0) return data;
     }
+  } catch (e) {}
+
+  try {
+    const { MOCK_CATEGORIES } = require('@/data/mock-products');
+    return MOCK_CATEGORIES;
   } catch (e) {
-    console.error('❌ Failed to fetch categories from MongoDB Backend:', e.message);
+    return [];
   }
-  return [];
 }
 
 /**
@@ -186,12 +190,16 @@ export async function getBrands() {
     const res = await fetch(`${API_BASE_URL}/api/brands`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) return data;
+      if (Array.isArray(data) && data.length > 0) return data;
     }
+  } catch (e) {}
+
+  try {
+    const { MOCK_BRANDS } = require('@/data/mock-products');
+    return MOCK_BRANDS;
   } catch (e) {
-    console.error('❌ Failed to fetch brands from MongoDB Backend:', e.message);
+    return [];
   }
-  return [];
 }
 
 // Authentication APIs
