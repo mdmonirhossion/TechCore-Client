@@ -1,11 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, Scale, Search } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Scale } from 'lucide-react';
 import { MOCK_PRODUCTS } from '@/data/mock-products';
+
+// Swiper React Components & Modules
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation, Pagination, EffectFade } from 'swiper/modules';
+
+// Swiper CSS
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 
 const bannerSlides = [
   {
@@ -42,28 +52,9 @@ const bannerSlides = [
 
 export default function HeroCarousel() {
   const router = useRouter();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [prod1, setProd1] = useState('');
   const [prod2, setProd2] = useState('');
-
-  useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % bannerSlides.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [isPaused]);
-
-  const slide = bannerSlides[currentSlide];
-
-  const handlePrev = () => {
-    setCurrentSlide(prev => (prev === 0 ? bannerSlides.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentSlide(prev => (prev + 1) % bannerSlides.length);
-  };
+  const swiperRef = useRef(null);
 
   const handleCompareSubmit = (e) => {
     e.preventDefault();
@@ -77,80 +68,93 @@ export default function HeroCarousel() {
   return (
     <div className="w-full max-w-[1320px] mx-auto my-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
       
-      {/* LEFT MAIN BANNER CAROUSEL (3 cols on lg desktop) */}
-      <div
-        className="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-xl text-white min-h-[380px] md:min-h-[420px] flex items-center p-6 md:p-10 transition-all duration-500 group"
-        style={{ background: slide.bgGradient }}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center w-full z-10">
-          
-          {/* Left Text */}
-          <div className="space-y-4">
-            <span className="inline-block bg-[#ea580c] text-white text-[11px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-sm">
-              {slide.tag}
-            </span>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">
-              {slide.title}
-            </h1>
-            <p className="text-xs md:text-sm text-slate-200 leading-relaxed font-sans">
-              {slide.subtitle}
-            </p>
-            <div>
-              <Link
-                href={slide.link}
-                className="inline-flex items-center gap-2 bg-[#ea580c] hover:bg-orange-700 text-white font-bold text-xs md:text-sm px-6 py-3 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all hover:scale-105"
+      {/* LEFT MAIN BANNER CAROUSEL powered by Swiper JS */}
+      <div className="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-xl text-white group border border-slate-800/40">
+        <Swiper
+          modules={[Autoplay, Navigation, Pagination, EffectFade]}
+          effect="fade"
+          fadeEffect={{ crossFade: true }}
+          loop={true}
+          speed={700}
+          autoplay={{
+            delay: 4500,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          pagination={{
+            clickable: true,
+            el: '.hero-swiper-pagination',
+            bulletActiveClass: '!w-8 !bg-[#e11d48]',
+            bulletClass: 'inline-block h-2.5 w-2.5 rounded-full bg-white/50 cursor-pointer transition-all duration-300 mx-1',
+          }}
+          onBeforeInit={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          className="w-full h-full min-h-[380px] md:min-h-[420px]"
+        >
+          {bannerSlides.map((slide) => (
+            <SwiperSlide key={slide.id} className="h-full">
+              <div
+                className="w-full h-full min-h-[380px] md:min-h-[420px] flex items-center p-6 md:p-10 relative"
+                style={{ background: slide.bgGradient }}
               >
-                <span>{slide.linkText}</span>
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center w-full z-10">
+                  {/* Left Text */}
+                  <div className="space-y-4">
+                    <span className="inline-block bg-[#ea580c] text-white text-[11px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-sm">
+                      {slide.tag}
+                    </span>
+                    <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">
+                      {slide.title}
+                    </h1>
+                    <p className="text-xs md:text-sm text-slate-200 leading-relaxed font-sans">
+                      {slide.subtitle}
+                    </p>
+                    <div>
+                      <Link
+                        href={slide.link}
+                        className="inline-flex items-center gap-2 bg-[#ea580c] hover:bg-orange-700 text-white font-bold text-xs md:text-sm px-6 py-3 rounded-full shadow-lg hover:shadow-orange-500/30 transition-all hover:scale-105"
+                      >
+                        <span>{slide.linkText}</span>
+                        <ArrowRight size={16} />
+                      </Link>
+                    </div>
+                  </div>
 
-          {/* Right Image */}
-          <div className="relative w-full h-48 md:h-72 flex items-center justify-center">
-            <Image
-              src={slide.img}
-              alt={slide.title}
-              fill
-              priority
-              className="object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105"
-            />
-          </div>
+                  {/* Right Image */}
+                  <div className="relative w-full h-48 md:h-72 flex items-center justify-center">
+                    <Image
+                      src={slide.img}
+                      alt={slide.title}
+                      fill
+                      priority
+                      className="object-contain drop-shadow-2xl transition-all duration-700 hover:scale-105"
+                    />
+                  </div>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-        </div>
-
-        {/* Carousel Navigation Buttons */}
+        {/* Custom Navigation Arrows */}
         <button
-          onClick={handlePrev}
+          onClick={() => swiperRef.current?.slidePrev()}
           className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all z-20"
           aria-label="Previous Slide"
         >
           <ChevronLeft size={22} />
         </button>
         <button
-          onClick={handleNext}
+          onClick={() => swiperRef.current?.slideNext()}
           className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-orange-600 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all z-20"
           aria-label="Next Slide"
         >
           <ChevronRight size={22} />
         </button>
 
-        {/* Dots (Red/White like Monarch IT) */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-          {bannerSlides.map((s, idx) => (
-            <button
-              key={s.id}
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-2.5 rounded-full transition-all ${
-                idx === currentSlide ? 'w-8 bg-[#e11d48]' : 'w-2.5 bg-white/50 hover:bg-white'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-
+        {/* Custom Pagination Bullets Container */}
+        <div className="hero-swiper-pagination absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20" />
       </div>
 
       {/* RIGHT SIDEBAR: MONARCH IT COMPARE WIDGET & PROMO BANNER */}
@@ -226,7 +230,7 @@ export default function HeroCarousel() {
           <div className="relative z-10 mt-3">
             <Link
               href="/category/accessories"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-white hover:bg-amber-300 px-3.5 py-1.5 rounded-lg shadow transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-white hover:bg-amber-[#facc15] px-3.5 py-1.5 rounded-lg shadow transition-colors"
             >
               <span>Buy Now</span>
               <ArrowRight size={14} />
@@ -239,4 +243,5 @@ export default function HeroCarousel() {
     </div>
   );
 }
+
 
