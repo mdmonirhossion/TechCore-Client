@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
 import { getProducts, API_BASE_URL } from '@/lib/api';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
+import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
 import {
   LayoutDashboard,
   Package,
@@ -182,25 +182,22 @@ export default function AdminDashboardPage() {
     maintenanceMode: false
   });
 
-  // Fetch product list
-  useEffect(() => {
-    async function loadAdminData() {
-      try {
-        setLoadingProducts(true);
-        const data = await getProducts();
-        if (Array.isArray(data) && data.length > 0) {
-          setProductsList(data);
-        } else {
-          setProductsList(MOCK_PRODUCTS);
-        }
-      } catch (e) {
-        console.error('Admin data fetch error:', e);
-        setProductsList(MOCK_PRODUCTS);
-      } finally {
-        setLoadingProducts(false);
-      }
+  // Fetch product list strictly from server
+  const loadAdminProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      const data = await getProducts();
+      setProductsList(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Admin products fetch error:', e);
+      setProductsList([]);
+    } finally {
+      setLoadingProducts(false);
     }
-    loadAdminData();
+  };
+
+  useEffect(() => {
+    loadAdminProducts();
   }, []);
 
   // Filtered products list
@@ -294,67 +291,102 @@ export default function AdminDashboardPage() {
         },
         body: JSON.stringify(newProd)
       });
-      if (res.ok) {
-        const created = await res.json();
-        const finalProd = created.product || created;
-        setProductsList(prev => [finalProd, ...prev]);
-        MOCK_PRODUCTS.unshift(finalProd);
-      } else {
-        setProductsList(prev => [newProd, ...prev]);
-        MOCK_PRODUCTS.unshift(newProd);
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`❌ Failed to save product: ${data.message || 'Server error'}`);
+        return;
       }
-    } catch (err) {
-      setProductsList(prev => [newProd, ...prev]);
-      MOCK_PRODUCTS.unshift(newProd);
-    }
 
-    setShowAddModal(false);
-    // Reset form
-    setFormData({
-      name: '',
-      slug: '',
-      price: '',
-      discountPrice: '',
-      category: 'gpu',
-      brand: 'ASUS',
-      stock: '15',
-      warranty: '3 Years Official Warranty',
-      badge: 'New Arrival',
-      image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop',
-      extraImages: '',
-      keyFeaturesText: '',
-      specificationsText: '',
-      description: '',
-      isFlashSale: false,
-      isFeatured: true
-    });
-    alert('✅ Product successfully added to inventory!');
+      alert('✅ Product successfully created and saved to MongoDB Atlas!');
+      setShowAddModal(false);
+      // Reset form
+      setFormData({
+        name: '',
+        slug: '',
+        price: '',
+        discountPrice: '',
+        category: 'gpu',
+        brand: 'ASUS',
+        stock: '15',
+        warranty: '3 Years Official Warranty',
+        badge: 'New Arrival',
+        image: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop',
+        extraImages: '',
+        keyFeaturesText: '',
+        specificationsText: '',
+        description: '',
+        isFlashSale: false,
+        isFeatured: true
+      });
+      // Refetch full inventory from server
+      await loadAdminProducts();
+    } catch (err) {
+      alert(`❌ Network error while saving product: ${err.message}`);
+    }
   };
 
   const handleDeleteProduct = async (id) => {
     if (confirm('Are you sure you want to delete this product?')) {
       try {
-        await fetch(`${API_BASE_URL}/api/products/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           method: 'DELETE',
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
-      } catch (err) {}
-      setProductsList(prev => prev.filter(p => p.id !== id && p._id !== id));
+        const data = await res.json();
+        if (!res.ok) {
+          alert(`❌ Failed to delete product: ${data.message || 'Server error'}`);
+          return;
+        }
+        alert('✅ Product deleted successfully from MongoDB!');
+        await loadAdminProducts();
+      } catch (err) {
+        alert(`❌ Network error deleting product: ${err.message}`);
+      }
     }
   };
 
-  const toggleProductFlashSale = (id) => {
+  const toggleProductFlashSale = async (id) => {
+    const prod = productsList.find(p => (p.id || p._id) === id);
+    if (!prod) return;
+    const newStatus = !prod.isFlashSale;
     setProductsList(prev => prev.map(p => {
-      if ((p.id || p._id) === id) return { ...p, isFlashSale: !p.isFlashSale };
+      if ((p.id || p._id) === id) return { ...p, isFlashSale: newStatus };
       return p;
     }));
+    try {
+      await fetch(`${API_BASE_URL}/api/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ isFlashSale: newStatus })
+      });
+    } catch (err) {
+      console.error('Failed to sync flash sale status to server:', err);
+    }
   };
 
-  const toggleProductFeatured = (id) => {
+  const toggleProductFeatured = async (id) => {
+    const prod = productsList.find(p => (p.id || p._id) === id);
+    if (!prod) return;
+    const newStatus = !prod.isFeatured;
     setProductsList(prev => prev.map(p => {
-      if ((p.id || p._id) === id) return { ...p, isFeatured: !p.isFeatured };
+      if ((p.id || p._id) === id) return { ...p, isFeatured: newStatus };
       return p;
     }));
+    try {
+      await fetch(`${API_BASE_URL}/api/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ isFeatured: newStatus })
+      });
+    } catch (err) {
+      console.error('Failed to sync featured status to server:', err);
+    }
   };
 
   const handleAddCoupon = (e) => {

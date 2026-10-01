@@ -12,6 +12,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Fetch products list strictly from MongoDB Express Backend
+ * Fetches all products across pages (default limit 100) or accepts limit param
  */
 export async function getProducts(params = {}) {
   try {
@@ -21,112 +22,74 @@ export async function getProducts(params = {}) {
         queryParams.append(key, val);
       }
     });
-    const queryString = queryParams.toString();
-    const url = `${API_BASE_URL}/api/products${queryString ? `?${queryString}` : ''}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : (data.products || []);
-      if (list.length > 0) return list;
-    }
-  } catch (err) {
-    // Quiet fallback to mock data when backend API is offline
-  }
 
-  try {
-    const { MOCK_PRODUCTS } = require('@/data/mock-products');
-    let filtered = [...MOCK_PRODUCTS];
-    if (params.category) {
-      const cat = String(params.category).toLowerCase();
-      filtered = filtered.filter(p => (p.category || '').toLowerCase() === cat);
+    // Default limit to 100 to fetch complete inventory if limit not specified
+    if (!queryParams.has('limit')) {
+      queryParams.set('limit', '100');
     }
-    if (params.brand) {
-      const b = String(params.brand).toLowerCase();
-      filtered = filtered.filter(p => (p.brand || '').toLowerCase() === b);
+
+    const firstUrl = `${API_BASE_URL}/api/products?${queryParams.toString()}`;
+    const res = await fetch(firstUrl, { cache: 'no-store' });
+    if (!res.ok) {
+      return [];
     }
-    if (params.isFeatured === 'true' || params.isFeatured === true) {
-      filtered = filtered.filter(p => p.isFeatured);
+
+    const data = await res.json();
+    let allProducts = Array.isArray(data) ? data : (data.products || []);
+    const totalPages = Number(data.totalPages) || 1;
+
+    // If caller didn't ask for a specific page and there are multiple pages, fetch remaining pages
+    if (!params.page && totalPages > 1) {
+      for (let p = 2; p <= totalPages; p++) {
+        queryParams.set('page', p.toString());
+        const nextUrl = `${API_BASE_URL}/api/products?${queryParams.toString()}`;
+        const nextRes = await fetch(nextUrl, { cache: 'no-store' });
+        if (nextRes.ok) {
+          const nextData = await nextRes.json();
+          const nextList = Array.isArray(nextData) ? nextData : (nextData.products || []);
+          allProducts = allProducts.concat(nextList);
+        }
+      }
     }
-    if (params.search) {
-      const q = String(params.search).toLowerCase();
-      filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q));
-    }
-    return filtered;
-  } catch (e) {
+
+    return allProducts;
+  } catch (err) {
+    console.error('getProducts network error:', err.message);
     return [];
   }
 }
 
 /**
  * Fetch single product by slug or ID strictly from MongoDB Express Backend
+ * Calls GET /api/products/slug/:slug with cache: 'no-store', unwraps response.product,
+ * returns null on 404 (no mock fallback).
  */
 export async function getProductBySlug(slugOrId) {
   if (!slugOrId) return null;
+  const target = String(slugOrId).trim();
+
   try {
     // 1. Try slug endpoint on backend
-    let res = await fetch(`${API_BASE_URL}/api/products/slug/${encodeURIComponent(slugOrId)}`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (data.slug || data.id || data._id)) return data;
+    const slugUrl = `${API_BASE_URL}/api/products/slug/${encodeURIComponent(target.toLowerCase())}`;
+    const slugRes = await fetch(slugUrl, { cache: 'no-store' });
+    if (slugRes.ok) {
+      const data = await slugRes.json();
+      return data?.product || data || null;
     }
-    // 2. Try ID endpoint on backend
-    res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(slugOrId)}`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (data.slug || data.id || data._id)) return data;
+
+    // 2. If 404 on slug, also attempt lookup by ID in case an ID was passed
+    const idUrl = `${API_BASE_URL}/api/products/${encodeURIComponent(target)}`;
+    const idRes = await fetch(idUrl, { cache: 'no-store' });
+    if (idRes.ok) {
+      const idData = await idRes.json();
+      return idData?.product || idData || null;
     }
-  } catch (e) {}
 
-  // Fallback to MOCK_PRODUCTS with intelligent keyword token matching
-  try {
-    const { MOCK_PRODUCTS } = require('@/data/mock-products');
-    const target = String(slugOrId).toLowerCase().trim();
-
-    // 1. Exact match on slug, id, _id
-    const exact = MOCK_PRODUCTS.find(p => 
-      (p.slug && p.slug.toLowerCase() === target) ||
-      (p.id && String(p.id).toLowerCase() === target) ||
-      (p._id && String(p._id).toLowerCase() === target)
-    );
-    if (exact) return exact;
-
-    // 2. Exact match on name slug
-    const exactNameSlug = MOCK_PRODUCTS.find(p => {
-      const nameSlug = (p.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      return nameSlug === target;
-    });
-    if (exactNameSlug) return exactNameSlug;
-
-    // 3. Substring inclusion match
-    const fuzzy = MOCK_PRODUCTS.find(p => {
-      const pSlug = (p.slug || '').toLowerCase();
-      return (pSlug && pSlug.includes(target)) || (pSlug && target.includes(pSlug));
-    });
-    if (fuzzy) return fuzzy;
-
-    // 4. Smart keyword token overlap matching
-    const targetTokens = target.split(/[-_\s]+/).filter(w => w.length > 1);
-    let bestMatch = null;
-    let maxOverlap = 0;
-
-    MOCK_PRODUCTS.forEach(p => {
-      const prodStr = `${p.slug || ''} ${p.name || ''} ${p.category || ''} ${p.brand || ''}`.toLowerCase();
-      let overlap = 0;
-      targetTokens.forEach(token => {
-        if (prodStr.includes(token)) overlap++;
-      });
-      if (overlap > maxOverlap) {
-        maxOverlap = overlap;
-        bestMatch = p;
-      }
-    });
-
-    if (bestMatch && maxOverlap >= 2) {
-      return bestMatch;
-    }
-  } catch (err) {}
-
-  return null;
+    return null;
+  } catch (err) {
+    console.error(`getProductBySlug network error for "${slugOrId}":`, err.message);
+    return null;
+  }
 }
 
 /**

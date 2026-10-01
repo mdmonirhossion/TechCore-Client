@@ -5,7 +5,7 @@ import { getProductBySlug } from '@/lib/api';
 import ProductDetailsClient from '@/components/ProductDetailsClient';
 import { ChevronRight } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   try {

@@ -38,18 +38,13 @@ function ProductsContent() {
     getProducts()
       .then(data => {
         if (isMounted) {
-          if (Array.isArray(data) && data.length > 0) {
-            setAllProducts(data);
-          } else {
-            const { MOCK_PRODUCTS } = require('@/data/mock-products');
-            setAllProducts(MOCK_PRODUCTS);
-          }
+          setAllProducts(Array.isArray(data) ? data : []);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load products from server:', err);
         if (isMounted) {
-          const { MOCK_PRODUCTS } = require('@/data/mock-products');
-          setAllProducts(MOCK_PRODUCTS);
+          setAllProducts([]);
         }
       })
       .finally(() => {
