@@ -154,10 +154,15 @@ export default function CartPage() {
                 <span>Estimated Shipping</span>
                 <span className="text-xs text-gray-500">Calculated at Checkout</span>
               </div>
-              <div className="flex justify-between text-base font-extrabold text-[#081621] border-t pt-3">
-                <span>Total Amount</span>
+              <div className="flex justify-between items-center text-base font-extrabold text-[#081621] border-t pt-3">
+                <span className="flex items-center gap-1">
+                  Estimated Total <span className="text-[10px] bg-slate-100 text-slate-600 font-normal px-1.5 py-0.5 rounded border">(Display-only)</span>
+                </span>
                 <span className="text-[#ef4a23]">৳{finalTotal.toLocaleString()}</span>
               </div>
+              <p className="text-[10px] text-slate-400 italic">
+                * Note: Total shown is estimated. Final grandTotal will be calculated securely by the server at checkout.
+              </p>
             </div>
 
             <Link

@@ -12,6 +12,7 @@ function SuccessContent() {
   const { clearCart } = useShop();
 
   const orderId = searchParams.get('orderId') || searchParams.get('tran_id') || searchParams.get('val_id') || '';
+  const isPriceChangedParam = searchParams.get('priceChanged') === 'true';
 
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
@@ -127,8 +128,24 @@ function SuccessContent() {
         </div>
       </div>
 
+      
+      {/* Price / Stock Change Banner */}
+      {(isPriceChangedParam || order.priceChanged || order.priceNotice) && (
+        <div className="bg-amber-50 border-2 border-amber-300 text-amber-900 p-4 rounded-2xl max-w-md mx-auto text-xs font-semibold text-left space-y-1 shadow-sm">
+          <div className="font-extrabold text-amber-800 flex items-center gap-1.5 text-sm">
+            <span>⚠️ Notice: Price / Stock Adjustment</span>
+          </div>
+          <p className="text-amber-800">
+            {order.priceNotice || 'Product price or stock availability updated during checkout. Displaying server-calculated grand total.'}
+          </p>
+          <p className="text-[11px] text-amber-700 pt-1">
+            পণ্যের দাম বা স্টকে পরিবর্তন দেখা দিয়েছে। আপনার সার্ভার গণনাকৃত চূড়ান্ত মোট মূল্য: <strong>৳ {(order.grandTotal || 0).toLocaleString()}</strong>
+          </p>
+        </div>
+      )}
+
       {/* Status Badges Box */}
-      <div className="bg-white border rounded-2xl p-4 shadow-sm max-w-md mx-auto grid grid-cols-2 gap-4 text-xs">
+      <div className="bg-white border rounded-2xl p-4 shadow-sm max-w-md mx-auto grid grid-cols-3 gap-3 text-xs">
         <div>
           <span className="text-[10px] font-bold text-slate-400 block uppercase">Payment Status</span>
           <span className={`font-extrabold ${isPaid ? 'text-emerald-600' : isCOD ? 'text-blue-600' : 'text-amber-600'}`}>
@@ -139,6 +156,12 @@ function SuccessContent() {
           <span className="text-[10px] font-bold text-slate-400 block uppercase">Order Status</span>
           <span className="font-extrabold text-slate-800">
             {order.orderStatus || 'PENDING'}
+          </span>
+        </div>
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 block uppercase">Server Total</span>
+          <span className="font-extrabold text-emerald-700">
+            ৳ {(order.grandTotal || 0).toLocaleString()}
           </span>
         </div>
       </div>

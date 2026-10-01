@@ -283,9 +283,18 @@ export async function trackOrderApi(identifier) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders/track?query=${encodeURIComponent(identifier)}`);
     const data = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        status: res.status,
+        message: data?.message || (res.status === 404 
+          ? 'Order not found / অর্ডার পাওয়া যায়নি। Please verify your Order ID or phone number.' 
+          : 'Order tracking failed / অর্ডার ট্র্যাকিং ব্যর্থ হয়েছে')
+      };
+    }
     return data;
   } catch (err) {
-    return { success: false, message: 'Unable to connect to server' };
+    return { success: false, message: 'Unable to connect to server / সার্ভারের সাথে সংযোগ করতে ব্যর্থ হয়েছে' };
   }
 }
 

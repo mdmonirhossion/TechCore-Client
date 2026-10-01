@@ -137,10 +137,12 @@ export default function CheckoutPage() {
         upazila: formData.upazila
       },
       paymentMethod: formData.paymentMethod.toUpperCase(),
-      couponCode: coupon?.code || undefined
+      couponCode: coupon?.code || undefined,
+      clientTotal: grandTotal
     };
 
     try {
+      const estimatedClientTotal = grandTotal;
       const res = await createOrderApi(orderPayload, token);
 
       // 1. Online Payment Gateway Redirect
@@ -153,13 +155,23 @@ export default function CheckoutPage() {
       // 2. Cash on Delivery (COD) Success
       if (res && res.success && res.order) {
         clearCart(); // Clear cart only after COD success response
-        router.push(`/checkout/success?orderId=${res.order.id || res.order.invoiceNo}`);
+        const serverTotal = res.order.grandTotal !== undefined ? res.order.grandTotal : res.grandTotal;
+        const priceChanged = res.priceChanged || (serverTotal !== undefined && Math.abs(serverTotal - estimatedClientTotal) > 1);
+        
+        let targetUrl = `/checkout/success?orderId=${encodeURIComponent(res.order.id || res.order.invoiceNo)}`;
+        if (serverTotal !== undefined) {
+          targetUrl += `&serverGrandTotal=${serverTotal}`;
+        }
+        if (priceChanged) {
+          targetUrl += `&priceChanged=true`;
+        }
+        router.push(targetUrl);
         return;
       }
 
       // 3. Server Error Response (NO mock fallback)
       setIsSubmitting(false);
-      setErrorMsg(res?.message || res?.error || 'Order creation failed. Please check details and try again.');
+      setErrorMsg(res?.message || res?.error || 'Order creation failed. Stock or price may have changed. Please review your cart.');
     } catch (err) {
       setIsSubmitting(false);
       setErrorMsg(err.message || 'Server connection error. Please try again.');
@@ -365,7 +377,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex justify-between text-lg font-black text-slate-900 border-t pt-3">
-                <span>Grand Total</span>
+                <span>Grand Total <span className="text-[10px] text-slate-500 font-normal">(Display Only)</span></span>
                 <span className="text-[#d92d20]">৳ {grandTotal.toLocaleString()}</span>
               </div>
             </div>

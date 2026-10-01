@@ -1,16 +1,46 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { trackOrderApi } from '@/lib/api';
 import { Truck, Search, CheckCircle2, Clock, PackageCheck, MapPin } from 'lucide-react';
 
-export default function TrackOrderPage() {
+function TrackOrderForm() {
+  const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState('');
   const [phone, setPhone] = useState('');
   const [orderStatus, setOrderStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const q = searchParams.get('query') || searchParams.get('id');
+    if (q) {
+      setOrderId(q);
+      trackOrderApi(q).then(res => {
+        setSearched(true);
+        if (res && res.success !== false && (res.id || res._id || res.order)) {
+          const orderData = res.order || res;
+          const statusMap = { 'pending': 1, 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
+          const stepNum = statusMap[(orderData.orderStatus || orderData.status || 'placed').toLowerCase()] || 2;
+          setOrderStatus({
+            id: orderData.id || orderData._id || q.toUpperCase(),
+            date: orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : 'N/A',
+            paymentStatus: orderData.paymentStatus || 'Unpaid',
+            paymentMethod: orderData.paymentMethod || 'COD',
+            courierPartner: orderData.courier || orderData.courierPartner || 'Steadfast Courier',
+            trackingNumber: orderData.trackingNumber || '',
+            currentStep: stepNum,
+            items: orderData.items || [],
+            total: orderData.grandTotal || orderData.total || 0
+          });
+        } else {
+          setErrorMsg(res?.message || 'অর্ডার পাওয়া যায়নি। সঠিক অর্ডার আইডি বা ফোন নম্বর দিয়ে আবার চেষ্টা করুন / Order not found. Please verify your Order ID or phone number.');
+        }
+      });
+    }
+  }, [searchParams]);
 
   const handleTrack = async (e) => {
     e.preventDefault();
@@ -26,24 +56,25 @@ export default function TrackOrderPage() {
       const res = await trackOrderApi(query);
       if (res && res.success !== false && (res.id || res._id || res.order)) {
         const orderData = res.order || res;
-        const statusMap = { 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
-        const stepNum = statusMap[(orderData.status || 'placed').toLowerCase()] || 2;
+        const statusMap = { 'pending': 1, 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
+        const stepNum = statusMap[(orderData.orderStatus || orderData.status || 'placed').toLowerCase()] || 2;
 
         setOrderStatus({
-          id: orderData.id || orderData._id || orderId.toUpperCase(),
+          id: orderData.id || orderData._id || query.toUpperCase(),
           date: orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : 'N/A',
-          customerName: orderData.customer?.fullName || orderData.customerName || 'Customer',
-          deliveryAddress: orderData.customer?.address || orderData.address || 'Dhaka, Bangladesh',
-          courierPartner: orderData.courierPartner || 'Steadfast Courier / RedX',
+          paymentStatus: orderData.paymentStatus || 'Unpaid',
+          paymentMethod: orderData.paymentMethod || 'COD',
+          courierPartner: orderData.courier || orderData.courierPartner || 'Steadfast Courier',
+          trackingNumber: orderData.trackingNumber || '',
           currentStep: stepNum,
           items: orderData.items || [],
           total: orderData.grandTotal || orderData.total || 0
         });
       } else {
-        setErrorMsg(res?.message || 'No order found matching the provided Order ID or Phone number.');
+        setErrorMsg(res?.message || 'অর্ডার পাওয়া যায়নি। সঠিক অর্ডার আইডি বা ফোন নম্বর দিয়ে আবার চেষ্টা করুন / Order not found matching provided Order ID or Phone number.');
       }
     } catch (err) {
-      setErrorMsg('Failed to connect to order tracking server.');
+      setErrorMsg(' Failed to connect to order tracking server.');
     } finally {
       setLoading(false);
     }
@@ -140,19 +171,32 @@ export default function TrackOrderPage() {
             })}
           </div>
 
-          {/* Delivery Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          {/* Status & Delivery Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div className="p-4 bg-gray-50 rounded-xl space-y-1">
-              <span className="text-gray-500 font-semibold block">Customer Name</span>
-              <strong className="text-gray-900">{orderStatus.customerName}</strong>
+              <span className="text-gray-500 font-semibold block uppercase text-[10px]">Payment Status & Method</span>
+              <strong className="text-gray-900 block text-xs">{orderStatus.paymentStatus} ({orderStatus.paymentMethod})</strong>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl space-y-1">
-              <span className="text-gray-500 font-semibold block">Delivery Address</span>
-              <strong className="text-gray-900">{orderStatus.deliveryAddress}</strong>
+              <span className="text-gray-500 font-semibold block uppercase text-[10px]">Grand Total</span>
+              <strong className="text-[#ef4a23] block text-xs">৳{orderStatus.total.toLocaleString()}</strong>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-xl space-y-1">
+              <span className="text-gray-500 font-semibold block uppercase text-[10px]">Tracking Number</span>
+              <strong className="text-gray-900 block text-xs">{orderStatus.trackingNumber || 'Assigned at dispatch'}</strong>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center text-xs text-slate-500">Loading tracking page...</div>}>
+      <TrackOrderForm />
+    </Suspense>
   );
 }

@@ -69,7 +69,7 @@ export default function MyOrdersPage() {
 
             <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0">
               <Link
-                href={`/track-order?id=${order.id}`}
+                href={`/track-order?query=${order.id}`}
                 className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1 shadow-sm"
               >
                 <Eye size={14} /> View Status
