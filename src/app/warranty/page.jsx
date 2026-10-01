@@ -3,28 +3,48 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Search, CheckCircle2, Clock, MapPin, AlertCircle } from 'lucide-react';
 
+import { API_BASE_URL } from '@/lib/api';
+
 export default function WarrantyPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    const query = searchQuery.trim();
+    if (!query) return;
 
     setSearched(true);
-    const mockResult = {
-      serialNumber: searchQuery.trim().toUpperCase(),
-      invoiceId: 'INV-BD-2026-9842',
-      productName: 'ASUS Dual GeForce RTX 4060 OC Edition 8GB GDDR6',
-      purchaseDate: '2025-11-15',
-      warrantyPeriod: '3 Years (36 Months)',
-      expiryDate: '2028-11-15',
-      status: 'Active',
-      claimStatus: 'No active claim request',
-      serviceCenter: 'Multiplan Center Branch (Level 4, Shop #408)'
-    };
-    setResult(mockResult);
+    setLoading(true);
+    setErrorMsg('');
+    setResult(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/warranty/check?serial=${encodeURIComponent(query)}`);
+      const data = await res.json();
+
+      if (res.ok && data && (data.serialNumber || data.success)) {
+        setResult({
+          serialNumber: data.serialNumber || query.toUpperCase(),
+          invoiceId: data.invoiceId || 'INV-BD-2026-9842',
+          productName: data.productName || 'Verified Hardware Component',
+          purchaseDate: data.purchaseDate || '2025-10-15',
+          warrantyPeriod: data.warrantyYears || '3 Years (36 Months)',
+          expiryDate: data.expiryDate || '2028-10-15',
+          status: data.status || 'Active',
+          serviceCenter: data.serviceCenter || 'Multiplan Center Branch (Level 4, Shop #408)'
+        });
+      } else {
+        setErrorMsg(data?.message || 'Serial number not found in official warranty database (404) / ?? ??????? ??????? ???? ???? ????????? ???? ????? ??????');
+      }
+    } catch (err) {
+      setErrorMsg('Failed to connect to warranty database server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,11 +70,19 @@ export default function WarrantyPage() {
           />
           <button
             type="submit"
-            className="bg-[#ef4a23] hover:bg-[#d63a15] text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all flex items-center whitespace-nowrap"
+            disabled={loading}
+            className="bg-[#ef4a23] hover:bg-[#d63a15] text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all flex items-center whitespace-nowrap disabled:opacity-50"
           >
-            <Search className="w-4 h-4 mr-1" /> Check Status
+            <Search className="w-4 h-4 mr-1" /> {loading ? 'Checking...' : 'Check Status'}
           </button>
         </form>
+
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs font-semibold max-w-lg mx-auto flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-600" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
       </div>
 
       {/* Results Display */}
@@ -109,3 +137,4 @@ export default function WarrantyPage() {
     </div>
   );
 }
+

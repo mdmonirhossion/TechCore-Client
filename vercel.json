@@ -1,3 +1,9 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/cancel-unpaid-orders",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }

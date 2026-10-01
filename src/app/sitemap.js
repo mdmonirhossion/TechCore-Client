@@ -22,7 +22,7 @@ export default async function sitemap() {
   const productUrls = products.map((product) => {
     const slug = product.slug || product.categorySlug || product.id || product._id;
     return {
-      url: `${baseUrl}/product/${slug}`,
+      url: `${baseUrl}/products/${slug}`,
       lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
