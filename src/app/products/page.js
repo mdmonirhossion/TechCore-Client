@@ -34,7 +34,6 @@ function ProductsContent() {
   // Fetch products strictly from Node.js / Express + MongoDB Backend
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
     getProducts()
       .then(data => {
         if (isMounted) {
@@ -63,12 +62,14 @@ function ProductsContent() {
     setCurrentPage(1);
   }
 
-  useEffect(() => {
-    const p = parseInt(searchParams.get('page') || '1', 10);
-    if (p > 0 && p !== currentPage) {
-      setCurrentPage(p);
+  const queryPage = parseInt(searchParams.get('page') || '1', 10);
+  const [prevQueryPage, setPrevQueryPage] = useState(queryPage);
+  if (queryPage !== prevQueryPage) {
+    setPrevQueryPage(queryPage);
+    if (queryPage > 0 && queryPage !== currentPage) {
+      setCurrentPage(queryPage);
     }
-  }, [searchParams]);
+  }
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter(product => {

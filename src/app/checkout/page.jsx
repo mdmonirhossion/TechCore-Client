@@ -51,9 +51,10 @@ export default function CheckoutPage() {
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setDistricts(data);
-          if (!data.includes(formData.district)) {
-            setFormData(prev => ({ ...prev, district: data[0] }));
-          }
+          setFormData(prev => ({
+            ...prev,
+            district: data.includes(prev.district) ? prev.district : data[0]
+          }));
         }
       })
       .catch(() => {});
@@ -67,9 +68,10 @@ export default function CheckoutPage() {
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setUpazilas(data);
-          if (!data.includes(formData.upazila)) {
-            setFormData(prev => ({ ...prev, upazila: data[0] }));
-          }
+          setFormData(prev => ({
+            ...prev,
+            upazila: data.includes(prev.upazila) ? prev.upazila : data[0]
+          }));
         }
       })
       .catch(() => {});

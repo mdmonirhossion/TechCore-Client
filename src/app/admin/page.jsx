@@ -197,7 +197,22 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    loadAdminProducts();
+    let isMounted = true;
+    getProducts()
+      .then(data => {
+        if (isMounted) {
+          setProductsList(Array.isArray(data) ? data : []);
+          setLoadingProducts(false);
+        }
+      })
+      .catch(e => {
+        if (isMounted) {
+          console.error('Admin products fetch error:', e);
+          setProductsList([]);
+          setLoadingProducts(false);
+        }
+      });
+    return () => { isMounted = false; };
   }, []);
 
   // Filtered products list

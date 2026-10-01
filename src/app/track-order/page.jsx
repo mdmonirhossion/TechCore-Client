@@ -7,7 +7,8 @@ import { Truck, Search, CheckCircle2, Clock, PackageCheck, MapPin } from 'lucide
 
 function TrackOrderForm() {
   const searchParams = useSearchParams();
-  const [orderId, setOrderId] = useState('');
+  const initialQuery = searchParams.get('query') || searchParams.get('id') || '';
+  const [orderId, setOrderId] = useState(initialQuery);
   const [phone, setPhone] = useState('');
   const [orderStatus, setOrderStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -16,30 +17,33 @@ function TrackOrderForm() {
 
   useEffect(() => {
     const q = searchParams.get('query') || searchParams.get('id');
-    if (q) {
-      setOrderId(q);
-      trackOrderApi(q).then(res => {
-        setSearched(true);
-        if (res && res.success !== false && (res.id || res._id || res.order)) {
-          const orderData = res.order || res;
-          const statusMap = { 'pending': 1, 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
-          const stepNum = statusMap[(orderData.orderStatus || orderData.status || 'placed').toLowerCase()] || 2;
-          setOrderStatus({
-            id: orderData.id || orderData._id || q.toUpperCase(),
-            date: orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : 'N/A',
-            paymentStatus: orderData.paymentStatus || 'Unpaid',
-            paymentMethod: orderData.paymentMethod || 'COD',
-            courierPartner: orderData.courier || orderData.courierPartner || 'Steadfast Courier',
-            trackingNumber: orderData.trackingNumber || '',
-            currentStep: stepNum,
-            items: orderData.items || [],
-            total: orderData.grandTotal || orderData.total || 0
-          });
-        } else {
-          setErrorMsg(res?.message || 'অর্ডার পাওয়া যায়নি। সঠিক অর্ডার আইডি বা ফোন নম্বর দিয়ে আবার চেষ্টা করুন / Order not found. Please verify your Order ID or phone number.');
-        }
-      });
-    }
+    if (!q) return;
+
+    let isMounted = true;
+    trackOrderApi(q).then(res => {
+      if (!isMounted) return;
+      setSearched(true);
+      if (res && res.success !== false && (res.id || res._id || res.order)) {
+        const orderData = res.order || res;
+        const statusMap = { 'pending': 1, 'placed': 1, 'confirmed': 2, 'processing': 2, 'shipped': 3, 'in-transit': 3, 'delivered': 4 };
+        const stepNum = statusMap[(orderData.orderStatus || orderData.status || 'placed').toLowerCase()] || 2;
+        setOrderStatus({
+          id: orderData.id || orderData._id || q.toUpperCase(),
+          date: orderData.createdAt ? new Date(orderData.createdAt).toLocaleDateString() : 'N/A',
+          paymentStatus: orderData.paymentStatus || 'Unpaid',
+          paymentMethod: orderData.paymentMethod || 'COD',
+          courierPartner: orderData.courier || orderData.courierPartner || 'Steadfast Courier',
+          trackingNumber: orderData.trackingNumber || '',
+          currentStep: stepNum,
+          items: orderData.items || [],
+          total: orderData.grandTotal || orderData.total || 0
+        });
+      } else {
+        setErrorMsg(res?.message || 'অর্ডার পাওয়া যায়নি। সঠিক অর্ডার আইডি বা ফোন নম্বর দিয়ে আবার চেষ্টা করুন / Order not found. Please verify your Order ID or phone number.');
+      }
+    });
+
+    return () => { isMounted = false; };
   }, [searchParams]);
 
   const handleTrack = async (e) => {

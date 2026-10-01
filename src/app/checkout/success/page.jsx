@@ -14,9 +14,9 @@ function SuccessContent() {
   const orderId = searchParams.get('orderId') || searchParams.get('tran_id') || searchParams.get('val_id') || '';
   const isPriceChangedParam = searchParams.get('priceChanged') === 'true';
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(orderId));
   const [order, setOrder] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(orderId ? null : 'No Order ID found in parameters.');
 
   const fetchOrderStatus = async () => {
     if (!orderId) {
@@ -49,8 +49,35 @@ function SuccessContent() {
   };
 
   useEffect(() => {
-    fetchOrderStatus();
-  }, [orderId]);
+    if (!orderId) return;
+
+    let isMounted = true;
+    trackOrderApi(orderId)
+      .then(res => {
+        if (!isMounted) return;
+        if (res && res.id) {
+          setOrder(res);
+          // Clear cart ONLY when status is Paid OR order is COD
+          const isPaid = res.paymentStatus === 'Paid';
+          const isCOD = String(res.paymentMethod || '').toUpperCase() === 'COD';
+          if (isPaid || isCOD) {
+            clearCart();
+          }
+        } else {
+          setError(res?.message || 'Unable to retrieve order details.');
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError('Server connection error while fetching order details.');
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [orderId, clearCart]);
 
   if (loading) {
     return (

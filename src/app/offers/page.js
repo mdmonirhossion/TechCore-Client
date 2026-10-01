@@ -4,7 +4,7 @@ import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/api';
 import { Gift, Zap, Flame, Clock, Sparkles } from 'lucide-react';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata() {
   return {
