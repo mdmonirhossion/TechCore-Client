@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
 import { getProducts, API_BASE_URL } from '@/lib/api';
 import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
+import SalesTrendChart from '@/components/admin/charts/SalesTrendChart';
+import OrderStatusChart from '@/components/admin/charts/OrderStatusChart';
+import TopProductsChart from '@/components/admin/charts/TopProductsChart';
 import {
   LayoutDashboard,
   Package,
@@ -228,6 +231,45 @@ export default function AdminDashboardPage() {
   const totalCustomers = customersList.length;
   const lowStockCount = productsList.filter(p => Number(p.stock || 0) <= 5).length;
   const pendingServiceCount = servicesList.filter(s => s.status !== 'Completed').length;
+
+  // Chart aggregations derived from order records
+  const salesTrendData = React.useMemo(() => {
+    if (!ordersList || !Array.isArray(ordersList) || ordersList.length === 0) return [];
+    const map = {};
+    ordersList.forEach(o => {
+      const d = o.date || 'Unknown';
+      if (!map[d]) map[d] = { date: d, revenue: 0, orders: 0 };
+      map[d].revenue += Number(o.total || 0);
+      map[d].orders += 1;
+    });
+    return Object.values(map).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [ordersList]);
+
+  const orderStatusData = React.useMemo(() => {
+    if (!ordersList || !Array.isArray(ordersList) || ordersList.length === 0) return [];
+    const counts = {};
+    ordersList.forEach(o => {
+      const st = o.status || 'Other';
+      counts[st] = (counts[st] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [ordersList]);
+
+  const topProductsData = React.useMemo(() => {
+    if (!ordersList || !Array.isArray(ordersList) || ordersList.length === 0) return [];
+    const productSales = {};
+    ordersList.forEach(o => {
+      if (Array.isArray(o.items)) {
+        o.items.forEach(it => {
+          const name = it.name || 'Unknown';
+          if (!productSales[name]) productSales[name] = { name, sales: 0, revenue: 0 };
+          productSales[name].sales += Number(it.qty || 1);
+          productSales[name].revenue += Number(it.price || 0) * Number(it.qty || 1);
+        });
+      }
+    });
+    return Object.values(productSales).sort((a, b) => b.sales - a.sales).slice(0, 5);
+  }, [ordersList]);
 
   // Handle Add Product Submit
   const handleAddProduct = async (e) => {
@@ -605,6 +647,13 @@ export default function AdminDashboardPage() {
                   <span className="text-[11px] text-amber-600 font-bold">Active service tickets</span>
                 </div>
               </div>
+
+              {/* Analytics & Performance Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SalesTrendChart data={salesTrendData} />
+                <OrderStatusChart data={orderStatusData} />
+              </div>
+              <TopProductsChart data={topProductsData} />
 
               {/* Recent Orders Preview */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
