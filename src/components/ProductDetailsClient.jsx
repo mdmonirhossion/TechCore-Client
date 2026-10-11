@@ -52,8 +52,8 @@ export default function ProductDetailsClient({ product }) {
     : [product.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop'];
 
   const pId = product.id || product._id || product.slug;
-  const isWishlisted = wishlist.some(p => (p.id || p._id) === pId);
-  const isCompared = compareItems.some(p => (p.id || p._id) === pId);
+  const isWishlisted = wishlist.some(p => String(p.id || p._id) === String(pId));
+  const isCompared = compareItems.some(p => String(p.id || p._id) === String(pId) || (product.slug && p.slug === product.slug));
 
   const brandName = product.brand || 'Generic';
   const skuOrCode = product.productCode || product.sku || pId;

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ChevronLeft, ChevronRight, Scale } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/data/mock-products';
+import { useShop } from '@/context/ShopContext';
+import { getProducts } from '@/lib/api';
 
 // Swiper React Components & Modules
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,6 +17,130 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
+
+function ProductSearchBox({ placeholder, onSelectProduct }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!query.trim() || selectedProduct?.name === query) {
+      setResults([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const products = await getProducts({ search: query.trim(), limit: 5 });
+        setResults(Array.isArray(products) ? products.slice(0, 5) : []);
+        setIsOpen(true);
+      } catch (err) {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [query, selectedProduct]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const handleSelect = (prod) => {
+    setSelectedProduct(prod);
+    setQuery(prod.name);
+    setIsOpen(false);
+    onSelectProduct(prod);
+  };
+
+  const handleClear = () => {
+    setSelectedProduct(null);
+    setQuery('');
+    setResults([]);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <div className="relative flex items-center">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            if (selectedProduct && e.target.value !== selectedProduct.name) {
+              setSelectedProduct(null);
+            }
+          }}
+          onFocus={() => {
+            if (results.length > 0 && !selectedProduct) setIsOpen(true);
+          }}
+          placeholder={placeholder}
+          className="w-full bg-white text-slate-800 text-xs font-semibold px-3 py-2 pr-7 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 shadow-sm"
+        />
+        {query ? (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-2 text-slate-400 hover:text-slate-600 text-xs leading-none"
+            title="Clear"
+          >
+            &times;
+          </button>
+        ) : loading ? (
+          <div className="absolute right-2.5 w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        ) : null}
+      </div>
+
+      {isOpen && results.length > 0 && (
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-50 divide-y divide-slate-100">
+          {results.map((prod) => {
+            const pId = prod.id || prod._id;
+            const pImg = Array.isArray(prod.images) && prod.images.length > 0
+              ? prod.images[0]
+              : (prod.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&auto=format&fit=crop');
+            const price = Number(prod.discountPrice || prod.price || 0);
+
+            return (
+              <button
+                key={pId}
+                type="button"
+                onClick={() => handleSelect(prod)}
+                className="w-full px-2.5 py-2 text-left flex items-center gap-2 hover:bg-blue-50 transition-colors"
+              >
+                <div className="w-8 h-8 relative rounded bg-slate-50 border shrink-0 overflow-hidden">
+                  <Image src={pImg} alt={prod.name} fill className="object-contain p-0.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold text-slate-800 truncate">{prod.name}</p>
+                  <p className="text-[10px] font-extrabold text-[#ef4a23]">৳{price.toLocaleString()}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {isOpen && !loading && results.length === 0 && query.trim().length > 1 && (
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl p-2 z-50 text-[11px] text-slate-500 text-center">
+          No products found
+        </div>
+      )}
+    </div>
+  );
+}
 
 const bannerSlides = [
   {
@@ -52,18 +177,8 @@ const bannerSlides = [
 
 export default function HeroCarousel() {
   const router = useRouter();
-  const [prod1, setProd1] = useState('');
-  const [prod2, setProd2] = useState('');
+  const { toggleCompare } = useShop();
   const swiperRef = useRef(null);
-
-  const handleCompareSubmit = (e) => {
-    e.preventDefault();
-    if (prod1 || prod2) {
-      router.push(`/compare?p1=${encodeURIComponent(prod1)}&p2=${encodeURIComponent(prod2)}`);
-    } else {
-      router.push('/compare');
-    }
-  };
 
   return (
     <div className="w-full max-w-[1320px] mx-auto my-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -173,40 +288,25 @@ export default function HeroCarousel() {
               </p>
             </div>
 
-            <form onSubmit={handleCompareSubmit} className="space-y-2.5">
-              <div className="relative">
-                <select
-                  value={prod1}
-                  onChange={(e) => setProd1(e.target.value)}
-                  className="w-full bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 cursor-pointer appearance-none shadow-sm"
-                >
-                  <option value="">Search and Select Product 1</option>
-                  {MOCK_PRODUCTS.slice(0, 8).map(p => (
-                    <option key={p.id} value={p.slug || p.id}>
-                      {p.name} (৳{p.discountPrice || p.price})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="relative">
-                <select
-                  value={prod2}
-                  onChange={(e) => setProd2(e.target.value)}
-                  className="w-full bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 cursor-pointer appearance-none shadow-sm"
-                >
-                  <option value="">Search and Select Product 2</option>
-                  {MOCK_PRODUCTS.slice(4, 12).map(p => (
-                    <option key={p.id} value={p.slug || p.id}>
-                      {p.name} (৳{p.discountPrice || p.price})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                router.push('/compare');
+              }}
+              className="space-y-2.5"
+            >
+              <ProductSearchBox
+                placeholder="Search Product 1..."
+                onSelectProduct={(prod) => toggleCompare(prod)}
+              />
+              <ProductSearchBox
+                placeholder="Search Product 2..."
+                onSelectProduct={(prod) => toggleCompare(prod)}
+              />
 
               <button
                 type="submit"
-                className="w-full mt-2 bg-transparent hover:bg-blue-600 text-blue-700 hover:text-white text-xs font-bold py-2 rounded-lg border-2 border-blue-600 transition-colors shadow-sm"
+                className="w-full mt-2 bg-transparent hover:bg-blue-600 text-blue-700 hover:text-white text-xs font-bold py-2 rounded-lg border-2 border-blue-600 transition-colors shadow-sm cursor-pointer"
               >
                 View Comparison
               </button>
