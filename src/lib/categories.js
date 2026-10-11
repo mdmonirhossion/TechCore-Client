@@ -1,6 +1,5 @@
-import { API_BASE_URL } from '@/lib/api';
+import { API_BASE_URL, shouldUseMocks } from '@/lib/api';
 import { CATEGORY_TREE } from '@/data/category-tree';
-import { MOCK_CATEGORIES } from '@/data/mock-products';
 
 /**
  * Normalizes any category node to { name, slug, fullPath, children }
@@ -385,22 +384,24 @@ export async function getCategoryProducts(fullPath, query = {}) {
     console.error('getCategoryProducts network error:', err.message);
   }
 
-  // Fallback to local products from mock-products if network fails or returns empty
-  try {
-    const { MOCK_PRODUCTS } = await import('@/data/mock-products');
-    const filtered = (MOCK_PRODUCTS || []).filter((p) => {
-      const cat = (p.categorySlug || p.category || '').toLowerCase();
-      const cp = cleanPath.toLowerCase();
-      return cat.includes(cp) || cp.includes(cat);
-    });
-    return {
-      products: filtered,
-      total: filtered.length,
-      page: 1,
-      limit: 24,
-      totalPages: 1
-    };
-  } catch (e) {}
+  // Fallback to local products only when development mock flag is active
+  if (shouldUseMocks()) {
+    try {
+      const { MOCK_PRODUCTS } = await import('@/data/mock-products');
+      const filtered = (MOCK_PRODUCTS || []).filter((p) => {
+        const cat = (p.categorySlug || p.category || '').toLowerCase();
+        const cp = cleanPath.toLowerCase();
+        return cat.includes(cp) || cp.includes(cat);
+      });
+      return {
+        products: filtered,
+        total: filtered.length,
+        page: 1,
+        limit: 24,
+        totalPages: 1
+      };
+    } catch (e) {}
+  }
 
   return {
     products: [],

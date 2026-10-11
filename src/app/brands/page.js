@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MOCK_BRANDS } from '@/data/mock-products';
-import { Award, ChevronRight } from 'lucide-react';
+import { getBrands, isApiError } from '@/lib/api';
+import { Award, ChevronRight, AlertCircle } from 'lucide-react';
 
 export const revalidate = 60;
 
@@ -13,10 +13,12 @@ export async function generateMetadata() {
   };
 }
 
-export default function BrandsPage() {
+export default async function BrandsPage() {
+  const brands = await getBrands();
+  const hasError = isApiError(brands);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-xs text-slate-500 pb-2 border-b border-slate-200">
         <Link href="/" className="hover:text-orange-600">Home</Link>
@@ -36,24 +38,45 @@ export default function BrandsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {MOCK_BRANDS.map(brand => (
-          <Link
-            key={brand.id}
-            href={`/brand/${brand.id}`}
-            className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:border-orange-500 hover:-translate-y-1 transition-all group"
-          >
-            <div className="w-16 h-16 relative bg-slate-50 rounded-xl mb-3 flex items-center justify-center p-2 group-hover:scale-105 transition-transform border">
-              <Image src={brand.logo} alt={brand.name} fill className="object-contain p-2" />
-            </div>
-            <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-orange-600 transition-colors">
-              {brand.name}
-            </h3>
-            <span className="text-[10px] text-slate-400 font-bold mt-1">Explore Products →</span>
-          </Link>
-        ))}
-      </div>
+      {hasError ? (
+        <div className="bg-white border border-rose-200 rounded-2xl p-12 text-center space-y-3">
+          <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+            <AlertCircle size={24} />
+          </div>
+          <h3 className="text-base font-bold text-slate-900">Could Not Load Brands</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            Unable to connect to the store server. Please check your connection or try again later.
+          </p>
+        </div>
+      ) : brands.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {brands.map((brand) => {
+            const brandKey = brand._id || brand.id || brand.slug || brand.name;
+            const slug = brand.slug || brand.id || brand._id || brand.name.toLowerCase();
+            const logo = brand.logo || brand.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600';
 
+            return (
+              <Link
+                key={brandKey}
+                href={`/brand/${encodeURIComponent(slug)}`}
+                className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center shadow-sm hover:shadow-lg hover:border-orange-500 hover:-translate-y-1 transition-all group"
+              >
+                <div className="w-16 h-16 relative bg-slate-50 rounded-xl mb-3 flex items-center justify-center p-2 group-hover:scale-105 transition-transform border">
+                  <Image src={logo} alt={brand.name} fill className="object-contain p-2" />
+                </div>
+                <h3 className="font-extrabold text-sm text-slate-900 group-hover:text-orange-600 transition-colors">
+                  {brand.name}
+                </h3>
+                <span className="text-[10px] text-slate-400 font-bold mt-1">Explore Products →</span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 text-xs">
+          No brands available at the moment.
+        </div>
+      )}
     </div>
   );
 }

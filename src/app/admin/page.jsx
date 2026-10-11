@@ -5,8 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
-import { getProducts, API_BASE_URL } from '@/lib/api';
-import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
+import { getProducts, getCategories, getBrands, API_BASE_URL } from '@/lib/api';
 import SalesTrendChart from '@/components/admin/charts/SalesTrendChart';
 import OrderStatusChart from '@/components/admin/charts/OrderStatusChart';
 import TopProductsChart from '@/components/admin/charts/TopProductsChart';
@@ -58,6 +57,8 @@ export default function AdminDashboardPage() {
 
   // Products state & modal
   const [productsList, setProductsList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [brandsList, setBrandsList] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productSearch, setProductSearch] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
@@ -69,8 +70,10 @@ export default function AdminDashboardPage() {
     slug: '',
     price: '',
     discountPrice: '',
-    category: 'gpu',
-    brand: 'ASUS',
+    category: '',
+    categorySlug: '',
+    categoryId: '',
+    brand: '',
     stock: '15',
     warranty: '3 Years Official Warranty',
     badge: 'New Arrival',
@@ -185,12 +188,14 @@ export default function AdminDashboardPage() {
     maintenanceMode: false
   });
 
-  // Fetch product list strictly from server
+  // Fetch product list, categories and brands strictly from server
   const loadAdminProducts = async () => {
     try {
       setLoadingProducts(true);
-      const data = await getProducts();
+      const [data, cats, brs] = await Promise.all([getProducts(), getCategories(), getBrands()]);
       setProductsList(Array.isArray(data) ? data : []);
+      setCategoriesList(Array.isArray(cats) ? cats : []);
+      setBrandsList(Array.isArray(brs) ? brs : []);
     } catch (e) {
       console.error('Admin products fetch error:', e);
       setProductsList([]);
@@ -201,27 +206,74 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     let isMounted = true;
-    getProducts()
-      .then(data => {
-        if (isMounted) {
-          setProductsList(Array.isArray(data) ? data : []);
-          setLoadingProducts(false);
-        }
+    Promise.all([getProducts(), getCategories(), getBrands()])
+      .then(([productsData, categoriesData, brandsData]) => {
+        if (!isMounted) return;
+        setProductsList(Array.isArray(productsData) ? productsData : []);
+        setCategoriesList(Array.isArray(categoriesData) ? categoriesData : []);
+        setBrandsList(Array.isArray(brandsData) ? brandsData : []);
+        setLoadingProducts(false);
       })
-      .catch(e => {
+      .catch((e) => {
         if (isMounted) {
-          console.error('Admin products fetch error:', e);
+          console.error('Admin data fetch error:', e);
           setProductsList([]);
+          setCategoriesList([]);
+          setBrandsList([]);
           setLoadingProducts(false);
         }
       });
     return () => { isMounted = false; };
   }, []);
 
+  // Format "Parent > Child" category labels from flat category list
+  const formattedCategories = React.useMemo(() => {
+    if (!Array.isArray(categoriesList) || categoriesList.length === 0) return [];
+
+    const byId = new Map();
+    categoriesList.forEach((c) => {
+      const key = String(c._id || c.id || '');
+      if (key) byId.set(key, c);
+    });
+
+    const getLabel = (cat) => {
+      const parts = [cat.name || cat.title || cat.slug || ''];
+      let curr = cat;
+      const seen = new Set([String(curr._id || curr.id || '')]);
+
+      while (curr && curr.parent) {
+        const parentId = typeof curr.parent === 'object'
+          ? String(curr.parent._id || curr.parent.id || '')
+          : String(curr.parent);
+        if (!parentId || seen.has(parentId)) break;
+        seen.add(parentId);
+        const parentNode = byId.get(parentId);
+        if (parentNode) {
+          parts.unshift(parentNode.name || parentNode.title || parentNode.slug || '');
+          curr = parentNode;
+        } else {
+          break;
+        }
+      }
+      return parts.join(' > ');
+    };
+
+    return categoriesList.map((c) => ({
+      id: String(c._id || c.id || c.slug),
+      name: c.name || c.title || c.slug,
+      slug: c.slug,
+      label: getLabel(c),
+      raw: c
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [categoriesList]);
+
   // Filtered products list
   const filteredProducts = productsList.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(productSearch.toLowerCase()) || p.brand?.toLowerCase().includes(productSearch.toLowerCase());
-    const matchesCategory = selectedCategoryFilter === 'all' || p.category === selectedCategoryFilter;
+    const matchesCategory = selectedCategoryFilter === 'all' ||
+      (p.category && p.category.toLowerCase() === selectedCategoryFilter.toLowerCase()) ||
+      (p.categorySlug && p.categorySlug.toLowerCase() === selectedCategoryFilter.toLowerCase()) ||
+      (p.categoryId && String(p.categoryId) === selectedCategoryFilter);
     return matchesSearch && matchesCategory;
   });
 
@@ -324,6 +376,8 @@ export default function AdminDashboardPage() {
       slug: calculatedSlug,
       brand: formData.brand,
       category: formData.category,
+      categorySlug: formData.categorySlug || (formData.category ? formData.category.toLowerCase().replace(/\s+/g, '-') : ''),
+      categoryId: formData.categoryId || undefined,
       price: Number(formData.price),
       discountPrice: Number(formData.discountPrice || formData.price),
       images: allImages.length > 0 ? allImages : ['https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop'],
@@ -737,9 +791,9 @@ export default function AdminDashboardPage() {
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
                     className="p-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none"
                   >
-                    <option value="all">All Categories ({MOCK_CATEGORIES.length})</option>
-                    {MOCK_CATEGORIES.map(c => (
-                      <option key={c.id} value={c.slug}>{c.title}</option>
+                    <option value="all">All Categories ({formattedCategories.length})</option>
+                    {formattedCategories.map(c => (
+                      <option key={c.id} value={c.slug}>{c.label}</option>
                     ))}
                   </select>
                 </div>
@@ -1312,12 +1366,31 @@ export default function AdminDashboardPage() {
                 <div>
                   <label className="font-bold text-slate-900 dark:text-slate-100 block mb-1">Category *</label>
                   <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    value={formData.categoryId || formData.categorySlug || formData.category}
+                    onChange={(e) => {
+                      const selectedVal = e.target.value;
+                      const matched = formattedCategories.find(c => c.id === selectedVal || c.slug === selectedVal);
+                      if (matched) {
+                        setFormData({
+                          ...formData,
+                          categoryId: matched.id,
+                          category: matched.name,
+                          categorySlug: matched.slug
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          categoryId: '',
+                          category: selectedVal,
+                          categorySlug: selectedVal ? selectedVal.toLowerCase().replace(/\s+/g, '-') : ''
+                        });
+                      }
+                    }}
                     className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100"
                   >
-                    {MOCK_CATEGORIES.map(c => (
-                      <option key={c.id} value={c.slug}>{c.title}</option>
+                    <option value="">Select Category</option>
+                    {formattedCategories.map(c => (
+                      <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
                 </div>
@@ -1329,8 +1402,9 @@ export default function AdminDashboardPage() {
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100"
                   >
-                    {MOCK_BRANDS.map(b => (
-                      <option key={b.id} value={b.name}>{b.name}</option>
+                    <option value="">Select Brand</option>
+                    {brandsList.map(b => (
+                      <option key={b._id || b.id || b.name} value={b.name}>{b.name}</option>
                     ))}
                   </select>
                 </div>

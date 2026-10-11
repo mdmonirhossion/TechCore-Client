@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useShop } from '@/context/ShopContext';
-import { MOCK_PRODUCTS } from '@/data/mock-products';
+import { getProducts, isApiError } from '@/lib/api';
 import {
   Wrench,
   Plus,
@@ -18,7 +18,8 @@ import {
   X,
   Cpu,
   CheckCircle2,
-  HelpCircle
+  HelpCircle,
+  Loader2
 } from 'lucide-react';
 
 const BUILDER_CATEGORIES = [
@@ -37,6 +38,36 @@ export default function PCBuilderPage() {
   const { builderSlots, setBuilderComponent, removeBuilderComponent, resetBuilder, addToCart } = useShop();
   const [copied, setCopied] = useState(false);
   const [activeSelectCategory, setActiveSelectCategory] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    getProducts()
+      .then((data) => {
+        if (!isMounted) return;
+        if (isApiError(data)) {
+          setHasError(true);
+          setAllProducts([]);
+        } else {
+          setAllProducts(Array.isArray(data) ? data : []);
+          setHasError(false);
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setHasError(true);
+        setAllProducts([]);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const selectedList = Object.values(builderSlots).filter(Boolean);
   const totalPrice = selectedList.reduce((sum, item) => sum + Number(item.discountPrice || item.price || 0), 0);
@@ -261,34 +292,60 @@ export default function PCBuilderPage() {
             </div>
 
             <div className="space-y-3">
-              {MOCK_PRODUCTS.filter(p => p.category.toLowerCase() === activeSelectCategory.categorySlug.toLowerCase() || activeSelectCategory.categorySlug === 'processor').map((prod) => (
-                <div
-                  key={prod.id || prod._id}
-                  className="flex items-center justify-between p-3 border rounded-xl hover:border-blue-500 cursor-pointer transition-all hover:bg-blue-50/40"
-                  onClick={() => {
-                    setBuilderComponent(activeSelectCategory.key, prod);
-                    setActiveSelectCategory(null);
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 relative bg-slate-50 rounded border flex-shrink-0">
-                      <Image src={Array.isArray(prod.images) ? prod.images[0] : prod.image} alt={prod.name} fill className="object-contain p-1" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900">{prod.name}</h4>
-                      <span className="text-[11px] text-slate-500">{prod.brand}</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-extrabold text-xs text-[#d92d20]">
-                      ৳{(prod.discountPrice || prod.price).toLocaleString()}
-                    </div>
-                    <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded mt-1 inline-block">
-                      Select
-                    </span>
-                  </div>
+              {isLoading ? (
+                <div className="p-8 text-center space-y-2">
+                  <Loader2 size={24} className="animate-spin text-orange-600 mx-auto" />
+                  <p className="text-xs text-slate-500">Loading components...</p>
                 </div>
-              ))}
+              ) : hasError ? (
+                <div className="p-8 text-center text-xs text-rose-500 font-semibold bg-rose-50 rounded-xl">
+                  Could not load products. Please check your connection.
+                </div>
+              ) : (() => {
+                const filtered = (allProducts || []).filter(p => {
+                  const cat = (p.builderCategory || p.categorySlug || p.category || '').toLowerCase();
+                  const targetSlug = activeSelectCategory.categorySlug.toLowerCase();
+                  const targetKey = activeSelectCategory.key.toLowerCase();
+                  return cat.includes(targetSlug) || cat.includes(targetKey) || (targetSlug === 'processor' && cat.includes('cpu'));
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="p-8 text-center text-xs text-slate-500">
+                      No products available for {activeSelectCategory.name}.
+                    </div>
+                  );
+                }
+
+                return filtered.map((prod) => (
+                  <div
+                    key={prod.id || prod._id}
+                    className="flex items-center justify-between p-3 border rounded-xl hover:border-blue-500 cursor-pointer transition-all hover:bg-blue-50/40"
+                    onClick={() => {
+                      setBuilderComponent(activeSelectCategory.key, prod);
+                      setActiveSelectCategory(null);
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 relative bg-slate-50 rounded border flex-shrink-0">
+                        <Image src={Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : (prod.image || 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600')} alt={prod.name} fill className="object-contain p-1" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs text-slate-900">{prod.name}</h4>
+                        <span className="text-[11px] text-slate-500">{prod.brand}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-extrabold text-xs text-[#d92d20]">
+                        ৳{Number(prod.discountPrice || prod.price || 0).toLocaleString()}
+                      </div>
+                      <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded mt-1 inline-block">
+                        Select
+                      </span>
+                    </div>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         </div>

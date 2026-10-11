@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter as useNextRouter } from 'next/navigation';
 import MobileCategoryMenu from '@/components/MobileCategoryMenu';
 import { useShop } from '@/context/ShopContext';
+import { searchProducts } from '@/lib/api';
 import {
   Cpu,
   Search,
@@ -61,26 +62,13 @@ export default function Navbar({ categoryTree = [] }) {
       }
 
       setIsSearching(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://techcore-server.vercel.app';
-      fetch(`${apiUrl}/api/products?search=${encodeURIComponent(searchQuery.trim())}`)
-        .then(res => res.json())
-        .then(data => {
-          const list = Array.isArray(data) ? data : (data.products || []);
-          setSuggestions(list.slice(0, 5));
+      searchProducts(searchQuery.trim())
+        .then(list => {
+          setSuggestions(Array.isArray(list) ? list.slice(0, 5) : []);
           setShowSuggestions(true);
         })
         .catch(() => {
-          // Fallback searching in local mock
-          import('@/data/mock-products').then(({ MOCK_PRODUCTS }) => {
-            const q = searchQuery.toLowerCase();
-            const filtered = MOCK_PRODUCTS.filter(p =>
-              p.name.toLowerCase().includes(q) ||
-              p.brand.toLowerCase().includes(q) ||
-              p.category.toLowerCase().includes(q)
-            ).slice(0, 5);
-            setSuggestions(filtered);
-            setShowSuggestions(true);
-          });
+          setSuggestions([]);
         })
         .finally(() => {
           setIsSearching(false);

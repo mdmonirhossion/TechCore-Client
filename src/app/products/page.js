@@ -4,9 +4,8 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import Pagination from '@/components/Pagination';
-import { getProducts } from '@/lib/api';
-import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/data/mock-products';
-import { Filter, SlidersHorizontal, ArrowUpDown, X, Loader2 } from 'lucide-react';
+import { getProducts, getCategories, getBrands, isApiError } from '@/lib/api';
+import { Filter, SlidersHorizontal, ArrowUpDown, X, Loader2, AlertCircle } from 'lucide-react';
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -18,7 +17,10 @@ function ProductsContent() {
 
   // 100% Clean state - loads strictly from Backend MongoDB
   const [allProducts, setAllProducts] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [brandsList, setBrandsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   const [selectedCategories, setSelectedCategories] = useState(initialCategory ? [initialCategory] : []);
   const [selectedBrands, setSelectedBrands] = useState([]);
@@ -31,18 +33,26 @@ function ProductsContent() {
 
   const itemsPerPage = 12;
 
-  // Fetch products strictly from Node.js / Express + MongoDB Backend
+  // Fetch products, categories and brands strictly from API
   useEffect(() => {
     let isMounted = true;
-    getProducts()
-      .then(data => {
-        if (isMounted) {
-          setAllProducts(Array.isArray(data) ? data : []);
+    Promise.all([getProducts(), getCategories(), getBrands()])
+      .then(([productsData, categoriesData, brandsData]) => {
+        if (!isMounted) return;
+        if (isApiError(productsData)) {
+          setHasError(true);
+          setAllProducts([]);
+        } else {
+          setAllProducts(Array.isArray(productsData) ? productsData : []);
+          setHasError(false);
         }
+        setCategoriesList(Array.isArray(categoriesData) ? categoriesData : []);
+        setBrandsList(Array.isArray(brandsData) ? brandsData : []);
       })
       .catch((err) => {
         console.error('Failed to load products from server:', err);
         if (isMounted) {
+          setHasError(true);
           setAllProducts([]);
         }
       })
@@ -250,15 +260,15 @@ function ProductsContent() {
           <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white">Categories</h4>
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-2 text-xs">
-              {MOCK_CATEGORIES.map(cat => (
-                <label key={cat.id} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
+              {categoriesList.map(cat => (
+                <label key={cat._id || cat.id || cat.slug} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
                   <input
                     type="checkbox"
-                    checked={selectedCategories.some(c => c.toLowerCase() === cat.slug.toLowerCase())}
+                    checked={selectedCategories.some(c => c.toLowerCase() === (cat.slug || '').toLowerCase())}
                     onChange={() => toggleCategory(cat.slug)}
                     className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                   />
-                  <span className="text-slate-700 dark:text-slate-300">{cat.title}</span>
+                  <span className="text-slate-700 dark:text-slate-300">{cat.name || cat.title || cat.slug}</span>
                 </label>
               ))}
             </div>
@@ -268,8 +278,8 @@ function ProductsContent() {
           <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white">Brands</h4>
             <div className="space-y-1.5 max-h-40 overflow-y-auto text-xs">
-              {MOCK_BRANDS.map(brand => (
-                <label key={brand.id} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
+              {brandsList.map(brand => (
+                <label key={brand._id || brand.id || brand.name} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
                   <input
                     type="checkbox"
                     checked={selectedBrands.includes(brand.name.toUpperCase())}
@@ -304,7 +314,17 @@ function ProductsContent() {
           {isLoading ? (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center space-y-3">
               <Loader2 size={32} className="text-orange-600 animate-spin mx-auto" />
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Loading products from MongoDB Backend...</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Loading products...</h3>
+            </div>
+          ) : hasError ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-rose-200 dark:border-rose-900/50 p-12 text-center space-y-4">
+              <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+                !
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Could not load products</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                Unable to connect to the store server. Please check your connection or try again later.
+              </p>
             </div>
           ) : paginatedProducts.length > 0 ? (
             <div>
@@ -376,15 +396,15 @@ function ProductsContent() {
               <div>
                 <h4 className="font-bold text-slate-900 dark:text-white mb-2">Categories</h4>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {MOCK_CATEGORIES.map(cat => (
-                    <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
+                  {categoriesList.map(cat => (
+                    <label key={cat._id || cat.id || cat.slug} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selectedCategories.some(c => c.toLowerCase() === cat.slug.toLowerCase())}
+                        checked={selectedCategories.some(c => c.toLowerCase() === (cat.slug || '').toLowerCase())}
                         onChange={() => toggleCategory(cat.slug)}
                         className="rounded border-slate-300 text-orange-600"
                       />
-                      <span>{cat.title}</span>
+                      <span>{cat.name || cat.title || cat.slug}</span>
                     </label>
                   ))}
                 </div>

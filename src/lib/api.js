@@ -8,13 +8,55 @@ const getApiBaseUrl = () => {
   return url;
 };
 
-const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl();
+
+export const shouldUseMocks = () => {
+  return process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+};
+
+async function getMockModule() {
+  try {
+    return await import('../data/mock-products.js');
+  } catch {
+    try {
+      // CommonJS fallback
+      return require('../data/mock-products');
+    } catch {
+      try {
+        return require('@/data/mock-products');
+      } catch {
+        return {};
+      }
+    }
+  }
+}
+
+export const createSuccessList = (items = []) => {
+  const list = Array.isArray(items) ? [...items] : [];
+  list.error = false;
+  list.hasError = false;
+  list.errorMessage = null;
+  return list;
+};
+
+export const createErrorList = (errorMessage = 'Failed to load data') => {
+  const list = [];
+  list.error = true;
+  list.hasError = true;
+  list.errorMessage = errorMessage;
+  return list;
+};
+
+export const isApiError = (result) => {
+  return Boolean(result && (result.error || result.hasError));
+};
 
 /**
  * Fetch products list strictly from MongoDB Express Backend
  * Fetches all products across pages (default limit 100) or accepts limit param
  */
 export async function getProducts(params = {}) {
+  const baseUrl = getApiBaseUrl();
   try {
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, val]) => {
@@ -28,10 +70,14 @@ export async function getProducts(params = {}) {
       queryParams.set('limit', '100');
     }
 
-    const firstUrl = `${API_BASE_URL}/api/products?${queryParams.toString()}`;
+    const firstUrl = `${baseUrl}/api/products?${queryParams.toString()}`;
     const res = await fetch(firstUrl, { cache: 'no-store' });
     if (!res.ok) {
-      return [];
+      if (shouldUseMocks()) {
+        const { MOCK_PRODUCTS = [] } = await getMockModule();
+        return createSuccessList(MOCK_PRODUCTS);
+      }
+      return createErrorList(`Failed to fetch products: ${res.statusText || res.status}`);
     }
 
     const data = await res.json();
@@ -42,7 +88,7 @@ export async function getProducts(params = {}) {
     if (!params.page && totalPages > 1) {
       for (let p = 2; p <= totalPages; p++) {
         queryParams.set('page', p.toString());
-        const nextUrl = `${API_BASE_URL}/api/products?${queryParams.toString()}`;
+        const nextUrl = `${baseUrl}/api/products?${queryParams.toString()}`;
         const nextRes = await fetch(nextUrl, { cache: 'no-store' });
         if (nextRes.ok) {
           const nextData = await nextRes.json();
@@ -52,25 +98,30 @@ export async function getProducts(params = {}) {
       }
     }
 
-    return allProducts;
+    return createSuccessList(allProducts);
   } catch (err) {
     console.error('getProducts network error:', err.message);
-    return [];
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return createSuccessList(MOCK_PRODUCTS);
+    }
+    return createErrorList(err.message);
   }
 }
 
 /**
  * Fetch single product by slug or ID strictly from MongoDB Express Backend
  * Calls GET /api/products/slug/:slug with cache: 'no-store', unwraps response.product,
- * returns null on 404 (no mock fallback).
+ * returns null on 404 (no mock fallback unless dev flag is enabled).
  */
 export async function getProductBySlug(slugOrId) {
   if (!slugOrId) return null;
   const target = String(slugOrId).trim();
+  const baseUrl = getApiBaseUrl();
 
   try {
     // 1. Try slug endpoint on backend
-    const slugUrl = `${API_BASE_URL}/api/products/slug/${encodeURIComponent(target.toLowerCase())}`;
+    const slugUrl = `${baseUrl}/api/products/slug/${encodeURIComponent(target.toLowerCase())}`;
     const slugRes = await fetch(slugUrl, { cache: 'no-store' });
     if (slugRes.ok) {
       const data = await slugRes.json();
@@ -78,16 +129,33 @@ export async function getProductBySlug(slugOrId) {
     }
 
     // 2. If 404 on slug, also attempt lookup by ID in case an ID was passed
-    const idUrl = `${API_BASE_URL}/api/products/${encodeURIComponent(target)}`;
+    const idUrl = `${baseUrl}/api/products/${encodeURIComponent(target)}`;
     const idRes = await fetch(idUrl, { cache: 'no-store' });
     if (idRes.ok) {
       const idData = await idRes.json();
       return idData?.product || idData || null;
     }
 
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return MOCK_PRODUCTS.find(p =>
+        String(p.id) === target ||
+        String(p._id) === target ||
+        (p.slug && p.slug.toLowerCase() === target.toLowerCase())
+      ) || null;
+    }
+
     return null;
   } catch (err) {
     console.error(`getProductBySlug network error for "${slugOrId}":`, err.message);
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return MOCK_PRODUCTS.find(p =>
+        String(p.id) === target ||
+        String(p._id) === target ||
+        (p.slug && p.slug.toLowerCase() === target.toLowerCase())
+      ) || null;
+    }
     return null;
   }
 }
@@ -96,20 +164,25 @@ export async function getProductBySlug(slugOrId) {
  * Fetch featured products strictly from MongoDB Express Backend
  */
 export async function getFeaturedProducts() {
+  const baseUrl = getApiBaseUrl();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products?isFeatured=true&limit=10`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/products?isFeatured=true&limit=10`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.products || []);
-      if (list.length > 0) return list;
+      return createSuccessList(list);
     }
-  } catch (e) {}
-
-  try {
-    const { MOCK_PRODUCTS } = require('@/data/mock-products');
-    return MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 10);
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return createSuccessList(MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 10));
+    }
+    return createErrorList(`Failed to fetch featured products: ${res.statusText || res.status}`);
   } catch (e) {
-    return [];
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return createSuccessList(MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 10));
+    }
+    return createErrorList(e.message);
   }
 }
 
@@ -117,22 +190,27 @@ export async function getFeaturedProducts() {
  * Fetch flash sale products strictly from MongoDB Express Backend
  */
 export async function getFlashSaleProducts() {
+  const baseUrl = getApiBaseUrl();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/offers/flash-sale`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/offers/flash-sale`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       let list = [];
       if (data && data.products && Array.isArray(data.products)) list = data.products;
       else if (Array.isArray(data)) list = data;
-      if (list.length > 0) return list;
+      return createSuccessList(list);
     }
-  } catch (e) {}
-
-  try {
-    const { MOCK_PRODUCTS } = require('@/data/mock-products');
-    return MOCK_PRODUCTS.filter(p => p.isFlashSale);
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return createSuccessList(MOCK_PRODUCTS.filter(p => p.isFlashSale));
+    }
+    return createErrorList(`Failed to fetch flash sale: ${res.statusText || res.status}`);
   } catch (e) {
-    return [];
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      return createSuccessList(MOCK_PRODUCTS.filter(p => p.isFlashSale));
+    }
+    return createErrorList(e.message);
   }
 }
 
@@ -141,37 +219,63 @@ export async function getFlashSaleProducts() {
  */
 export async function searchProducts(query = '') {
   const q = (query || '').toLowerCase().trim();
-  if (!q) return [];
+  if (!q) return createSuccessList([]);
+  const baseUrl = getApiBaseUrl();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products?search=${encodeURIComponent(q)}`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/products?search=${encodeURIComponent(q)}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data.products || []);
-      return list;
+      return createSuccessList(list);
     }
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      const list = MOCK_PRODUCTS.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.brand || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      );
+      return createSuccessList(list);
+    }
+    return createErrorList(`Failed to search products: ${res.statusText || res.status}`);
   } catch (e) {
     console.error('❌ Failed to search products from MongoDB Backend:', e.message);
+    if (shouldUseMocks()) {
+      const { MOCK_PRODUCTS = [] } = await getMockModule();
+      const list = MOCK_PRODUCTS.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.brand || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      );
+      return createSuccessList(list);
+    }
+    return createErrorList(e.message);
   }
-  return [];
 }
 
 /**
  * Fetch categories list strictly from MongoDB Express Backend
  */
 export async function getCategories() {
+  const baseUrl = getApiBaseUrl();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/categories`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/categories`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) return data;
+      const list = Array.isArray(data) ? data : [];
+      return createSuccessList(list);
     }
-  } catch (e) {}
-
-  try {
-    const { MOCK_CATEGORIES } = require('@/data/mock-products');
-    return MOCK_CATEGORIES;
+    if (shouldUseMocks()) {
+      const { MOCK_CATEGORIES = [] } = await getMockModule();
+      return createSuccessList(MOCK_CATEGORIES);
+    }
+    return createErrorList(`Failed to fetch categories: ${res.statusText || res.status}`);
   } catch (e) {
-    return [];
+    if (shouldUseMocks()) {
+      const { MOCK_CATEGORIES = [] } = await getMockModule();
+      return createSuccessList(MOCK_CATEGORIES);
+    }
+    return createErrorList(e.message);
   }
 }
 
@@ -179,19 +283,25 @@ export async function getCategories() {
  * Fetch brands list strictly from MongoDB Express Backend
  */
 export async function getBrands() {
+  const baseUrl = getApiBaseUrl();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/brands`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/api/brands`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) return data;
+      const list = Array.isArray(data) ? data : [];
+      return createSuccessList(list);
     }
-  } catch (e) {}
-
-  try {
-    const { MOCK_BRANDS } = require('@/data/mock-products');
-    return MOCK_BRANDS;
+    if (shouldUseMocks()) {
+      const { MOCK_BRANDS = [] } = await getMockModule();
+      return createSuccessList(MOCK_BRANDS);
+    }
+    return createErrorList(`Failed to fetch brands: ${res.statusText || res.status}`);
   } catch (e) {
-    return [];
+    if (shouldUseMocks()) {
+      const { MOCK_BRANDS = [] } = await getMockModule();
+      return createSuccessList(MOCK_BRANDS);
+    }
+    return createErrorList(e.message);
   }
 }
 
@@ -304,5 +414,3 @@ export async function savePcBuildApi(buildData) {
     return { success: false, message: 'Failed to save build to server' };
   }
 }
-
-export { API_BASE_URL };
