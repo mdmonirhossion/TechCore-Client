@@ -2,8 +2,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ShopProvider } from "@/context/ShopContext";
 import Navbar from "@/components/Navbar";
+import MegaMenu from "@/components/MegaMenu";
 import Footer from "@/components/Footer";
 import FloatingActions from "@/components/FloatingActions";
+import { getCategoryTree } from "@/lib/categories";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -65,12 +67,31 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const categoryTree = await getCategoryTree();
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
       <head>
+        {/* Automatic Extension Attribute Cleaner to eliminate bis_skin_checked hydration mismatch */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              try{
+                var o=new MutationObserver(function(m){
+                  for(var i=0;i<m.length;i++){
+                    var r=m[i];
+                    if(r.type==='attributes'&&r.attributeName==='bis_skin_checked'&&r.target){
+                      r.target.removeAttribute('bis_skin_checked');
+                    }
+                  }
+                });
+                o.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:['bis_skin_checked']});
+              }catch(e){}
+            })();`,
+          }}
+        />
         {gtmId && (
           <script
             dangerouslySetInnerHTML={{
@@ -95,7 +116,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </noscript>
         )}
         <ShopProvider>
-          <Navbar />
+          <Navbar categoryTree={categoryTree} />
+          <MegaMenu categoryTree={categoryTree} isOpen={false} />
           <main className="w-full flex-grow flex flex-col">{children}</main>
           <Footer />
           <FloatingActions />

@@ -148,8 +148,11 @@ html.dark .footer-links {
 }
 
 html, body {
-  overflow-x: hidden !important;
-  max-width: 100vw;
+  max-width: 100%;
+  overflow-x: clip;
+}
+@supports not (overflow: clip) {
+  html { overflow-x: hidden; }  
 }
 
 body {

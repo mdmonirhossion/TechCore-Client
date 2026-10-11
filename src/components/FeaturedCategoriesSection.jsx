@@ -62,7 +62,7 @@ export default function FeaturedCategoriesSection() {
           return (
             <Link
               key={cat.id}
-              href={`/category/${cat.slug}`}
+              href={`/category/${cat.fullPath || cat.slug}`}
               className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#ea580c] hover:shadow-lg hover:shadow-orange-500/10 group"
             >
               <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-700 flex items-center justify-center mb-2 group-hover:bg-orange-50 group-hover:text-[#ea580c] transition-colors">

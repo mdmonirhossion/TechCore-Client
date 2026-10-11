@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useRouter as useNextRouter } from 'next/navigation';
+import MobileCategoryMenu from '@/components/MobileCategoryMenu';
 import { useShop } from '@/context/ShopContext';
 import {
   Cpu,
@@ -34,61 +34,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
-export const CATEGORIES_LIST = [
-  {
-    title: 'Desktop',
-    slug: 'desktop',
-    subcategories: [
-      { title: 'Gaming PC', items: ['Intel Gaming PC', 'AMD Gaming PC', 'Custom Rig'] },
-      { title: 'Brand PC', items: ['HP', 'Dell', 'Lenovo', 'ASUS'] },
-      { title: 'All-in-One PC', items: ['iMac', 'HP AIO', 'Dell Inspiron'] }
-    ]
-  },
-  {
-    title: 'Laptop',
-    slug: 'laptop',
-    subcategories: [
-      { title: 'Gaming Laptop', items: ['ASUS ROG / TUF', 'Lenovo Legion / LOQ', 'MSI Gaming', 'HP Victus'] },
-      { title: 'Ultrabook', items: ['MacBook Pro', 'MacBook Air', 'Dell XPS', 'HP Spectre'] },
-      { title: 'Budget Laptop', items: ['Core i3 Laptops', 'Ryzen 3 Laptops'] }
-    ]
-  },
-  {
-    title: 'Components',
-    slug: 'processor',
-    subcategories: [
-      { title: 'Processor', items: ['Intel Core i9 / i7 / i5', 'AMD Ryzen 9 / 7 / 5', 'Server CPU'] },
-      { title: 'Motherboard', items: ['Intel Socket LGA1700', 'AMD Socket AM5 / AM4'] },
-      { title: 'RAM', items: ['Desktop DDR5 RAM', 'Desktop DDR4 RAM', 'Laptop RAM'] },
-      { title: 'GPU', items: ['NVIDIA RTX 4090 / 4080', 'NVIDIA RTX 4070 / 4060', 'AMD Radeon RX'] }
-    ]
-  },
-  {
-    title: 'Monitor',
-    slug: 'monitor',
-    subcategories: [
-      { title: 'Gaming Monitor', items: ['144Hz / 165Hz Monitors', '240Hz Gaming Monitors', 'OLED Monitors'] },
-      { title: '4K & Professional', items: ['4K UHD Monitors', 'IPS Color Accurate Monitors'] }
-    ]
-  },
-  { title: 'GPU', slug: 'gpu' },
-  { title: 'Processor', slug: 'processor' },
-  { title: 'Motherboard', slug: 'motherboard' },
-  { title: 'RAM', slug: 'ram' },
-  { title: 'Storage', slug: 'storage' },
-  { title: 'Power Supply', slug: 'psu' },
-  { title: 'Casing', slug: 'casing' },
-  { title: 'Networking', slug: 'networking' },
-  { title: 'Accessories', slug: 'accessories' },
-  { title: 'Gaming', slug: 'gaming' },
-  { title: 'Mobile', slug: 'mobile' },
-  { title: 'Smart Watch', slug: 'smartwatch' },
-  { title: 'Camera', slug: 'camera' },
-  { title: 'Office', slug: 'office' },
-  { title: 'Software', slug: 'software' }
-];
-
-export default function Navbar() {
+export default function Navbar({ categoryTree = [] }) {
   const router = useNextRouter();
   const { cart, wishlist, compareItems, user, theme, toggleTheme } = useShop();
 
@@ -157,14 +103,14 @@ export default function Navbar() {
   const compareCount = mounted ? compareItems.length : 0;
 
   return (
-    <header className="w-full z-50 sticky top-0 bg-white shadow-sm border-b border-slate-200">
+    <header suppressHydrationWarning className="w-full z-50 sticky top-0 bg-white shadow-sm border-b border-slate-200">
       
       {/* MONARCH IT ROYAL BLUE TOP HEADER (~74px height) */}
-      <div className="bg-gradient-to-r from-[#0f2bb0] via-[#1337b8] to-[#0e2482] text-white px-4 lg:px-8 py-3.5 min-h-[74px]">
-        <div className="max-w-[1320px] mx-auto flex items-center justify-between gap-4">
+      <div suppressHydrationWarning className="bg-gradient-to-r from-[#0f2bb0] via-[#1337b8] to-[#0e2482] text-white px-4 lg:px-8 py-3.5 min-h-[74px]">
+        <div suppressHydrationWarning className="max-w-[1320px] mx-auto flex items-center justify-between gap-4">
         
         {/* Logo Section */}
-        <div className="flex items-center gap-3">
+        <div suppressHydrationWarning className="flex items-center gap-3">
           <button
             className="lg:hidden text-white p-1 hover:bg-white/10 rounded-lg"
             onClick={() => setMobileMenuOpen(true)}
@@ -185,7 +131,7 @@ export default function Navbar() {
         </div>
 
         {/* 5. SEARCH BAR */}
-        <div className="relative flex-1 max-w-2xl hidden md:block">
+        <div suppressHydrationWarning className="relative flex-1 max-w-2xl hidden md:block">
           <form onSubmit={handleSearchSubmit} className="relative">
             <input
               type="text"
@@ -245,7 +191,7 @@ export default function Navbar() {
         </div>
 
         {/* 6. HEADER ACTIONS */}
-        <div className="flex items-center gap-3 lg:gap-5">
+        <div suppressHydrationWarning className="flex items-center gap-3 lg:gap-5">
           
           {/* Offers */}
           <Link href="/offers" className="hidden lg:flex items-center gap-2 text-slate-200 hover:text-white group">
@@ -360,40 +306,56 @@ export default function Navbar() {
       {/* 7. MEGA CATEGORY NAVIGATION */}
       <nav className="hidden lg:block bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 transition-colors">
         <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800 dark:text-slate-200">
-          {CATEGORIES_LIST.map((cat, index) => {
-            const hasSub = cat.subcategories && cat.subcategories.length > 0;
+          {categoryTree.map((cat, index) => {
+            const catChildren = cat.children || cat.subcategories || [];
+            const hasSub = catChildren.length > 0;
+            const catTitle = cat.name || cat.title || '';
+            const catPath = cat.fullPath || cat.slug || '';
             return (
               <div
-                key={index}
+                key={cat.id || index}
                 className="relative group py-3.5 hover:text-orange-600 dark:hover:text-orange-400 border-b-2 border-transparent hover:border-orange-600 transition-colors cursor-pointer"
-                onMouseEnter={() => setActiveHoverCategory(cat.title)}
+                onMouseEnter={() => setActiveHoverCategory(catTitle)}
                 onMouseLeave={() => setActiveHoverCategory(null)}
               >
-                <Link href={`/category/${cat.slug}`} className="flex items-center gap-1">
-                  <span>{cat.title}</span>
+                <Link href={`/category/${catPath}`} className="flex items-center gap-1">
+                  <span>{catTitle}</span>
                   {hasSub && <ChevronDown size={12} className="text-slate-400 group-hover:text-orange-600" />}
                 </Link>
 
                 {/* Dropdown Flyout */}
-                {hasSub && activeHoverCategory === cat.title && (
+                {hasSub && activeHoverCategory === catTitle && (
                   <div className="absolute left-0 top-full mt-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-b-xl shadow-2xl p-6 min-w-[500px] z-50 grid grid-cols-2 gap-6 text-slate-800 dark:text-slate-200 font-normal">
-                    {cat.subcategories.map((sub, sIdx) => (
-                      <div key={sIdx} className="space-y-2">
-                        <h5 className="font-bold text-xs text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 flex items-center gap-1">
-                          <ChevronRight size={12} className="text-orange-600" />
-                          {sub.title}
-                        </h5>
-                        <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                          {sub.items.map((item, iIdx) => (
-                            <li key={iIdx}>
-                              <Link href={`/category/${cat.slug}?filter=${encodeURIComponent(item)}`} className="hover:text-orange-600 dark:hover:text-orange-400 hover:underline block py-0.5">
-                                {item}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+                    {catChildren.map((sub, sIdx) => {
+                      const subTitle = sub.name || sub.title || '';
+                      const subPath = sub.fullPath || sub.slug || '';
+                      const subChildren = sub.children || sub.items || [];
+                      return (
+                        <div key={sub.id || sIdx} className="space-y-2">
+                          <h5 className="font-bold text-xs text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 flex items-center gap-1">
+                            <ChevronRight size={12} className="text-orange-600" />
+                            <Link href={`/category/${subPath}`} className="hover:text-orange-600 dark:hover:text-orange-400">
+                              {subTitle}
+                            </Link>
+                          </h5>
+                          {subChildren.length > 0 && (
+                            <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                              {subChildren.map((item, iIdx) => {
+                                const itemTitle = item.name || item.title || (typeof item === 'string' ? item : '');
+                                const itemPath = item.fullPath || item.slug || (typeof item === 'string' ? `${subPath}/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}` : subPath);
+                                return (
+                                  <li key={item.id || iIdx}>
+                                    <Link href={`/category/${itemPath}`} className="hover:text-orange-600 dark:hover:text-orange-400 hover:underline block py-0.5">
+                                      {itemTitle}
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -435,17 +397,11 @@ export default function Navbar() {
               </Link>
 
               <div className="font-bold text-xs uppercase tracking-wider text-slate-400 pt-3">Categories</div>
-              {CATEGORIES_LIST.map((cat, idx) => (
-                <Link
-                  key={idx}
-                  href={`/category/${cat.slug}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-orange-600"
-                >
-                  <span>{cat.title}</span>
-                  <ChevronRight size={14} className="text-slate-400" />
-                </Link>
-              ))}
+              <MobileCategoryMenu
+                tree={categoryTree}
+                onNavigate={() => setMobileMenuOpen(false)}
+                isOpen={mobileMenuOpen}
+              />
             </div>
           </div>
         </div>
