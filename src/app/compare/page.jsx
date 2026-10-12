@@ -91,6 +91,7 @@ function getAvailabilityData(prod) {
     case 'PRE_ORDER':
       return { label: 'Pre Order', className: 'text-amber-600 font-bold' };
     case 'UPCOMING':
+    case 'UP_COMING':
       return { label: 'Upcoming', className: 'text-blue-600 font-bold' };
     default:
       return { label: status.replace(/_/g, ' '), className: 'text-gray-800 font-medium' };
@@ -109,18 +110,22 @@ function CompareContent() {
   } = useShop();
 
   const [highlightDiff, setHighlightDiff] = useState(false);
-  const [loadingParams, setLoadingParams] = useState(false);
+  const idsParam = searchParams.get('ids');
+  const p1Param = searchParams.get('p1');
+  const p2Param = searchParams.get('p2');
+  const hasQueryParams = Boolean(idsParam || p1Param || p2Param);
+
+  const [loadingParams, setLoadingParams] = useState(hasQueryParams);
   const processedParamsRef = useRef(false);
 
   // Parse and fetch query params: ?ids=a,b,c or ?p1=...&p2=...
   useEffect(() => {
     if (!isHydrated || processedParamsRef.current) return;
 
-    const idsParam = searchParams.get('ids');
-    const p1Param = searchParams.get('p1');
-    const p2Param = searchParams.get('p2');
-
-    if (!idsParam && !p1Param && !p2Param) return;
+    if (!idsParam && !p1Param && !p2Param) {
+      setLoadingParams(false);
+      return;
+    }
 
     processedParamsRef.current = true;
     setLoadingParams(true);

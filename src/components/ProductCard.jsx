@@ -129,7 +129,7 @@ export default function ProductCard({ product }) {
           {/* Brand & Rating */}
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="font-bold text-[#0284c7] uppercase text-[11px] tracking-wider">
-              {product.brand || 'ASUS'}
+              {product.brand || ''}
             </span>
             <div className="flex items-center gap-1 text-amber-500 font-semibold text-[11px]">
               <Star size={12} className="fill-amber-400 text-amber-400" />

@@ -36,6 +36,7 @@ const isValidCompareItem = (item) => {
   return Boolean(
     item &&
     typeof item === 'object' &&
+    !Array.isArray(item) &&
     (item.id || item._id) &&
     (item.name || item.slug)
   );
@@ -142,10 +143,11 @@ export function ShopProvider({ children }) {
   }, [compareItems, isHydrated]);
 
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       localStorage.setItem('techcore_wishlist', JSON.stringify(wishlist));
     } catch (e) {}
-  }, [wishlist]);
+  }, [wishlist, isHydrated]);
 
   useEffect(() => {
     try {

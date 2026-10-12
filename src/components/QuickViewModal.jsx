@@ -73,7 +73,7 @@ export default function QuickViewModal({ product, onClose }) {
             
             <div>
               <span className="text-[11px] font-extrabold text-[#0284c7] uppercase tracking-wider">
-                {product.brand || 'ASUS'}
+                {product.brand || ''}
               </span>
               <h2 className="text-base font-extrabold text-slate-900 leading-tight mt-0.5">
                 {pName}

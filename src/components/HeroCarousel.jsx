@@ -18,7 +18,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 
-function ProductSearchBox({ placeholder, onSelectProduct }) {
+function ProductSearchBox({ placeholder, onSelectProduct, onQueryChange }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -63,6 +63,7 @@ function ProductSearchBox({ placeholder, onSelectProduct }) {
     setSelectedProduct(prod);
     setQuery(prod.name);
     setIsOpen(false);
+    if (onQueryChange) onQueryChange(prod.name, prod);
     onSelectProduct(prod);
   };
 
@@ -71,6 +72,7 @@ function ProductSearchBox({ placeholder, onSelectProduct }) {
     setQuery('');
     setResults([]);
     setIsOpen(false);
+    if (onQueryChange) onQueryChange('', null);
   };
 
   return (
@@ -80,9 +82,13 @@ function ProductSearchBox({ placeholder, onSelectProduct }) {
           type="text"
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            if (selectedProduct && e.target.value !== selectedProduct.name) {
+            const val = e.target.value;
+            setQuery(val);
+            if (selectedProduct && val !== selectedProduct.name) {
               setSelectedProduct(null);
+              if (onQueryChange) onQueryChange(val, null);
+            } else if (onQueryChange) {
+              onQueryChange(val, selectedProduct);
             }
           }}
           onFocus={() => {
@@ -95,7 +101,7 @@ function ProductSearchBox({ placeholder, onSelectProduct }) {
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-2 text-slate-400 hover:text-slate-600 text-xs leading-none"
+            className="absolute right-2 text-slate-400 hover:text-slate-600 text-xs leading-none cursor-pointer"
             title="Clear"
           >
             &times;
@@ -119,7 +125,7 @@ function ProductSearchBox({ placeholder, onSelectProduct }) {
                 key={pId}
                 type="button"
                 onClick={() => handleSelect(prod)}
-                className="w-full px-2.5 py-2 text-left flex items-center gap-2 hover:bg-blue-50 transition-colors"
+                className="w-full px-2.5 py-2 text-left flex items-center gap-2 hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 <div className="w-8 h-8 relative rounded bg-slate-50 border shrink-0 overflow-hidden">
                   <Image src={pImg} alt={prod.name} fill className="object-contain p-0.5" />
@@ -179,6 +185,21 @@ export default function HeroCarousel() {
   const router = useRouter();
   const { toggleCompare } = useShop();
   const swiperRef = useRef(null);
+  const [search1, setSearch1] = useState({ text: '', product: null });
+  const [search2, setSearch2] = useState({ text: '', product: null });
+
+  const handleCompareSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (search1.text.trim() && !search1.product) {
+      params.append('p1', search1.text.trim());
+    }
+    if (search2.text.trim() && !search2.product) {
+      params.append('p2', search2.text.trim());
+    }
+    const qs = params.toString();
+    router.push(qs ? `/compare?${qs}` : '/compare');
+  };
 
   return (
     <div className="w-full max-w-[1320px] mx-auto my-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -289,19 +310,24 @@ export default function HeroCarousel() {
             </div>
 
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                router.push('/compare');
-              }}
+              onSubmit={handleCompareSubmit}
               className="space-y-2.5"
             >
               <ProductSearchBox
                 placeholder="Search Product 1..."
-                onSelectProduct={(prod) => toggleCompare(prod)}
+                onSelectProduct={(prod) => {
+                  setSearch1({ text: prod.name, product: prod });
+                  toggleCompare(prod);
+                }}
+                onQueryChange={(text, prod) => setSearch1({ text, product: prod })}
               />
               <ProductSearchBox
                 placeholder="Search Product 2..."
-                onSelectProduct={(prod) => toggleCompare(prod)}
+                onSelectProduct={(prod) => {
+                  setSearch2({ text: prod.name, product: prod });
+                  toggleCompare(prod);
+                }}
+                onQueryChange={(text, prod) => setSearch2({ text, product: prod })}
               />
 
               <button
