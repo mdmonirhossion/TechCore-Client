@@ -2,7 +2,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ShopProvider } from "@/context/ShopContext";
 import Navbar from "@/components/Navbar";
-import MegaMenu from "@/components/MegaMenu";
 import Footer from "@/components/Footer";
 import FloatingActions from "@/components/FloatingActions";
 import { getCategoryTree } from "@/lib/categories";
@@ -117,7 +116,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         )}
         <ShopProvider>
           <Navbar categoryTree={categoryTree} />
-          <MegaMenu categoryTree={categoryTree} isOpen={false} />
           <main className="w-full flex-grow flex flex-col">{children}</main>
           <Footer />
           <FloatingActions />

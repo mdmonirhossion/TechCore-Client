@@ -165,7 +165,7 @@ const bannerSlides = [
     title: 'ASUS & MSI GeForce RTX 4060 / 4070 OC',
     subtitle: 'Ultimate Ray Tracing & DLSS 3 FPS Boost with 0% EMI Facility!',
     linkText: 'Shop Graphics Cards',
-    link: '/category/gpu',
+    link: '/category/component/graphics-card',
     bgGradient: 'linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%)',
     img: 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop'
   },

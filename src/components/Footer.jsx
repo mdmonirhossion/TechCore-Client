@@ -64,12 +64,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-slate-600">
               <li><Link href="/category/laptop" className="hover:text-orange-600 hover:underline">Gaming Laptop</Link></li>
-              <li><Link href="/category/desktop" className="hover:text-orange-600 hover:underline">Desktop PC</Link></li>
-              <li><Link href="/category/gpu" className="hover:text-orange-600 hover:underline">Graphics Card</Link></li>
+              <li><Link href="/category/desktop-pc" className="hover:text-orange-600 hover:underline">Desktop PC</Link></li>
+              <li><Link href="/category/component/graphics-card" className="hover:text-orange-600 hover:underline">Graphics Card</Link></li>
               <li><Link href="/category/monitor" className="hover:text-orange-600 hover:underline">Gaming Monitor</Link></li>
-              <li><Link href="/category/processor" className="hover:text-orange-600 hover:underline">Processor</Link></li>
-              <li><Link href="/category/ram" className="hover:text-orange-600 hover:underline">RAM Memory</Link></li>
-              <li><Link href="/category/storage" className="hover:text-orange-600 hover:underline">SSD Storage</Link></li>
+              <li><Link href="/category/component/processor" className="hover:text-orange-600 hover:underline">Processor</Link></li>
+              <li><Link href="/category/component/ram" className="hover:text-orange-600 hover:underline">RAM Memory</Link></li>
+              <li><Link href="/category/component/storage" className="hover:text-orange-600 hover:underline">SSD Storage</Link></li>
             </ul>
           </div>
 

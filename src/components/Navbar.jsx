@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter as useNextRouter } from 'next/navigation';
 import MobileCategoryMenu from '@/components/MobileCategoryMenu';
+import DesktopCategoryNav from '@/components/DesktopCategoryNav';
 import { useShop } from '@/context/ShopContext';
 import { searchProducts } from '@/lib/api';
 import {
@@ -45,7 +46,6 @@ export default function Navbar({ categoryTree = [] }) {
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeHoverCategory, setActiveHoverCategory] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
@@ -291,66 +291,8 @@ export default function Navbar({ categoryTree = [] }) {
         </form>
       </div>
 
-      {/* 7. MEGA CATEGORY NAVIGATION */}
-      <nav className="hidden lg:block bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-between font-sans text-xs font-bold text-slate-800 dark:text-slate-200">
-          {categoryTree.map((cat, index) => {
-            const catChildren = cat.children || cat.subcategories || [];
-            const hasSub = catChildren.length > 0;
-            const catTitle = cat.name || cat.title || '';
-            const catPath = cat.fullPath || cat.slug || '';
-            return (
-              <div
-                key={cat.id || index}
-                className="relative group py-3.5 hover:text-orange-600 dark:hover:text-orange-400 border-b-2 border-transparent hover:border-orange-600 transition-colors cursor-pointer"
-                onMouseEnter={() => setActiveHoverCategory(catTitle)}
-                onMouseLeave={() => setActiveHoverCategory(null)}
-              >
-                <Link href={`/category/${catPath}`} className="flex items-center gap-1">
-                  <span>{catTitle}</span>
-                  {hasSub && <ChevronDown size={12} className="text-slate-400 group-hover:text-orange-600" />}
-                </Link>
-
-                {/* Dropdown Flyout */}
-                {hasSub && activeHoverCategory === catTitle && (
-                  <div className="absolute left-0 top-full mt-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-b-xl shadow-2xl p-6 min-w-[500px] z-50 grid grid-cols-2 gap-6 text-slate-800 dark:text-slate-200 font-normal">
-                    {catChildren.map((sub, sIdx) => {
-                      const subTitle = sub.name || sub.title || '';
-                      const subPath = sub.fullPath || sub.slug || '';
-                      const subChildren = sub.children || sub.items || [];
-                      return (
-                        <div key={sub.id || sIdx} className="space-y-2">
-                          <h5 className="font-bold text-xs text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 flex items-center gap-1">
-                            <ChevronRight size={12} className="text-orange-600" />
-                            <Link href={`/category/${subPath}`} className="hover:text-orange-600 dark:hover:text-orange-400">
-                              {subTitle}
-                            </Link>
-                          </h5>
-                          {subChildren.length > 0 && (
-                            <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                              {subChildren.map((item, iIdx) => {
-                                const itemTitle = item.name || item.title || (typeof item === 'string' ? item : '');
-                                const itemPath = item.fullPath || item.slug || (typeof item === 'string' ? `${subPath}/${item.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}` : subPath);
-                                return (
-                                  <li key={item.id || iIdx}>
-                                    <Link href={`/category/${itemPath}`} className="hover:text-orange-600 dark:hover:text-orange-400 hover:underline block py-0.5">
-                                      {itemTitle}
-                                    </Link>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </nav>
+      {/* 7. DESKTOP CASCADING CATEGORY NAVIGATION */}
+      <DesktopCategoryNav tree={categoryTree} />
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (

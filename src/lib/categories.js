@@ -107,14 +107,6 @@ export async function getTopLevelSlugs() {
     });
   }
 
-  // Also include mock categories from catalog
-  if (Array.isArray(MOCK_CATEGORIES)) {
-    MOCK_CATEGORIES.forEach((node) => {
-      const s = (node.slug || node.id || '').toLowerCase();
-      if (s) slugs.add(s);
-    });
-  }
-
   // Common standard top-level tech slugs
   const wellKnown = [
     'desktop',
