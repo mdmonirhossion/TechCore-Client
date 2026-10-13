@@ -90,6 +90,26 @@ export default function Footer() {
 
         </div>
 
+        {/* SSLCommerz Payment Partners Banner */}
+        <div className="py-6 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-semibold text-slate-600">
+            <span>Verified Secure Payments via SSLCommerz (Cards, bKash, Nagad, Rocket & Internet Banking)</span>
+          </div>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.sslcommerz.com/"
+            title="SSLCommerz"
+            className="inline-block hover:opacity-90 transition-opacity"
+          >
+            <img
+              style={{ width: '300px', height: 'auto' }}
+              src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-01.png"
+              alt="SSLCommerz"
+            />
+          </a>
+        </div>
+
         {/* Footer Bottom */}
         <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>

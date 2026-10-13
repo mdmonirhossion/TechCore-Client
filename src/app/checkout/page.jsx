@@ -312,9 +312,24 @@ export default function CheckoutPage() {
                   onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                   className="text-blue-600"
                 />
-                <div>
+                <div className="flex-1">
                   <span className="font-bold text-slate-900 block">SSLCommerz (bKash, Nagad, Rocket, Cards)</span>
                   <span className="text-[11px] text-slate-500">Pay securely via any BD debit/credit card or mobile wallet</span>
+                  <div className="mt-2.5">
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href="https://www.sslcommerz.com/"
+                      title="SSLCommerz"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <img
+                        style={{ width: '300px', height: 'auto' }}
+                        src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-01.png"
+                        alt="SSLCommerz"
+                      />
+                    </a>
+                  </div>
                 </div>
               </label>
 
