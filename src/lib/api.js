@@ -414,3 +414,36 @@ export async function savePcBuildApi(buildData) {
     return { success: false, message: 'Failed to save build to server' };
   }
 }
+
+/**
+ * Create SSLCommerz Payment Invoice (Payment Link, QR Code, Bangla QR)
+ * Calls POST /api/payment/sslcommerz/invoice
+ * @param {string} orderId
+ * @param {Object} options - { isBanglaQr, sendEmail, sendSms, refer }
+ */
+export async function createPaymentInvoiceApi(orderId, options = {}) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/payment/sslcommerz/invoice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, ...options })
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message || 'Failed to connect to invoice payment server' };
+  }
+}
+
+/**
+ * Retrieve SSLCommerz Payment Invoice for an order
+ * Calls GET /api/payment/sslcommerz/invoice/:orderId
+ * @param {string} orderId
+ */
+export async function getPaymentInvoiceApi(orderId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/payment/sslcommerz/invoice/${encodeURIComponent(orderId)}`);
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message || 'Failed to retrieve invoice payment data' };
+  }
+}

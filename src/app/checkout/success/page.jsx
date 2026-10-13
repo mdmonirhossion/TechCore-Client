@@ -193,6 +193,37 @@ function SuccessContent() {
         </div>
       </div>
 
+      {/* SSLCommerz Invoice Payment & QR Code (If unpaid/pending and invoice exists) */}
+      {(order.paymentDetails?.payUrl || order.paymentDetails?.qrImageUrl) && !isPaid && (
+        <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 max-w-md mx-auto text-center space-y-3 shadow-md">
+          <div className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center justify-center gap-1.5 text-orange-600">
+            <span>SSLCommerz Invoice Payment</span>
+          </div>
+          {order.paymentDetails.qrImageUrl && (
+            <div className="flex flex-col items-center justify-center py-2">
+              <img
+                src={order.paymentDetails.qrImageUrl}
+                alt="SSLCommerz QR Code"
+                className="w-44 h-44 object-contain rounded-xl border border-slate-200 shadow-sm"
+              />
+              <span className="text-[11px] text-slate-500 font-semibold mt-1.5">
+                Scan with any Bangladeshi banking or bKash/Nagad app
+              </span>
+            </div>
+          )}
+          {order.paymentDetails.payUrl && (
+            <a
+              href={order.paymentDetails.payUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl shadow transition-all w-full"
+            >
+              Pay Now via SSLCommerz Link
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Context Description */}
       {isPending ? (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-4 rounded-xl max-w-md mx-auto space-y-2">

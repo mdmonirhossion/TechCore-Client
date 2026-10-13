@@ -6,6 +6,26 @@ import { Plus, Minus, ChevronRight } from 'lucide-react';
 import { CATEGORY_TREE } from '@/data/category-tree';
 import { normalizeTree } from '@/lib/categories';
 
+const FALLBACK_TOP_LEVEL = [
+  { name: 'Desktop PC', fullPath: 'desktop-pc', slug: 'desktop-pc', children: [] },
+  { name: 'Gaming Laptop', fullPath: 'laptop', slug: 'laptop', children: [] },
+  { name: 'Component', fullPath: 'component', slug: 'component', children: [] },
+  { name: 'Monitor', fullPath: 'monitor', slug: 'monitor', children: [] },
+  { name: 'UPS', fullPath: 'ups', slug: 'ups', children: [] },
+  { name: 'Tablet', fullPath: 'tablet', slug: 'tablet', children: [] },
+  { name: 'Office Equipment', fullPath: 'office-equipment', slug: 'office-equipment', children: [] },
+  { name: 'Camera', fullPath: 'camera', slug: 'camera', children: [] },
+  { name: 'Security', fullPath: 'security', slug: 'security', children: [] },
+  { name: 'Networking', fullPath: 'networking', slug: 'networking', children: [] },
+  { name: 'Software', fullPath: 'software', slug: 'software', children: [] },
+  { name: 'Server & Storage', fullPath: 'server-storage', slug: 'server-storage', children: [] },
+  { name: 'Accessories', fullPath: 'accessories', slug: 'accessories', children: [] },
+  { name: 'Gadget', fullPath: 'gadget', slug: 'gadget', children: [] },
+  { name: 'Gaming', fullPath: 'gaming', slug: 'gaming', children: [] },
+  { name: 'TV', fullPath: 'tv', slug: 'tv', children: [] },
+  { name: 'Appliance', fullPath: 'appliance', slug: 'appliance', children: [] }
+];
+
 /**
  * MobileCategoryMenu: An accessible accordion category menu for the mobile drawer.
  * - Only one sibling may be expanded at a time per level.
@@ -14,6 +34,7 @@ import { normalizeTree } from '@/lib/categories';
  * - Expanded parents display a "Show All {name}" link first.
  * - Smooth CSS-only height transition.
  * - Resets expanded state on close & locks body scroll when open.
+ * - Falls back to top-level list if tree is empty or failed.
  */
 export default function MobileCategoryMenu({
   tree = [],
@@ -42,11 +63,18 @@ export default function MobileCategoryMenu({
     }
   }, [isOpen]);
 
-  // Fallback if tree is empty or invalid
-  const categories =
-    Array.isArray(tree) && tree.length > 0
-      ? tree
-      : normalizeTree(CATEGORY_TREE);
+  // Fallback if tree is empty or failed: use normalized CATEGORY_TREE or top-level list
+  let categories = [];
+  if (Array.isArray(tree) && tree.length > 0) {
+    categories = tree;
+  } else {
+    try {
+      const normalized = normalizeTree(CATEGORY_TREE);
+      categories = Array.isArray(normalized) && normalized.length > 0 ? normalized : FALLBACK_TOP_LEVEL;
+    } catch {
+      categories = FALLBACK_TOP_LEVEL;
+    }
+  }
 
   const toggleExpand = (parentKey, childKey) => {
     setExpandedMap((prev) => {
