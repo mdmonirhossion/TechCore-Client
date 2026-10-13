@@ -67,10 +67,89 @@ export function normalizeTree(tree) {
 }
 
 /**
+ * Merges API tree with static category tree to ensure all categories and subcategories are populated
+ */
+function getCanonicalKey(rawKey) {
+  if (!rawKey) return '';
+  let k = String(rawKey).toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (k === 'desktop' || k === 'desktoppc' || k === 'desktopsworkstations' || k === 'desktopworkstation') return 'desktop';
+  if (k === 'laptop' || k === 'laptops' || k === 'gaminglaptop') return 'laptop';
+  if (k === 'component' || k === 'components') return 'component';
+  if (k === 'monitor' || k === 'monitors' || k === 'gamingmonitor' || k === 'gamingmonitors') return 'monitor';
+  if (k === 'ups') return 'ups';
+  if (k === 'officeequipment' || k === 'office') return 'office-equipment';
+  if (k === 'mobileaccessories' || k === 'mobileaccessory' || k === 'earbudsaudio' || k === 'smartwatch') return 'mobile-accessories';
+  if (k === 'ac' || k === 'airconditioner') return 'ac';
+  if (k === 'security' || k === 'securitycamera') return 'security';
+  if (k === 'networking') return 'networking';
+  if (k === 'accessories' || k === 'accessoriesperipherals' || k === 'accessoriesperipheral') return 'accessories';
+  if (k === 'serverstorage' || k === 'server' || k === 'storage') return 'server-storage';
+  if (k === 'gadget' || k === 'gadgets') return 'gadget';
+  if (k === 'gaming') return 'gaming';
+  if (k === 'tv' || k === 'television') return 'tv';
+  if (k === 'appliance' || k === 'appliances') return 'appliance';
+  if (k.endsWith('s') && k.length > 3) k = k.slice(0, -1);
+  return k;
+}
+
+/**
+ * Merges API tree with static category tree to ensure all categories and subcategories are populated without duplicates
+ */
+export function mergeCategoryTrees(apiTree = [], staticTree = []) {
+  if (!Array.isArray(apiTree) || apiTree.length === 0) return staticTree;
+  if (!Array.isArray(staticTree) || staticTree.length === 0) return apiTree;
+
+  const merged = [];
+  const processedKeys = new Set();
+
+  // First iterate through staticTree so top categories appear in clean, standard order
+  staticTree.forEach((staticNode) => {
+    const rawKey = staticNode.slug || staticNode.fullPath || staticNode.name || '';
+    const canonKey = getCanonicalKey(rawKey);
+    processedKeys.add(canonKey);
+
+    // Find any matching apiNode
+    const apiNode = apiTree.find((a) => {
+      const aKey = getCanonicalKey(a.slug || a.fullPath || a.name || '');
+      return aKey === canonKey;
+    });
+
+    if (apiNode) {
+      const apiChildren = Array.isArray(apiNode.children) ? apiNode.children : [];
+      const staticChildren = Array.isArray(staticNode.children) ? staticNode.children : [];
+      const children = staticChildren.length > 0 ? staticChildren : apiChildren;
+
+      merged.push({
+        ...staticNode,
+        ...apiNode,
+        name: staticNode.name || apiNode.name,
+        fullPath: staticNode.fullPath || apiNode.fullPath || staticNode.slug,
+        slug: staticNode.slug || apiNode.slug,
+        children
+      });
+    } else {
+      merged.push(staticNode);
+    }
+  });
+
+  // Then append any non-standard extra categories from API if they exist
+  apiTree.forEach((apiNode) => {
+    const aKey = getCanonicalKey(apiNode.slug || apiNode.fullPath || apiNode.name || '');
+    if (aKey && !processedKeys.has(aKey)) {
+      processedKeys.add(aKey);
+      merged.push(apiNode);
+    }
+  });
+
+  return merged;
+}
+
+/**
  * Fetches the category tree from the API with Next.js ISR (revalidate: 300).
- * Falls back to CATEGORY_TREE from data/category-tree.js on failure or empty response.
+ * Merges with comprehensive CATEGORY_TREE from data/category-tree.js so all categories and subcategories show.
  */
 export async function getCategoryTree() {
+  const staticTree = normalizeTree(CATEGORY_TREE);
   try {
     const res = await fetch(`${API_BASE_URL}/api/categories/tree`, {
       next: { revalidate: 300 }
@@ -79,14 +158,14 @@ export async function getCategoryTree() {
       const data = await res.json();
       const list = Array.isArray(data) ? data : (data?.tree || data?.categories || []);
       if (list && list.length > 0) {
-        return normalizeTree(list);
+        return mergeCategoryTrees(normalizeTree(list), staticTree);
       }
     }
   } catch (err) {
     // Network or server unreachable, fallback to normalized static tree
   }
 
-  return normalizeTree(CATEGORY_TREE);
+  return staticTree;
 }
 
 /**
@@ -248,7 +327,15 @@ export async function getCategoryByPath(fullPath) {
     if (res.ok) {
       const data = await res.json();
       if (data && data.category) {
-        return data;
+        const fallbackTree = normalizeTree(CATEGORY_TREE);
+        const matchedNode = findNodeInTree(fallbackTree, cleanPath);
+        const children = (Array.isArray(data.children) && data.children.length > 0)
+          ? data.children
+          : (matchedNode?.children || []);
+        return {
+          ...data,
+          children
+        };
       }
     }
   } catch (err) {

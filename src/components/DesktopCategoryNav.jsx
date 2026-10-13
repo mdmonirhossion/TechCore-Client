@@ -19,9 +19,9 @@ export default function DesktopCategoryNav({ tree = [] }) {
   // Hover & Active States
   const [activeL1, setActiveL1] = useState(null); // id/fullPath of level-1 item
   const [activeL2, setActiveL2] = useState(null); // id/fullPath of level-2 item
-  const [flipLeft, setFlipLeft] = useState(false); // flip level-3 flyout to left if overflowing
+  const [flipLeft, setFlipLeft] = useState(false); // flip level-3 flyout to left if near right edge
 
-  // Timers for hover intent (120ms open delay, 200ms close delay)
+  // Timers for hover intent
   const l1OpenTimerRef = useRef(null);
   const l1CloseTimerRef = useRef(null);
   const l2OpenTimerRef = useRef(null);
@@ -116,68 +116,44 @@ export default function DesktopCategoryNav({ tree = [] }) {
     return pathname === target || pathname.startsWith(`${target}/`);
   };
 
-  // Hover Intent Handlers for Level-1
+  // Hover Handlers for Level-1: Opens immediately
   const handleL1MouseEnter = (catKey) => {
     if (l1CloseTimerRef.current) clearTimeout(l1CloseTimerRef.current);
-    if (l1OpenTimerRef.current) clearTimeout(l1OpenTimerRef.current);
-
-    // If a menu is already open, switch immediately without delay
-    if (activeL1) {
-      setActiveL1(catKey);
-      setActiveL2(null);
-    } else {
-      // 120ms hover intent open delay
-      l1OpenTimerRef.current = setTimeout(() => {
-        setActiveL1(catKey);
-        setActiveL2(null);
-      }, 120);
-    }
+    if (l2CloseTimerRef.current) clearTimeout(l2CloseTimerRef.current);
+    setActiveL1(catKey);
+    setActiveL2(null);
   };
 
   const handleL1MouseLeave = () => {
-    if (l1OpenTimerRef.current) clearTimeout(l1OpenTimerRef.current);
-    if (l1CloseTimerRef.current) clearTimeout(l1CloseTimerRef.current);
-
-    // 200ms hover intent close delay
     l1CloseTimerRef.current = setTimeout(() => {
       setActiveL1(null);
       setActiveL2(null);
-    }, 200);
+    }, 150);
   };
 
-  // Hover Intent Handlers for Level-2 (flyout to Level-3)
+  // Hover Handlers for Level-2: Opens flyout immediately
   const handleL2MouseEnter = (e, l2Key) => {
+    if (l1CloseTimerRef.current) clearTimeout(l1CloseTimerRef.current);
     if (l2CloseTimerRef.current) clearTimeout(l2CloseTimerRef.current);
-    if (l2OpenTimerRef.current) clearTimeout(l2OpenTimerRef.current);
 
     // Check viewport overflow to flip left if flyout would exceed viewport width
     const targetEl = e?.currentTarget;
     if (targetEl) {
       const rect = targetEl.getBoundingClientRect();
-      // If opening another 265px to the right exceeds window width
-      if (rect.right + 265 > window.innerWidth) {
+      if (rect.right + 250 > window.innerWidth) {
         setFlipLeft(true);
       } else {
         setFlipLeft(false);
       }
     }
 
-    if (activeL2) {
-      setActiveL2(l2Key);
-    } else {
-      l2OpenTimerRef.current = setTimeout(() => {
-        setActiveL2(l2Key);
-      }, 120);
-    }
+    setActiveL2(l2Key);
   };
 
   const handleL2MouseLeave = () => {
-    if (l2OpenTimerRef.current) clearTimeout(l2OpenTimerRef.current);
-    if (l2CloseTimerRef.current) clearTimeout(l2CloseTimerRef.current);
-
     l2CloseTimerRef.current = setTimeout(() => {
       setActiveL2(null);
-    }, 200);
+    }, 120);
   };
 
   // Keyboard Navigation Handlers
@@ -195,7 +171,6 @@ export default function DesktopCategoryNav({ tree = [] }) {
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       setActiveL1(catKey);
-      // Focus first level-2 item after render
       setTimeout(() => {
         const firstL2 = document.querySelector(`[data-l2-menu="${catKey}"] [data-l2-link]`);
         firstL2?.focus();
@@ -216,7 +191,6 @@ export default function DesktopCategoryNav({ tree = [] }) {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (currentIndex === 0) {
-        // Return focus to parent L1
         const l1Link = containerRef.current?.querySelector(`[data-l1-id="${catKey}"] [data-level1-link]`);
         l1Link?.focus();
         setActiveL1(null);
@@ -256,7 +230,6 @@ export default function DesktopCategoryNav({ tree = [] }) {
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       setActiveL2(null);
-      // Return focus to parent L2 link
       const l2Link = document.querySelector(`[data-l2-id="${l2Key}"] [data-l2-link]`);
       l2Link?.focus();
     }
@@ -269,7 +242,7 @@ export default function DesktopCategoryNav({ tree = [] }) {
   return (
     <nav
       aria-label="Desktop Category Navigation"
-      className="hidden lg:block bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 transition-colors relative z-40 select-none"
+      className="hidden lg:block bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800 transition-colors relative z-40 select-none shadow-sm"
     >
       <div className="max-w-[1320px] mx-auto px-4">
         <ul
@@ -321,7 +294,7 @@ export default function DesktopCategoryNav({ tree = [] }) {
                   </Link>
                 </div>
 
-                {/* Level-2 Cascading Panel */}
+                {/* Level-2 Cascading Panel (NO SCROLLBAR, FULL OVERFLOW-VISIBLE FOR CRISP FLYOUT) */}
                 {hasChildren && isOpen && (
                   <div
                     role="menu"
@@ -331,7 +304,7 @@ export default function DesktopCategoryNav({ tree = [] }) {
                       if (l1CloseTimerRef.current) clearTimeout(l1CloseTimerRef.current);
                     }}
                     onMouseLeave={handleL1MouseLeave}
-                    className="absolute left-0 top-full mt-0 w-[260px] max-h-[460px] overflow-y-auto overscroll-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-b-xl shadow-2xl z-40 py-1.5 divide-y divide-slate-100 dark:divide-slate-800/60"
+                    className="absolute left-0 top-full mt-0 w-[240px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_12px_36px_rgba(0,0,0,0.16)] dark:shadow-2xl z-[100] py-1 divide-y divide-slate-100 dark:divide-slate-800/60 rounded-b-md"
                   >
                     {catChildren.map((l2) => {
                       const l2Children = Array.isArray(l2.children) ? l2.children : [];
@@ -357,19 +330,26 @@ export default function DesktopCategoryNav({ tree = [] }) {
                             aria-expanded={hasL2Children ? (isL2Open ? 'true' : 'false') : undefined}
                             onFocus={(e) => handleL2MouseEnter(e, l2Key)}
                             onKeyDown={(e) => handleL2KeyDown(e, l2, l2Key, catKey)}
-                            className={`w-full px-3.5 py-2.5 text-xs font-semibold flex items-center justify-between transition-colors hover:bg-orange-50 dark:hover:bg-slate-800/80 hover:text-orange-600 dark:hover:text-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 ${
-                              isL2Active
-                                ? 'bg-orange-50/70 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-bold'
-                                : 'text-slate-800 dark:text-slate-200'
+                            className={`w-full px-4 py-2.5 text-[13px] font-medium flex items-center justify-between transition-colors ${
+                              isL2Open
+                                ? 'bg-[#ea580c] text-white font-bold'
+                                : isL2Active
+                                ? 'bg-orange-50/80 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-semibold'
+                                : 'text-slate-800 dark:text-slate-200 hover:bg-[#ea580c] hover:text-white'
                             }`}
                           >
                             <span className="truncate pr-2">{l2.name || l2.title}</span>
                             {hasL2Children && (
-                              <ChevronRight size={13} className="text-slate-400 shrink-0" />
+                              <ChevronRight
+                                size={13}
+                                className={`shrink-0 transition-colors ${
+                                  isL2Open ? 'text-white' : 'text-orange-500/80 group-hover:text-white'
+                                }`}
+                              />
                             )}
                           </Link>
 
-                          {/* Level-3 Flyout Panel (Positioned to Right or Flipped to Left) */}
+                          {/* Level-3 Flyout Panel (Positioned adjacent to hovered item without any scrollbars) */}
                           {hasL2Children && isL2Open && (
                             <div
                               role="menu"
@@ -380,8 +360,8 @@ export default function DesktopCategoryNav({ tree = [] }) {
                                 if (l2CloseTimerRef.current) clearTimeout(l2CloseTimerRef.current);
                               }}
                               onMouseLeave={handleL2MouseLeave}
-                              className={`absolute top-0 w-[260px] max-h-[460px] overflow-y-auto overscroll-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 divide-y divide-slate-100 dark:divide-slate-800/60 ${
-                                flipLeft ? 'right-full mr-1' : 'left-full ml-1'
+                              className={`absolute top-0 w-[240px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_12px_36px_rgba(0,0,0,0.16)] dark:shadow-2xl z-[110] py-1 divide-y divide-slate-100 dark:divide-slate-800/60 rounded-md ${
+                                flipLeft ? 'right-full' : 'left-full'
                               }`}
                             >
                               {l2Children.map((l3) => {
@@ -391,30 +371,30 @@ export default function DesktopCategoryNav({ tree = [] }) {
                                 const isL3Active = isItemActive(l3.fullPath);
 
                                 return (
-                                  <div key={l3Key} role="none" className="px-1 py-1">
+                                  <div key={l3Key} role="none" className="relative">
                                     <Link
                                       href={`/category/${l3.fullPath}`}
                                       role="menuitem"
                                       data-l3-link
                                       onKeyDown={(e) => handleL3KeyDown(e, l3Key, l2Key)}
-                                      className={`w-full px-2.5 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-between transition-colors hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 ${
+                                      className={`w-full px-4 py-2.5 text-[13px] font-medium flex items-center justify-between transition-colors hover:text-orange-600 hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
                                         isL3Active
-                                          ? 'bg-orange-50/70 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-bold'
+                                          ? 'text-orange-600 dark:text-orange-400 font-bold bg-orange-50/50'
                                           : 'text-slate-800 dark:text-slate-200'
                                       }`}
                                     >
                                       <span className="truncate">{l3.name || l3.title}</span>
                                     </Link>
 
-                                    {/* Level-4 items as plain links */}
+                                    {/* Level-4 items as plain sub-links if any */}
                                     {hasL4 && (
-                                      <ul className="pl-4 pr-1 py-0.5 space-y-0.5 border-l-2 border-slate-100 dark:border-slate-800 ml-2 mt-0.5">
+                                      <ul className="pl-6 pr-2 py-1 space-y-1 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-800">
                                         {l4Children.map((l4) => (
                                           <li key={l4.fullPath || l4.name}>
                                             <Link
                                               href={`/category/${l4.fullPath}`}
                                               role="menuitem"
-                                              className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 block py-0.5 transition-colors"
+                                              className="text-xs text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 block py-0.5 transition-colors"
                                             >
                                               {l4.name || l4.title}
                                             </Link>
@@ -430,6 +410,17 @@ export default function DesktopCategoryNav({ tree = [] }) {
                         </div>
                       );
                     })}
+
+                    {/* Show All {cat.name} at bottom (Star Tech style) */}
+                    <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <Link
+                        href={`/category/${cat.fullPath || cat.slug}`}
+                        role="menuitem"
+                        className="w-full px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-slate-800 block transition-colors"
+                      >
+                        Show All {cat.name || cat.title}
+                      </Link>
+                    </div>
                   </div>
                 )}
               </li>
@@ -478,7 +469,7 @@ export default function DesktopCategoryNav({ tree = [] }) {
                     if (l1CloseTimerRef.current) clearTimeout(l1CloseTimerRef.current);
                   }}
                   onMouseLeave={handleL1MouseLeave}
-                  className="absolute right-0 top-full mt-0 w-[260px] max-h-[460px] overflow-y-auto overscroll-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-b-xl shadow-2xl z-40 py-1.5 divide-y divide-slate-100 dark:divide-slate-800/60"
+                  className="absolute right-0 top-full mt-0 w-[240px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_12px_36px_rgba(0,0,0,0.16)] dark:shadow-2xl z-50 py-1 divide-y divide-slate-100 dark:divide-slate-800/60 rounded-b-md"
                 >
                   {moreItems.map((cat) => {
                     const catChildren = Array.isArray(cat.children) ? cat.children : [];
@@ -503,10 +494,21 @@ export default function DesktopCategoryNav({ tree = [] }) {
                           aria-expanded={hasChildren ? (isL2Open ? 'true' : 'false') : undefined}
                           onFocus={(e) => handleL2MouseEnter(e, catKey)}
                           onKeyDown={(e) => handleL2KeyDown(e, cat, catKey, 'more-overflow')}
-                          className="w-full px-3.5 py-2.5 text-xs font-semibold flex items-center justify-between transition-colors hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 text-slate-800 dark:text-slate-200"
+                          className={`w-full px-4 py-2.5 text-[13px] font-medium flex items-center justify-between transition-colors ${
+                            isL2Open
+                              ? 'bg-[#ea580c] text-white font-bold'
+                              : 'text-slate-800 dark:text-slate-200 hover:bg-[#ea580c] hover:text-white'
+                          }`}
                         >
                           <span className="truncate pr-2">{cat.name || cat.title}</span>
-                          {hasChildren && <ChevronRight size={13} className="text-slate-400 shrink-0" />}
+                          {hasChildren && (
+                            <ChevronRight
+                              size={13}
+                              className={`shrink-0 transition-colors ${
+                                isL2Open ? 'text-white' : 'text-orange-500/80 group-hover:text-white'
+                              }`}
+                            />
+                          )}
                         </Link>
 
                         {/* Flyout for overflowed category */}
@@ -520,15 +522,15 @@ export default function DesktopCategoryNav({ tree = [] }) {
                               if (l2CloseTimerRef.current) clearTimeout(l2CloseTimerRef.current);
                             }}
                             onMouseLeave={handleL2MouseLeave}
-                            className="absolute top-0 right-full mr-1 w-[260px] max-h-[460px] overflow-y-auto overscroll-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 divide-y divide-slate-100 dark:divide-slate-800/60"
+                            className="absolute top-0 right-full w-[240px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_12px_36px_rgba(0,0,0,0.16)] dark:shadow-2xl z-[110] py-1 divide-y divide-slate-100 dark:divide-slate-800/60 rounded-md"
                           >
                             {catChildren.map((l2) => (
-                              <div key={l2.fullPath || l2.slug} role="none" className="px-1 py-1">
+                              <div key={l2.fullPath || l2.slug} role="none" className="relative">
                                 <Link
                                   href={`/category/${l2.fullPath}`}
                                   role="menuitem"
                                   data-l3-link
-                                  className="w-full px-2.5 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-between transition-colors hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 text-slate-800 dark:text-slate-200"
+                                  className="w-full px-4 py-2.5 text-[13px] font-medium flex items-center justify-between transition-colors hover:text-orange-600 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200"
                                 >
                                   <span className="truncate">{l2.name || l2.title}</span>
                                 </Link>
