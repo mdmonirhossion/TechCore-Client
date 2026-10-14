@@ -447,3 +447,51 @@ export async function getPaymentInvoiceApi(orderId) {
     return { success: false, message: err.message || 'Failed to retrieve invoice payment data' };
   }
 }
+
+/**
+ * Fetch all orders for the Admin Dashboard from MongoDB Backend
+ * Calls GET /api/admin/orders
+ * @param {string} token - Optional JWT Bearer token
+ */
+export async function getAdminOrders(token) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/admin/orders`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!res.ok) {
+      return [];
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.orders || []);
+  } catch (err) {
+    console.error('[getAdminOrders API error]:', err);
+    return [];
+  }
+}
+
+/**
+ * Update order status from Admin Dashboard
+ * Calls PATCH /api/admin/orders/:id/status
+ * @param {string} orderId
+ * @param {string} status
+ * @param {string} token
+ */
+export async function updateAdminOrderStatusApi(orderId, status, token) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/admin/orders/${encodeURIComponent(orderId)}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ status })
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}

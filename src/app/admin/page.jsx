@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
-import { getProducts, getCategories, getBrands, API_BASE_URL } from '@/lib/api';
+import { getProducts, getCategories, getBrands, getAdminOrders, updateAdminOrderStatusApi, API_BASE_URL } from '@/lib/api';
 import SalesTrendChart from '@/components/admin/charts/SalesTrendChart';
 import OrderStatusChart from '@/components/admin/charts/OrderStatusChart';
 import TopProductsChart from '@/components/admin/charts/TopProductsChart';
@@ -86,71 +86,80 @@ export default function AdminDashboardPage() {
     isFeatured: true
   });
 
-  // Orders state
-  const [ordersList, setOrdersList] = useState([
-    {
-      id: 'ORD-9821',
-      customerName: 'Tanvir Ahmed',
-      email: 'tanvir@gmail.com',
-      phone: '01711223344',
-      address: 'House 42, Road 11, Banani, Dhaka',
-      total: 124999,
-      paymentMethod: 'Cash on Delivery',
-      status: 'Pending',
-      date: '2026-09-29',
-      itemsCount: 1,
-      items: [{ name: 'ASUS TUF Gaming A15 RTX 4050 Laptop', qty: 1, price: 124999 }]
-    },
-    {
-      id: 'ORD-9820',
-      customerName: 'Mahmudul Hasan',
-      email: 'mahmud@yahoo.com',
-      phone: '01899887766',
-      address: 'Agrabad C/A, Chittagong',
-      total: 45000,
-      paymentMethod: 'bKash Online',
-      status: 'Processing',
-      date: '2026-09-28',
-      itemsCount: 1,
-      items: [{ name: 'AMD Ryzen 7 7800X3D Processor', qty: 1, price: 45000 }]
-    },
-    {
-      id: 'ORD-9819',
-      customerName: 'Sabbir Hossain',
-      email: 'sabbir@gmail.com',
-      phone: '01912345678',
-      address: 'Zindabazar, Sylhet',
-      total: 14500,
-      paymentMethod: 'Cash on Delivery',
-      status: 'Shipped',
-      date: '2026-09-27',
-      itemsCount: 1,
-      items: [{ name: 'ASUS VY229HF 100Hz IPS Monitor', qty: 1, price: 14500 }]
-    },
-    {
-      id: 'ORD-9818',
-      customerName: 'Naimur Rahman',
-      email: 'naimur@gmail.com',
-      phone: '01511223344',
-      address: 'Khashbag, Rajshahi',
-      total: 228999,
-      paymentMethod: 'Nagad Online',
-      status: 'Delivered',
-      date: '2026-09-25',
-      itemsCount: 1,
-      items: [{ name: 'TechCore Ultimate Ryzen 7 7800X3D RTX 4070 Ti Super Rig', qty: 1, price: 228999 }]
-    }
-  ]);
+  // Orders state (Loaded dynamically from MongoDB)
+  const [ordersList, setOrdersList] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
 
-  // Customers state
-  const [customersList, setCustomersList] = useState([
-    { id: 'CUST-101', name: 'Tanvir Ahmed', email: 'tanvir@gmail.com', phone: '01711223344', city: 'Dhaka', joined: '2026-01-15', totalSpent: 245000, orders: 3, status: 'Active' },
-    { id: 'CUST-102', name: 'Mahmudul Hasan', email: 'mahmud@yahoo.com', phone: '01899887766', city: 'Chittagong', joined: '2026-03-22', totalSpent: 98000, orders: 2, status: 'Active' },
-    { id: 'CUST-103', name: 'Sabbir Hossain', email: 'sabbir@gmail.com', phone: '01912345678', city: 'Sylhet', joined: '2026-05-10', totalSpent: 14500, orders: 1, status: 'Active' },
-    { id: 'CUST-104', name: 'Naimur Rahman', email: 'naimur@gmail.com', phone: '01511223344', city: 'Rajshahi', joined: '2026-08-01', totalSpent: 228999, orders: 1, status: 'Active' }
-  ]);
+  // Customers state (Derived from MongoDB orders)
+  const [customersList, setCustomersList] = useState([]);
+
+  // Helper to normalize an order from MongoDB or API
+  const normalizeOrder = (ord) => {
+    if (!ord) return null;
+    const customer = ord.customer || {};
+    const rawStatus = String(ord.orderStatus || ord.status || 'Pending').toUpperCase();
+    let displayStatus = 'Pending';
+    if (rawStatus === 'PENDING' || rawStatus === 'PENDING_PAYMENT') displayStatus = 'Pending';
+    else if (rawStatus === 'PROCESSING' || rawStatus === 'CONFIRMED') displayStatus = 'Processing';
+    else if (rawStatus === 'SHIPPED') displayStatus = 'Shipped';
+    else if (rawStatus === 'DELIVERED') displayStatus = 'Delivered';
+    else if (rawStatus === 'CANCELLED') displayStatus = 'Cancelled';
+    else displayStatus = ord.orderStatus || ord.status || 'Pending';
+
+    const orderId = ord.id || ord.invoiceNo || (ord._id ? `ORD-${String(ord._id).slice(-6).toUpperCase()}` : 'ORD-NEW');
+    const items = Array.isArray(ord.items)
+      ? ord.items.map(it => ({
+          name: it.name || 'Product',
+          qty: Number(it.quantity || it.qty || 1),
+          price: Number(it.price || 0)
+        }))
+      : [];
+
+    return {
+      id: orderId,
+      rawId: ord.id || ord._id,
+      customerName: customer.name || ord.customerName || 'Customer',
+      email: customer.email || ord.email || '',
+      phone: customer.phone || ord.phone || '',
+      address: customer.address || ord.address || (customer.city ? `${customer.city}, Bangladesh` : 'Dhaka, Bangladesh'),
+      total: Number(ord.grandTotal ?? ord.total ?? ord.subtotal ?? 0),
+      paymentMethod: ord.paymentMethod || 'Cash on Delivery',
+      paymentStatus: ord.paymentStatus || 'Unpaid',
+      status: displayStatus,
+      rawStatus: ord.orderStatus || ord.status,
+      date: ord.createdAt ? new Date(ord.createdAt).toISOString().split('T')[0] : (ord.date || new Date().toISOString().split('T')[0]),
+      itemsCount: items.length,
+      items
+    };
+  };
+
+  // Derive customers CRM profiles dynamically from real orders
+  const deriveCustomersFromOrders = (orders = []) => {
+    const customerMap = new Map();
+    orders.forEach((o) => {
+      const key = (o.phone || o.email || o.customerName || '').toLowerCase().trim();
+      if (!key) return;
+      if (!customerMap.has(key)) {
+        customerMap.set(key, {
+          id: `CUST-${101 + customerMap.size}`,
+          name: o.customerName,
+          email: o.email || 'N/A',
+          phone: o.phone || 'N/A',
+          city: o.address ? o.address.split(',').pop().trim() : 'Dhaka',
+          joined: o.date,
+          totalSpent: 0,
+          orders: 0,
+          status: 'Active'
+        });
+      }
+      const existing = customerMap.get(key);
+      existing.totalSpent += Number(o.total || 0);
+      existing.orders += 1;
+    });
+    return Array.from(customerMap.values());
+  };
 
   // Coupons state
   const [couponsList, setCouponsList] = useState([
@@ -204,15 +213,38 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Fetch real orders from server
+  const loadAdminOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const rawOrders = await getAdminOrders(token);
+      if (Array.isArray(rawOrders)) {
+        const normalized = rawOrders.map(normalizeOrder).filter(Boolean);
+        setOrdersList(normalized);
+        setCustomersList(deriveCustomersFromOrders(normalized));
+      }
+    } catch (e) {
+      console.error('Admin orders fetch error:', e);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
-    Promise.all([getProducts(), getCategories(), getBrands()])
-      .then(([productsData, categoriesData, brandsData]) => {
+    Promise.all([getProducts(), getCategories(), getBrands(), getAdminOrders(token)])
+      .then(([productsData, categoriesData, brandsData, ordersData]) => {
         if (!isMounted) return;
         setProductsList(Array.isArray(productsData) ? productsData : []);
         setCategoriesList(Array.isArray(categoriesData) ? categoriesData : []);
         setBrandsList(Array.isArray(brandsData) ? brandsData : []);
+        if (Array.isArray(ordersData)) {
+          const normalized = ordersData.map(normalizeOrder).filter(Boolean);
+          setOrdersList(normalized);
+          setCustomersList(deriveCustomersFromOrders(normalized));
+        }
         setLoadingProducts(false);
+        setLoadingOrders(false);
       })
       .catch((e) => {
         if (isMounted) {
@@ -221,10 +253,11 @@ export default function AdminDashboardPage() {
           setCategoriesList([]);
           setBrandsList([]);
           setLoadingProducts(false);
+          setLoadingOrders(false);
         }
       });
     return () => { isMounted = false; };
-  }, []);
+  }, [token, demoAdmin]);
 
   // Format "Parent > Child" category labels from flat category list
   const formattedCategories = React.useMemo(() => {
@@ -518,10 +551,17 @@ export default function AdminDashboardPage() {
     setShowAddCouponModal(false);
   };
 
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = async (orderId, newStatus) => {
     setOrdersList(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
+    }
+    const orderObj = ordersList.find(o => o.id === orderId);
+    const targetId = orderObj?.rawId || orderId;
+    try {
+      await updateAdminOrderStatusApi(targetId, newStatus.toUpperCase(), token);
+    } catch (err) {
+      console.error('Failed to sync order status to server:', err);
     }
   };
 
@@ -935,9 +975,18 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {ordersList
-                        .filter(o => orderStatusFilter === 'All' || o.status === orderStatusFilter)
-                        .map(ord => (
+                      {ordersList.filter(o => orderStatusFilter === 'All' || o.status === orderStatusFilter).length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-slate-500 text-xs">
+                            {loadingOrders
+                              ? 'Loading real orders from MongoDB database...'
+                              : 'No orders found in MongoDB. New orders placed through checkout will appear here in real-time.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        ordersList
+                          .filter(o => orderStatusFilter === 'All' || o.status === orderStatusFilter)
+                          .map(ord => (
                           <tr key={ord.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                             <td className="p-3 font-bold text-blue-600">{ord.id}</td>
                             <td className="p-3">
@@ -968,7 +1017,8 @@ export default function AdminDashboardPage() {
                               </button>
                             </td>
                           </tr>
-                        ))}
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1001,7 +1051,16 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {customersList.map(cust => (
+                      {customersList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-slate-500 text-xs">
+                            {loadingOrders
+                              ? 'Loading customer records from database...'
+                              : 'No customer profiles found yet. Customer profiles are automatically tracked when orders are placed.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        customersList.map(cust => (
                         <tr key={cust.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="p-3 font-bold text-slate-900 dark:text-slate-100">{cust.name}</td>
                           <td className="p-3">
@@ -1018,7 +1077,8 @@ export default function AdminDashboardPage() {
                             </span>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    )}
                     </tbody>
                   </table>
                 </div>
