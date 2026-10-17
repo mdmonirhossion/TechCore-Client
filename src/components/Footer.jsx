@@ -2,15 +2,19 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Cpu, Phone, Mail, MapPin, ShieldCheck, Share2, Globe } from 'lucide-react';
+import { Cpu, Phone, Mail, MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Footer() {
+  const t = useTranslations('Footer');
+
   return (
-    <footer className="bg-white border-t border-slate-200 pt-12 pb-6 text-slate-800 font-sans">
+    <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-12 pb-6 text-slate-800 dark:text-slate-200 font-sans transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Footer Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-slate-200 dark:border-slate-800">
           
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
@@ -19,50 +23,50 @@ export default function Footer() {
                 <Cpu size={20} className="stroke-[2.5]" />
               </div>
               <div className="text-xl font-black tracking-tight">
-                <span className="text-slate-900">TECH</span>
+                <span className="text-slate-900 dark:text-white">TECH</span>
                 <span className="text-orange-600">CORE</span>
               </div>
             </Link>
-            <p className="text-xs text-slate-500 leading-relaxed max-w-sm">
-              TechCore is Bangladesh&apos;s premier technology e-commerce destination for gaming laptops, custom desktop PCs, graphics cards, processors, monitors, and official tech accessories.
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
+              {t('tagline')}
             </p>
-            <div className="space-y-2 text-xs text-slate-700 font-semibold pt-1">
+            <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300 font-semibold pt-1">
               <div className="flex items-center gap-2">
                 <Phone size={14} className="text-orange-600" />
-                <span>Hotline: 01700-000000 (9 AM - 8 PM)</span>
+                <span>{t('hotline')}: 01700-000000 (9 AM - 8 PM)</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail size={14} className="text-blue-600" />
-                <span>Email: support@techcorebd.com</span>
+                <span>{t('email')}: support@techcorebd.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-emerald-600" />
-                <span>Multiplan Center, New Elephant Road, Dhaka-1205</span>
+                <span>{t('address')}</span>
               </div>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
-              Customer Service
+            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+              {t('customerService')}
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600">
-              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Warranty Claim</Link></li>
-              <li><Link href="/service-center" className="hover:text-orange-600 hover:underline">Service Center</Link></li>
-              <li><Link href="/track-order" className="hover:text-orange-600 hover:underline">Track Your Order</Link></li>
-              <li><Link href="/my-orders" className="hover:text-orange-600 hover:underline">My Orders</Link></li>
-              <li><Link href="/pc-builder" className="hover:text-orange-600 hover:underline">PC Builder Tool</Link></li>
-              <li><Link href="/laptop-finder" className="hover:text-orange-600 hover:underline">Laptop Finder</Link></li>
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+              <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">{t('warrantyClaim')}</Link></li>
+              <li><Link href="/service-center" className="hover:text-orange-600 hover:underline">{t('serviceCenter')}</Link></li>
+              <li><Link href="/track-order" className="hover:text-orange-600 hover:underline">{t('trackOrder')}</Link></li>
+              <li><Link href="/my-orders" className="hover:text-orange-600 hover:underline">{t('myOrders')}</Link></li>
+              <li><Link href="/pc-builder" className="hover:text-orange-600 hover:underline">{t('pcBuilderTool')}</Link></li>
+              <li><Link href="/laptop-finder" className="hover:text-orange-600 hover:underline">{t('laptopFinder')}</Link></li>
             </ul>
           </div>
 
           {/* Popular Categories */}
           <div>
-            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
-              Popular Categories
+            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+              {t('popularCategories')}
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
               <li><Link href="/category/laptop" className="hover:text-orange-600 hover:underline">Gaming Laptop</Link></li>
               <li><Link href="/category/desktop-pc" className="hover:text-orange-600 hover:underline">Desktop PC</Link></li>
               <li><Link href="/category/component/graphics-card" className="hover:text-orange-600 hover:underline">Graphics Card</Link></li>
@@ -75,10 +79,10 @@ export default function Footer() {
 
           {/* Information & Policies */}
           <div>
-            <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
-              About & Policies
+            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+              {t('aboutPolicies')}
             </h4>
-            <ul className="space-y-2 text-xs text-slate-600">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
               <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">About TechCore</Link></li>
               <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Warranty Policy</Link></li>
               <li><Link href="/warranty" className="hover:text-orange-600 hover:underline">Delivery Information</Link></li>
@@ -91,9 +95,9 @@ export default function Footer() {
         </div>
 
         {/* SSLCommerz Payment Partners Banner */}
-        <div className="py-6 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-xs font-semibold text-slate-600">
-            <span>Verified Secure Payments via SSLCommerz (Cards, bKash, Nagad, Rocket & Internet Banking)</span>
+        <div className="py-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <span>{t('verifiedSecure')}</span>
           </div>
           <a
             target="_blank"
@@ -111,14 +115,12 @@ export default function Footer() {
         </div>
 
         {/* Footer Bottom */}
-        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
           <div>
-            © 2026 TechCore. All rights reserved. Premium Electronics & Computer Store Bangladesh.
+            {t('copyright')}
           </div>
-          <div className="flex items-center gap-3 text-slate-400">
-            <span className="flex items-center gap-1 hover:text-blue-600 transition-colors cursor-pointer">
-              <Globe size={14} /> English / বাংলা
-            </span>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher variant="footer" />
           </div>
         </div>
 

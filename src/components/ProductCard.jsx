@@ -5,11 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShop } from '@/context/ShopContext';
+import { useTranslations } from 'next-intl';
 import { ShoppingCart, Zap, Heart, Scale, Star, ShieldCheck, Eye } from 'lucide-react';
 import QuickViewModal from './QuickViewModal';
 
 export default function ProductCard({ product }) {
   const router = useRouter();
+  const t = useTranslations('Product');
   const { addToCart, toggleWishlist, wishlist, toggleCompare, compareItems } = useShop();
   const [showQuickView, setShowQuickView] = useState(false);
 
@@ -161,18 +163,18 @@ export default function ProductCard({ product }) {
           {/* Buttons */}
           <div className="grid grid-cols-2 gap-1.5 mt-3">
             <button
-              onClick={handleBuyNow}
-              className="bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:from-orange-700 hover:to-orange-800 text-white text-xs font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95"
+               onClick={handleBuyNow}
+               className="bg-gradient-to-r from-[#ea580c] to-[#c2410c] hover:from-orange-700 hover:to-orange-800 text-white text-xs font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95"
             >
               <Zap size={12} />
-              <span>Buy Now</span>
+              <span>{t('buyNow')}</span>
             </button>
             <button
-              onClick={handleAddToCart}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95"
+               onClick={handleAddToCart}
+               className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 shadow-sm transition-all active:scale-95"
             >
               <ShoppingCart size={12} />
-              <span>Add Cart</span>
+              <span>{t('addToCart')}</span>
             </button>
           </div>
 

@@ -7,6 +7,8 @@ import MobileCategoryMenu from '@/components/MobileCategoryMenu';
 import DesktopCategoryNav from '@/components/DesktopCategoryNav';
 import { useShop } from '@/context/ShopContext';
 import { searchProducts } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {
   Cpu,
   Search,
@@ -38,6 +40,7 @@ import Image from 'next/image';
 
 export default function Navbar({ categoryTree = [] }) {
   const router = useNextRouter();
+  const t = useTranslations('Navigation');
   const { cart, wishlist, compareItems, user, theme, toggleTheme } = useShop();
 
   const [mounted, setMounted] = useState(false);
@@ -48,8 +51,8 @@ export default function Navbar({ categoryTree = [] }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 0);
-    return () => clearTimeout(t);
+    const mountTimer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(mountTimer);
   }, []);
 
   // Debounced search logic
@@ -124,7 +127,7 @@ export default function Navbar({ categoryTree = [] }) {
             <input
               type="text"
               className="w-full bg-white text-slate-900 placeholder:text-slate-400 pl-4 pr-10 py-2.5 rounded-lg text-sm border-0 focus:ring-2 focus:ring-orange-500 focus:outline-none shadow-sm"
-              placeholder="Search RTX 4060, Ryzen 7, Gaming Laptop..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
@@ -187,8 +190,8 @@ export default function Navbar({ categoryTree = [] }) {
               <Gift size={18} className="text-orange-500 group-hover:text-white" />
             </div>
             <div className="text-left text-xs">
-              <span className="block font-bold text-white leading-tight">Offers</span>
-              <span className="text-[10px] text-slate-400">Latest Offers</span>
+              <span className="block font-bold text-white leading-tight">{t('offers')}</span>
+              <span className="text-[10px] text-slate-400">{t('latestOffers')}</span>
             </div>
           </Link>
 
@@ -198,8 +201,8 @@ export default function Navbar({ categoryTree = [] }) {
               <Zap size={18} className="text-amber-400 group-hover:text-white" />
             </div>
             <div className="text-left text-xs">
-              <span className="block font-bold text-white leading-tight">Happy Hour</span>
-              <span className="text-[10px] text-slate-400">Special Deals</span>
+              <span className="block font-bold text-white leading-tight">{t('happyHour')}</span>
+              <span className="text-[10px] text-slate-400">{t('specialDeals')}</span>
             </div>
           </Link>
 
@@ -210,16 +213,16 @@ export default function Navbar({ categoryTree = [] }) {
             </div>
             <div className="text-left text-xs hidden sm:block">
               <span className="block font-bold text-white leading-tight">
-                {mounted && user ? (user.name ? user.name.split(' ')[0] : 'Md Monir') : 'Account'}
+                {mounted && user ? (user.name ? user.name.split(' ')[0] : 'User') : t('account')}
               </span>
               <span className="text-[10px] text-slate-400">
-                {mounted && user ? 'My Account' : 'Register or Login'}
+                {mounted && user ? t('myAccount') : t('registerOrLogin')}
               </span>
             </div>
           </Link>
 
           {/* Wishlist Icon */}
-          <Link href="/wishlist" className="relative p-2 text-slate-300 hover:text-orange-500 transition-colors" title="Wishlist">
+          <Link href="/wishlist" className="relative p-2 text-slate-300 hover:text-orange-500 transition-colors" title={t('wishlist')}>
             <Heart size={22} />
             {wishlistCount > 0 && (
               <span className="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -229,7 +232,7 @@ export default function Navbar({ categoryTree = [] }) {
           </Link>
 
           {/* Compare Icon */}
-          <Link href="/compare" className="relative p-2 text-slate-300 hover:text-blue-400 transition-colors" title="Compare">
+          <Link href="/compare" className="relative p-2 text-slate-300 hover:text-blue-400 transition-colors" title={t('compare')}>
             <Scale size={22} />
             {compareCount > 0 && (
               <span className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -239,7 +242,7 @@ export default function Navbar({ categoryTree = [] }) {
           </Link>
 
           {/* Cart Icon */}
-          <Link href="/cart" className="relative p-2 text-slate-300 hover:text-orange-500 transition-colors" title="Cart">
+          <Link href="/cart" className="relative p-2 text-slate-300 hover:text-orange-500 transition-colors" title={t('cart')}>
             <ShoppingCart size={22} />
             {cartCount > 0 && (
               <span className="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -248,11 +251,14 @@ export default function Navbar({ categoryTree = [] }) {
             )}
           </Link>
 
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Theme Toggle Button (Sun / Moon) */}
           <button
             onClick={toggleTheme}
             className="w-9 h-9 rounded-full bg-slate-800 hover:bg-orange-600 flex items-center justify-center text-slate-200 hover:text-white transition-all shadow-md group"
-            title={mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            title={mounted && theme === 'dark' ? t('lightMode') : t('darkMode')}
             aria-label="Toggle Theme"
           >
             {mounted && theme === 'dark' ? (
@@ -268,7 +274,7 @@ export default function Navbar({ categoryTree = [] }) {
             className="bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-md hover:shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95"
           >
             <Wrench size={16} />
-            <span className="hidden sm:inline">PC Builder</span>
+            <span className="hidden sm:inline">{t('pcBuilder')}</span>
           </Link>
 
         </div>
@@ -322,8 +328,14 @@ export default function Navbar({ categoryTree = [] }) {
                 <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">{mounted ? theme : ''}</span>
               </button>
 
+              {/* Language Switcher in Mobile Drawer */}
+              <div className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{t('switchLanguage')}</span>
+                <LanguageSwitcher />
+              </div>
+
               <Link href="/pc-builder" onClick={() => setMobileMenuOpen(false)} className="bg-blue-600 text-white font-bold px-4 py-2.5 rounded-lg flex items-center gap-2">
-                <Wrench size={16} /> PC Builder
+                <Wrench size={16} /> {t('pcBuilder')}
               </Link>
 
               <div className="font-bold text-xs uppercase tracking-wider text-slate-400 pt-3">Categories</div>
